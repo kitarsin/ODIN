@@ -1,2 +1,24 @@
 # ODIN
-The thesis of the group Insomnicode
+ODIN is a Gamified Intelligent Tutoring System (ITS) developed by InsomniCode. It designed to assist Grade 11 ICT students in mastering C# Bitwise and Logical Operators.
+
+Traditional IDEs only catch syntax errors. ODIN goes further by analyzing Keystroke Dynamics and Compilation Behavior to detect the student's cognitive state. It identifies when a student is "Wheel-Spinning" (stuck in a loop of failure) or "Gaming the System" (guessing/spamming hints) and provides scaffolded interventions to foster resilience.
+
+Tech Stack
+
+    Language: C#
+
+    Analysis Engine: Microsoft Roslyn Compiler Platform 
+
+    Platform: Windows Desktop Application
+
+    Key Metrics: Compilation Rate, Edit Distance, Error Similarity.
+
+The Team (InsomniCode)
+
+    Russell D. Magdaong
+
+    Jerson Angelo B. Bautista
+
+    Ken Johan Liwanag
+
+    Kristian Lawrence R. Villaraza
