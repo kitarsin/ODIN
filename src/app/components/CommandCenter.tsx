@@ -35,8 +35,8 @@ export function CommandCenter() {
   const stuckStudents = mockStudents.filter(s => s.status === 'stuck').length;
 
   return (
-    <div className="h-full bg-background text-foreground overflow-auto p-8">
-      <div className="max-w-[1600px] mx-auto space-y-6">
+    <div className="h-full bg-background text-foreground overflow-auto p-4 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2 text-[#00E676]" style={{ fontFamily: 'Orbitron, sans-serif' }}>

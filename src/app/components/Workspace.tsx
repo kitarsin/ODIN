@@ -7,7 +7,11 @@ import {
   Activity,
   Zap,
   AlertCircle,
-  Terminal as TerminalIcon
+  Terminal as TerminalIcon,
+  ChevronLeft,
+  ChevronRight,
+  PanelLeftClose,
+  PanelRightClose
 } from 'lucide-react';
 
 interface Task {
@@ -49,6 +53,8 @@ void draw() {
   const [output, setOutput] = useState('> Ready to compile...');
   const [tasks, setTasks] = useState(mockTasks);
   const [compilations, setCompilations] = useState(0);
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
 
   const handleCompile = () => {
     setCompilations(prev => prev + 1);
@@ -85,7 +91,7 @@ void draw() {
   };
 
   return (
-    <div className="h-screen bg-background text-foreground flex flex-col overflow-hidden">
+    <div className="w-full h-full bg-background text-foreground flex flex-col overflow-hidden">
       {/* Top Bar */}
       <div className="h-14 border-b border-border backdrop-blur-md bg-card/80 flex items-center justify-between px-6 shrink-0">
         <div className="flex items-center gap-4">
@@ -113,63 +119,81 @@ void draw() {
       {/* Main Workspace - 3 Pane Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Pane - Mission Log */}
-        <div className="w-80 border-r border-border backdrop-blur-md bg-card/40 overflow-y-auto shrink-0">
-          <div className="p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-[#2979FF]/20 flex items-center justify-center">
-                <AlertCircle className="w-4 h-4 text-[#2979FF]" />
+        <div 
+          className={`border-r border-border backdrop-blur-md bg-card/40 overflow-y-auto shrink-0 transition-all duration-300 ${
+            leftSidebarOpen ? 'w-64 lg:w-72 xl:w-80' : 'w-0'
+          }`}
+        >
+          {leftSidebarOpen && (
+            <div className="p-4 lg:p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-[#2979FF]/20 flex items-center justify-center">
+                  <AlertCircle className="w-4 h-4 text-[#2979FF]" />
+                </div>
+                <h3 className="font-semibold">Current Objective</h3>
               </div>
-              <h3 className="font-semibold">Current Objective</h3>
-            </div>
 
-            <div className="space-y-3">
-              {tasks.map((task) => (
-                <button
-                  key={task.id}
-                  onClick={() => toggleTask(task.id)}
-                  className="w-full flex items-start gap-3 p-3 rounded-lg bg-secondary/50 border border-border hover:border-[#2979FF]/30 transition-all text-left group"
-                >
-                  {task.completed ? (
-                    <CheckSquare className="w-5 h-5 text-[#00E676] shrink-0 mt-0.5" />
-                  ) : (
-                    <Square className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5 group-hover:text-[#2979FF] transition-colors" />
-                  )}
-                  <span className={`text-sm ${task.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-                    {task.text}
+              <div className="space-y-3">
+                {tasks.map((task) => (
+                  <button
+                    key={task.id}
+                    onClick={() => toggleTask(task.id)}
+                    className="w-full flex items-start gap-3 p-3 rounded-lg bg-secondary/50 border border-border hover:border-[#2979FF]/30 transition-all text-left group"
+                  >
+                    {task.completed ? (
+                      <CheckSquare className="w-5 h-5 text-[#00E676] shrink-0 mt-0.5" />
+                    ) : (
+                      <Square className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5 group-hover:text-[#2979FF] transition-colors" />
+                    )}
+                    <span className={`text-sm ${task.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                      {task.text}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Progress */}
+              <div className="mt-6 p-4 rounded-lg bg-secondary/30 border border-border">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-muted-foreground">Progress</span>
+                  <span className="text-sm font-semibold text-[#2979FF]">
+                    {tasks.filter(t => t.completed).length}/{tasks.length}
                   </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Progress */}
-            <div className="mt-6 p-4 rounded-lg bg-secondary/30 border border-border">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-muted-foreground">Progress</span>
-                <span className="text-sm font-semibold text-[#2979FF]">
-                  {tasks.filter(t => t.completed).length}/{tasks.length}
-                </span>
+                </div>
+                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-[#2979FF] to-[#00E676] transition-all duration-500"
+                    style={{ width: `${(tasks.filter(t => t.completed).length / tasks.length) * 100}%` }}
+                  />
+                </div>
               </div>
-              <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-[#2979FF] to-[#00E676] transition-all duration-500"
-                  style={{ width: `${(tasks.filter(t => t.completed).length / tasks.length) * 100}%` }}
-                />
-              </div>
-            </div>
 
-            {/* Hint Button */}
-            <button
-              onClick={onShowHint}
-              className="w-full mt-4 px-4 py-3 rounded-lg bg-[#FFAB00]/10 border border-[#FFAB00]/30 hover:bg-[#FFAB00]/20 transition-colors text-[#FFAB00] font-semibold flex items-center justify-center gap-2"
-            >
-              <Zap className="w-4 h-4" />
-              Request Hint
-            </button>
-          </div>
+              {/* Hint Button */}
+              <button
+                onClick={onShowHint}
+                className="w-full mt-4 px-4 py-3 rounded-lg bg-[#FFAB00]/10 border border-[#FFAB00]/30 hover:bg-[#FFAB00]/20 transition-colors text-[#FFAB00] font-semibold flex items-center justify-center gap-2"
+              >
+                <Zap className="w-4 h-4" />
+                Request Hint
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Center Pane - Code Editor */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Left Sidebar Toggle */}
+        <button
+          onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-6 h-16 bg-card/80 border border-border rounded-r-lg flex items-center justify-center hover:bg-card transition-colors"
+        >
+          {leftSidebarOpen ? (
+            <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          )}
+        </button>
+
+        {/* Center Pane - Code Editor - FLEX GROW */}
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <div className="flex-1 overflow-auto">
             <textarea
               value={code}
@@ -199,89 +223,107 @@ void draw() {
           </div>
         </div>
 
+        {/* Right Sidebar Toggle */}
+        <button
+          onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-6 h-16 bg-card/80 border border-border rounded-l-lg flex items-center justify-center hover:bg-card transition-colors"
+        >
+          {rightSidebarOpen ? (
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+          )}
+        </button>
+
         {/* Right Pane - ODIN AI HUD */}
-        <div className="w-80 border-l border-border backdrop-blur-md bg-card/40 overflow-y-auto shrink-0">
-          <div className="p-6">
-            <div className="flex items-center gap-3 mb-6">
-              {/* ODIN Avatar */}
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#2979FF] to-[#00E676] flex items-center justify-center animate-pulse">
-                  <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center">
-                    <Activity className="w-6 h-6 text-[#00E676]" />
+        <div 
+          className={`border-l border-border backdrop-blur-md bg-card/40 overflow-y-auto shrink-0 transition-all duration-300 ${
+            rightSidebarOpen ? 'w-64 lg:w-72 xl:w-80' : 'w-0'
+          }`}
+        >
+          {rightSidebarOpen && (
+            <div className="p-4 lg:p-6">
+              <div className="flex items-center gap-3 mb-6">
+                {/* ODIN Avatar */}
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#2979FF] to-[#00E676] flex items-center justify-center animate-pulse">
+                    <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center">
+                      <Activity className="w-6 h-6 text-[#00E676]" />
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#00E676] rounded-full border-2 border-background" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">ODIN Assistant</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[#00E676]">● Online</span>
                   </div>
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#00E676] rounded-full border-2 border-background" />
               </div>
-              <div>
-                <h3 className="font-semibold">ODIN Assistant</h3>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#00E676]">● Online</span>
+
+              {/* Status Panel */}
+              <div className="p-4 rounded-lg bg-secondary/30 border border-[#00E676]/30 mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Activity className="w-4 h-4 text-[#00E676]" />
+                  <span className="text-sm font-semibold text-[#00E676]">Status: Monitoring</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  I'm watching your progress and ready to help when needed.
+                </p>
+              </div>
+
+              {/* AI Feedback Section */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  Live Analysis
+                </h4>
+
+                {/* Feedback Card */}
+                <div className="p-4 rounded-lg bg-[#2979FF]/10 border border-[#2979FF]/30">
+                  <div className="flex items-start gap-2 mb-2">
+                    <div className="w-2 h-2 rounded-full bg-[#2979FF] mt-2" />
+                    <div>
+                      <p className="text-sm font-semibold">Syntax Check</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Your code structure looks good. Remember to initialize the array before using it.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg bg-secondary/30 border border-border">
+                  <div className="flex items-start gap-2 mb-2">
+                    <div className="w-2 h-2 rounded-full bg-muted-foreground mt-2" />
+                    <div>
+                      <p className="text-sm font-semibold">Logic Analysis</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Compile your code to see my analysis of your logic flow.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="mt-6 p-4 rounded-lg bg-secondary/30 border border-border">
+                  <h4 className="text-sm font-semibold mb-3">Session Stats</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Compilations</span>
+                      <span className="font-semibold">{compilations}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Hints Used</span>
+                      <span className="font-semibold">0</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Time Elapsed</span>
+                      <span className="font-semibold">3:24</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-
-            {/* Status Panel */}
-            <div className="p-4 rounded-lg bg-secondary/30 border border-[#00E676]/30 mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Activity className="w-4 h-4 text-[#00E676]" />
-                <span className="text-sm font-semibold text-[#00E676]">Status: Monitoring</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                I'm watching your progress and ready to help when needed.
-              </p>
-            </div>
-
-            {/* AI Feedback Section */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Live Analysis
-              </h4>
-
-              {/* Feedback Card */}
-              <div className="p-4 rounded-lg bg-[#2979FF]/10 border border-[#2979FF]/30">
-                <div className="flex items-start gap-2 mb-2">
-                  <div className="w-2 h-2 rounded-full bg-[#2979FF] mt-2" />
-                  <div>
-                    <p className="text-sm font-semibold">Syntax Check</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Your code structure looks good. Remember to initialize the array before using it.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-lg bg-secondary/30 border border-border">
-                <div className="flex items-start gap-2 mb-2">
-                  <div className="w-2 h-2 rounded-full bg-muted-foreground mt-2" />
-                  <div>
-                    <p className="text-sm font-semibold">Logic Analysis</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Compile your code to see my analysis of your logic flow.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="mt-6 p-4 rounded-lg bg-secondary/30 border border-border">
-                <h4 className="text-sm font-semibold mb-3">Session Stats</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Compilations</span>
-                    <span className="font-semibold">{compilations}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Hints Used</span>
-                    <span className="font-semibold">0</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Time Elapsed</span>
-                    <span className="font-semibold">3:24</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

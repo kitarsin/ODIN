@@ -3,6 +3,16 @@
 :root {
   --font-size: 16px;
   
+  /* Responsive Typography using clamp() */
+  --text-xs: clamp(0.625rem, 0.6rem + 0.125vw, 0.75rem);      /* 10px - 12px */
+  --text-sm: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);       /* 12px - 14px */
+  --text-base: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);       /* 14px - 16px */
+  --text-lg: clamp(1rem, 0.925rem + 0.375vw, 1.125rem);       /* 16px - 18px */
+  --text-xl: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);        /* 18px - 20px */
+  --text-2xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);        /* 20px - 24px */
+  --text-3xl: clamp(1.5rem, 1.3rem + 1vw, 1.875rem);          /* 24px - 30px */
+  --text-4xl: clamp(1.875rem, 1.6rem + 1.375vw, 2.25rem);     /* 30px - 36px */
+  
   /* ODIN Cyber-Academic Color Palette */
   --background: #121212;
   --foreground: #E0E0E0;

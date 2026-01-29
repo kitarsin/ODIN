@@ -32,7 +32,7 @@ export function AuthPortal({ onLogin }: AuthPortalProps) {
   return (
     <div className="w-full h-full bg-background flex overflow-hidden">
       {/* Left Side - Animated Logo */}
-      <div className="flex-1 relative overflow-hidden bg-gradient-to-br from-background via-[#1a1a2e] to-background flex items-center justify-center">
+      <div className="hidden lg:flex flex-1 relative overflow-hidden bg-gradient-to-br from-background via-[#1a1a2e] to-background items-center justify-center">
         {/* Grid Background */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
@@ -46,14 +46,14 @@ export function AuthPortal({ onLogin }: AuthPortalProps) {
           <div className="relative mb-8">
             {/* Outer Glow Rings */}
             <div className="absolute inset-0 animate-pulse">
-              <div className="w-64 h-64 rounded-full border-2 border-[#2979FF]/30 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-              <div className="w-80 h-80 rounded-full border border-[#00E676]/20 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ animationDelay: '0.5s' }} />
+              <div className="w-48 h-48 xl:w-64 xl:h-64 rounded-full border-2 border-[#2979FF]/30 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+              <div className="w-60 h-60 xl:w-80 xl:h-80 rounded-full border border-[#00E676]/20 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ animationDelay: '0.5s' }} />
             </div>
 
             {/* Main Orb */}
-            <div className="w-48 h-48 rounded-full bg-gradient-to-br from-[#2979FF] via-[#00E676] to-[#2979FF] flex items-center justify-center relative animate-pulse shadow-[0_0_80px_rgba(41,121,255,0.5)]">
-              <div className="w-44 h-44 rounded-full bg-background flex items-center justify-center">
-                <Activity className="w-20 h-20 text-[#00E676] animate-pulse" />
+            <div className="w-36 h-36 xl:w-48 xl:h-48 rounded-full bg-gradient-to-br from-[#2979FF] via-[#00E676] to-[#2979FF] flex items-center justify-center relative animate-pulse shadow-[0_0_80px_rgba(41,121,255,0.5)]">
+              <div className="w-32 h-32 xl:w-44 xl:h-44 rounded-full bg-background flex items-center justify-center">
+                <Activity className="w-16 h-16 xl:w-20 xl:h-20 text-[#00E676] animate-pulse" />
               </div>
               
               {/* Orbiting particles */}
@@ -70,12 +70,12 @@ export function AuthPortal({ onLogin }: AuthPortalProps) {
 
           {/* System Text */}
           <div className="text-center space-y-2">
-            <h1 className="text-6xl font-bold tracking-wider text-[#00E676] mb-4" style={{ fontFamily: 'Orbitron, sans-serif' }}>
+            <h1 className="text-4xl xl:text-6xl font-bold tracking-wider text-[#00E676] mb-4" style={{ fontFamily: 'Orbitron, sans-serif' }}>
               ODIN
             </h1>
             <div className="code-font text-[#2979FF] space-y-1">
-              <p className="text-lg">System Online // v1.0</p>
-              <p className="text-sm text-muted-foreground">Operator Diagnostic Intelligent Navigator</p>
+              <p className="text-base xl:text-lg">System Online // v1.0</p>
+              <p className="text-xs xl:text-sm text-muted-foreground">Operator Diagnostic Intelligent Navigator</p>
             </div>
             <div className="flex items-center justify-center gap-2 mt-4 text-xs text-[#00E676] code-font">
               <div className="w-2 h-2 bg-[#00E676] rounded-full animate-pulse" />
@@ -90,16 +90,16 @@ export function AuthPortal({ onLogin }: AuthPortalProps) {
       </div>
 
       {/* Right Side - Auth Form */}
-      <div className="w-[600px] relative flex items-center justify-center p-12 border-l border-border/30">
+      <div className="flex-1 lg:w-auto lg:max-w-2xl relative flex items-center justify-center p-6 lg:p-12 lg:border-l lg:border-border/30 overflow-y-auto">
         {/* Glassmorphism Card */}
         <div className="w-full max-w-md relative">
-          <div className="backdrop-blur-xl bg-card/60 border border-border/50 rounded-2xl p-8 shadow-[0_0_50px_rgba(41,121,255,0.1)]">
+          <div className="backdrop-blur-xl bg-card/60 border border-border/50 rounded-2xl p-6 lg:p-8 shadow-[0_0_50px_rgba(41,121,255,0.1)]">
             {/* Header */}
             <div className="mb-8">
-              <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Orbitron, sans-serif' }}>
+              <h2 className="text-2xl lg:text-3xl font-bold mb-2" style={{ fontFamily: 'Orbitron, sans-serif' }}>
                 {isLogin ? 'SYSTEM ACCESS' : 'REGISTER AGENT'}
               </h2>
-              <p className="text-sm text-muted-foreground code-font">
+              <p className="text-xs lg:text-sm text-muted-foreground code-font">
                 {isLogin ? '// ENTER_CREDENTIALS' : '// CREATE_NEW_PROFILE'}
               </p>
             </div>
@@ -154,7 +154,7 @@ export function AuthPortal({ onLogin }: AuthPortalProps) {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full py-4 bg-gradient-to-r from-[#2979FF] to-[#00E676] hover:shadow-[0_0_30px_rgba(41,121,255,0.5)] transition-all font-bold text-lg tracking-wider uppercase relative overflow-hidden group"
+                className="w-full py-3 lg:py-4 bg-gradient-to-r from-[#2979FF] to-[#00E676] hover:shadow-[0_0_30px_rgba(41,121,255,0.5)] transition-all font-bold text-base lg:text-lg tracking-wider uppercase relative overflow-hidden group"
                 style={{ 
                   fontFamily: 'Rajdhani, sans-serif',
                   clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))'

@@ -66,7 +66,7 @@ export default function App() {
   // Show auth screen if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="w-[1920px] h-[1080px] overflow-hidden">
+      <div className="w-screen h-screen overflow-hidden">
         <AuthPortal onLogin={handleLogin} />
       </div>
     );
@@ -75,7 +75,7 @@ export default function App() {
   // Show calibration screen after auth
   if (currentScreen === 'calibration') {
     return (
-      <div className="w-[1920px] h-[1080px] overflow-hidden">
+      <div className="w-screen h-screen overflow-hidden">
         <SystemCalibration onComplete={handleCalibrationComplete} />
       </div>
     );
@@ -84,7 +84,7 @@ export default function App() {
   // Full workspace view (no sidebar)
   if (currentScreen === 'workspace' && selectedLevel) {
     return (
-      <div className="w-[1920px] h-[1080px] overflow-hidden">
+      <div className="w-screen h-screen overflow-hidden">
         <Workspace
           levelId={selectedLevel}
           onBack={handleBackToDashboard}
@@ -121,7 +121,7 @@ export default function App() {
 
   // Main layout with navigation
   return (
-    <div className="w-[1920px] h-[1080px] overflow-hidden flex">
+    <div className="w-screen h-screen overflow-hidden flex">
       <Navigation 
         currentPage={currentScreen} 
         onNavigate={handleNavigate}

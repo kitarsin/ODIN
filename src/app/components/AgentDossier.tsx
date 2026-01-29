@@ -23,8 +23,8 @@ export function AgentDossier() {
   const progressPercentage = (userStats.currentXP / userStats.nextLevelXP) * 100;
 
   return (
-    <div className="h-full bg-background text-foreground overflow-auto p-8">
-      <div className="max-w-[1200px] mx-auto space-y-8">
+    <div className="h-full bg-background text-foreground overflow-auto p-4 lg:p-8">
+      <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2 text-[#2979FF]" style={{ fontFamily: 'Orbitron, sans-serif' }}>
