@@ -159,7 +159,7 @@ export function Analytics() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded bg-destructive" />
-                  <span className="text-muted-foreground">Low (<50%)</span>
+                  <span className="text-muted-foreground">Low (&lt;50%)</span>
                 </div>
               </div>
             </div>
