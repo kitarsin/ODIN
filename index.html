@@ -17,6 +17,41 @@
           </div>
         </div>
       </div>
+      <script>
+        (function(){
+          function renderError(title, details){
+            try{
+              var root = document.getElementById('root');
+              if(!root) return;
+              root.innerHTML = '\n+                <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0F172A;color:#F8FAFC;font-family:monospace;padding:24px;">\n+                  <div style="max-width:880px;text-align:left;">\n+                    <div style="font-size:18px;color:#F97316;margin-bottom:8px;">⚠️ Runtime Error</div>\n+                    <div style="font-size:13px;color:#94A3B8;margin-bottom:10px;">'+(title||'An error occurred during initialization.')+'</div>\n+                    <pre style="white-space:pre-wrap;background:#071127;padding:12px;border-radius:6px;color:#E6E6E6;overflow:auto;max-height:340px;">'+(details||'No details available')+'</pre>\n+                    <div style="font-size:12px;color:#94A3B8;margin-top:8px;">Open DevTools &rarr; Console for more information.</div>\n+                  </div>\n+                </div>';
+            }catch(e){ console.error('Error rendering error overlay', e); }
+          }
+
+          window.addEventListener('error', function(e){
+            var msg = e && e.message ? e.message : String(e);
+            var stack = e && e.error && e.error.stack ? e.error.stack : (e && e.filename ? (e.filename+':'+e.lineno+':'+e.colno) : '');
+            console.error('Captured window.error:', e);
+            renderError(msg, stack);
+          });
+
+          window.addEventListener('unhandledrejection', function(e){
+            var reason = e && e.reason ? (e.reason.message || String(e.reason)) : 'Unhandled rejection';
+            var details = e && e.reason && e.reason.stack ? e.reason.stack : String(e.reason);
+            console.error('Captured unhandledrejection:', e);
+            renderError('Unhandled Rejection: '+reason, details);
+          });
+
+          // Catch synchronous parse/module errors if possible by timing out
+          setTimeout(function(){
+            // if the page still contains only the loading message after 5s, show a hint
+            var root = document.getElementById('root');
+            if(root && /Loading ODIN/.test(root.innerText)){
+              var hint = '\n+                <div style="position:fixed;left:12px;bottom:12px;background:#091024;color:#E6E6E6;padding:8px 12px;border-radius:6px;font-size:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6);">\n+                  If screen remains blank, open DevTools → Console to see runtime errors.\n+                </div>';
+              try{ root.insertAdjacentHTML('beforeend', hint); }catch(e){}
+            }
+          }, 5000);
+        })();
+      </script>
       <script type="module" src="/src/main.tsx"></script>
     </body>
   </html>
