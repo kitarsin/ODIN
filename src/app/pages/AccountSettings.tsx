@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Navigation } from '../components/Navigation';
 import { Lock, Upload } from 'lucide-react';
+import { supabase } from '../../lib/supabaseClient';
 
 const AccountSettings: React.FC = () => {
   const { user, updatePassword, updateProfileAvatar } = useAuth();
@@ -44,13 +45,13 @@ const AccountSettings: React.FC = () => {
 
       // Avatar update
       if (avatarFile) {
-        const fileExt = avatarFile.name.split('.').pop();
+        const fileExt = avatarFile.name.split('.').pop() || 'png';
         const fileName = `${user?.id}.${fileExt}`;
-        const { error } = await (window as any).supabase.storage
+        const { error } = await supabase.storage
           .from('avatars')
           .upload(fileName, avatarFile, { upsert: true });
         if (error) throw error;
-        const { data: publicData } = (window as any).supabase.storage
+        const { data: publicData } = supabase.storage
           .from('avatars')
           .getPublicUrl(fileName);
         await updateProfileAvatar(publicData.publicUrl);
