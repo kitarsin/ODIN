@@ -29,9 +29,11 @@ export function Profile() {
                 {user.avatar}
               </div>
               <div className="flex-1">
-                <h2 className="text-2xl font-semibold text-[#F1F5F9] mb-1">{user.name}</h2>
+                <h2 className="text-2xl font-semibold text-[#F1F5F9] mb-1">
+                    {user.full_name}
+                </h2>
                 <p className="text-lg text-[#3B82F6] mb-4" style={{ fontFamily: 'var(--font-mono)' }}>
-                  {user.studentId}
+                  {user.student_id}
                 </p>
 
                 <div className="grid grid-cols-2 gap-4">

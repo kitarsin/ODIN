@@ -6,6 +6,8 @@ import { Input } from '../components/ui/input';
 import { Checkbox } from '../components/ui/checkbox';
 import { mockUsers } from '../context/AuthContext';
 import { UserModal } from '../components/UserModal';
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabaseClient'; // Import client
 
 interface User {
   id: string;
@@ -20,10 +22,11 @@ interface User {
 }
 
 export function AdminDatabase() {
+  const [users, setUsers] = useState<User[]>([]); // Initialize empty
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSection, setFilterSection] = useState('all');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [users, setUsers] = useState<User[]>(mockUsers);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
@@ -35,6 +38,43 @@ export function AdminDatabase() {
     const matchesSection = filterSection === 'all' || user.section === filterSection;
     return matchesSearch && matchesSection;
   });
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      // Fetch from your 'profiles' table
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      // Map DB fields to your UI 'User' type if they differ
+      // e.g. DB has 'full_name', UI expects 'name'
+      const formattedUsers = data.map(u => ({
+        id: u.id,
+        name: u.full_name,
+        studentId: u.student_id,
+        role: u.role,
+        section: u.section,
+        avatar: u.avatar_url || '🧑‍🎓',
+        syncRate: u.sync_rate || 0,
+        lastLogin: u.created_at, // or a real last_login column if you added it
+        status: 'active'
+      }));
+
+      setUsers(formattedUsers);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
     if (checked === true) {
@@ -57,10 +97,17 @@ export function AdminDatabase() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (userId: string) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-      setUsers(users.filter(u => u.id !== userId));
-      setSelectedUsers(selectedUsers.filter(id => id !== userId));
+  // Update Delete Logic
+  const handleDelete = async (userId: string) => {
+    if (confirm('Are you sure?')) {
+      // Delete from Supabase (Requires RLS policy allowing delete)
+      const { error } = await supabase.from('profiles').delete().eq('id', userId);
+      
+      if (!error) {
+        setUsers(users.filter(u => u.id !== userId));
+      } else {
+        alert('Error deleting user');
+      }
     }
   };
 

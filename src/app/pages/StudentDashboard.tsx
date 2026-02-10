@@ -6,7 +6,7 @@ import { Trophy, Key, Activity } from 'lucide-react';
 export function StudentDashboard() {
   const { user } = useAuth();
 
-  if (!user) return null;
+  if (!user) return <div>Loading...</div>;
 
   return (
     <div className="min-h-screen bg-[#0F172A]">
@@ -187,7 +187,27 @@ export function StudentDashboard() {
                   <p className="text-sm text-[#64748B] text-center py-4">No keys collected yet</p>
                 )}
               </div>
+              {/* Update User Info Display */}
+              <h3 className="text-xl font-semibold text-[#F1F5F9] mb-1">
+                {user.full_name || user.email} {/* Use full_name from profile */}
+              </h3>
+              <p className="text-sm text-[#94A3B8] mb-1" style={{ fontFamily: 'var(--font-mono)' }}>
+                {user.student_id} {/* Update property name */}
+              </p>
+              <p className="text-sm text-[#3B82F6] mb-6" style={{ fontFamily: 'var(--font-mono)' }}>
+                {user.section}
+              </p>
 
+              {/* Sync Rate - Ensure your DB has this column or provide a default */}
+              <span className="text-sm font-semibold text-[#10B981]">
+                {user.sync_rate || 100}%
+              </span>
+
+              {/* Progress & Badges */}
+              {/* Since you haven't built the 'progress' table fetching yet in AuthContext, 
+                  you might want to fetch it here inside a useEffect or mock it for now until 
+                  you build the progress API. */}
+              
               {/* Stats */}
               <div className="mt-6 pt-6 border-t border-[#334155]">
                 <h3 className="text-sm font-semibold text-[#F1F5F9] mb-3">Session Stats</h3>

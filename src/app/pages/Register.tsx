@@ -14,6 +14,7 @@ export function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
+  const [email, setEmail] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,13 +22,15 @@ export function Register() {
     setError('');
     setLoading(true);
 
-    const success = await register(name, studentId, password, section);
-    setLoading(false);
-
-    if (success) {
-      navigate('/dashboard');
-    } else {
-      setError('Registration failed. Please check your information.');
+    try {
+      // Pass the arguments in the order your AuthContext expects:
+      // register(email, password, fullName, studentId, section)
+      await register(email, password, name, studentId, section);
+      // No need to navigate here, the AuthContext handles navigation or you can do it here
+    } catch (err: any) {
+      setError(err.message || 'Registration failed.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,6 +62,22 @@ export function Register() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your full name"
+                className="bg-[#0F172A] border-[#334155] text-[#F1F5F9] placeholder:text-[#64748B]"
+                required
+              />
+            </div>
+
+            {/* Add Email Input Field inside the form, maybe before Password */}
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-[#F1F5F9]">
+                Email Address
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
                 className="bg-[#0F172A] border-[#334155] text-[#F1F5F9] placeholder:text-[#64748B]"
                 required
               />

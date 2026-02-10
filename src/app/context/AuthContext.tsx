@@ -1,143 +1,121 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
+import { useNavigate } from "react-router-dom";
 
-interface User {
+// 1. Update the User Type to match what your UI components expect
+type User = {
   id: string;
-  name: string;
-  studentId: string;
-  role: 'student' | 'admin';
+  email: string;
+  name: string;        // UI expects 'name', DB has 'full_name'
+  studentId: string;   // UI expects 'studentId', DB has 'student_id'
+  role: string;
   section: string;
   avatar: string;
-  syncRate: number;
-  progress: {
-    arrays: number;
-    loops: number;
-    grids: number;
-  };
+  syncRate: number;    // UI expects 'syncRate', DB has 'sync_rate'
+  status: string;
+  // Add these defaults so your dashboard doesn't crash if they are missing
+  progress: { arrays: number; loops: number; grids: number }; 
   badges: string[];
-  lastLogin: string;
-  status: 'active' | 'inactive';
-}
+};
 
-interface AuthContextType {
-  user: User | null;
-  login: (studentId: string, password: string) => Promise<boolean>;
-  register: (name: string, studentId: string, password: string, section: string) => Promise<boolean>;
-  logout: () => void;
-  isAuthenticated: boolean;
-}
+const AuthContext = createContext<any>(null);
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Mock users database
-const mockUsers: User[] = [
-  {
-    id: '1',
-    name: 'Alex Chen',
-    studentId: 'STU001',
-    role: 'student',
-    section: 'CS-301A',
-    avatar: '👨‍💻',
-    syncRate: 87,
-    progress: { arrays: 92, loops: 78, grids: 65 },
-    badges: ['source-key-1', 'source-key-2'],
-    lastLogin: '2026-02-10T08:30:00',
-    status: 'active'
-  },
-  {
-    id: '2',
-    name: 'Admin User',
-    studentId: 'ADMIN',
-    role: 'admin',
-    section: 'Faculty',
-    avatar: '👔',
-    syncRate: 100,
-    progress: { arrays: 100, loops: 100, grids: 100 },
-    badges: ['admin-key'],
-    lastLogin: '2026-02-10T09:00:00',
-    status: 'active'
-  },
-  {
-    id: '3',
-    name: 'Sarah Martinez',
-    studentId: 'STU002',
-    role: 'student',
-    section: 'CS-301A',
-    avatar: '👩‍💻',
-    syncRate: 65,
-    progress: { arrays: 85, loops: 62, grids: 48 },
-    badges: ['source-key-1'],
-    lastLogin: '2026-02-09T14:20:00',
-    status: 'active'
-  },
-  {
-    id: '4',
-    name: 'Jordan Lee',
-    studentId: 'STU003',
-    role: 'student',
-    section: 'CS-301B',
-    avatar: '🧑‍💻',
-    syncRate: 42,
-    progress: { arrays: 55, loops: 38, grids: 33 },
-    badges: [],
-    lastLogin: '2026-02-08T16:45:00',
-    status: 'active'
-  }
-];
-
-export function AuthProvider({ children }: { children: ReactNode }) {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const login = async (studentId: string, password: string): Promise<boolean> => {
-    // Mock authentication - in production, this would call an API
-    const foundUser = mockUsers.find(u => u.studentId === studentId);
-    if (foundUser && password) { // Accept any non-empty password for demo
-      setUser(foundUser);
-      return true;
+  useEffect(() => {
+    // Check active session on load
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) fetchProfile(session.user);
+      else setLoading(false);
+    });
+
+    // Listen for changes (login/logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) fetchProfile(session.user);
+      else {
+        setUser(null);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // 2. THE FIX: Map Database Fields (snake_case) to UI Fields (camelCase)
+  const fetchProfile = async (authUser: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setUser({
+          id: authUser.id,
+          email: authUser.email,
+          name: data.full_name,         // MAP THIS
+          studentId: data.student_id,   // MAP THIS
+          section: data.section,
+          role: data.role || 'student',
+          avatar: data.avatar_url || '🧑‍🎓',
+          syncRate: data.sync_rate || 100, // MAP THIS
+          status: 'active',
+          // Mocking these for now until you create real tables for them
+          progress: { arrays: 0, loops: 0, grids: 0 },
+          badges: [] 
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    } finally {
+      setLoading(false);
     }
-    return false;
   };
 
-  const register = async (name: string, studentId: string, password: string, section: string): Promise<boolean> => {
-    // Mock registration
-    if (name && studentId && password && section) {
-      const newUser: User = {
-        id: Date.now().toString(),
-        name,
-        studentId,
-        role: 'student',
-        section,
-        avatar: '🧑‍🎓',
-        syncRate: 50,
-        progress: { arrays: 0, loops: 0, grids: 0 },
-        badges: [],
-        lastLogin: new Date().toISOString(),
-        status: 'active'
-      };
-      mockUsers.push(newUser);
-      setUser(newUser);
-      return true;
-    }
-    return false;
+  const login = async (email, password) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    navigate("/dashboard"); 
   };
 
-  const logout = () => {
-    setUser(null);
+  const register = async (email, password, name, studentId, section) => {
+    // 1. Create Auth User
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) throw error;
+
+    if (data.user) {
+      // 2. Create Profile Entry using correct DB column names
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([
+          { 
+            id: data.user.id, 
+            full_name: name,       // Insert as full_name
+            student_id: studentId, // Insert as student_id
+            section: section,
+            sync_rate: 100
+          }
+        ]);
+      if (profileError) throw profileError;
+    }
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user }}>
-      {children}
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+      {!loading && children}
     </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}
-
-// Export mock users for admin panel
-export { mockUsers };
+export const useAuth = () => useContext(AuthContext);

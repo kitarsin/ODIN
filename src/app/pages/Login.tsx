@@ -9,11 +9,13 @@ import { Label } from '../components/ui/label';
 import { ThemeToggle } from '../components/ThemeToggle';
 
 export function Login() {
-  const [studentId, setStudentId] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { isGameMode } = useTheme();
   const navigate = useNavigate();
 
@@ -22,13 +24,13 @@ export function Login() {
     setError('');
     setLoading(true);
 
-    const success = await login(studentId, password);
-    setLoading(false);
-
-    if (success) {
-      navigate('/dashboard');
-    } else {
-      setError('Invalid credentials. Please try again.');
+    try {
+      await login(email, password);
+      // Navigation is handled in AuthContext, or you can check user state here
+    } catch (err: any) {
+      setError('Invalid credentials.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,18 +76,16 @@ export function Login() {
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="studentId" className={isGameMode ? 'text-[#00ff41]' : 'text-[#F1F5F9]'}
-                     style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}>
-                {isGameMode ? 'USER_ID' : 'Student ID'}
+          <div className="space-y-2">
+              <Label htmlFor="email" className={isGameMode ? 'text-[#00ff41]' : 'text-[#F1F5F9]'}>
+                {isGameMode ? 'EMAIL_ADDRESS' : 'Email Address'}
               </Label>
               <Input
-                id="studentId"
-                type="text"
-                value={studentId}
-                onChange={(e) => setStudentId(e.target.value)}
-                placeholder={isGameMode ? 'ENTER_ID' : 'Enter your student ID'}
+                id="email"
+                type="email" // Change type to email
+                value={email} // Bind to email state
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={isGameMode ? 'ENTER_EMAIL' : 'Enter your email'}
                 className={`transition-all ${
                   isGameMode
                     ? 'bg-[#1a1a2e] border-[#00ff41] text-[#00ff41] border-2 placeholder:text-[#0f3460] focus:shadow-[0_0_10px_rgba(0,255,65,0.5)]'
