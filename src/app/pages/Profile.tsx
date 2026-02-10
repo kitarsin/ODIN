@@ -6,6 +6,8 @@ import { Progress } from '../components/ui/progress';
 export function Profile() {
   const { user } = useAuth();
 
+  const isAvatarUrl = (value: string) => value.startsWith('http') || value.startsWith('data:');
+
   if (!user) return null;
 
   return (
@@ -25,8 +27,16 @@ export function Profile() {
           {/* Profile Card */}
           <div className="border rounded-lg p-8 bg-card border-border transition-colors">
             <div className="flex items-start gap-6">
-              <div className="w-24 h-24 rounded-full flex items-center justify-center text-6xl bg-muted">
-                {user.avatar}
+              <div className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center bg-muted">
+                {isAvatarUrl(user.avatar) ? (
+                  <img
+                    src={user.avatar}
+                    alt="Profile avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-6xl">{user.avatar}</span>
+                )}
               </div>
               <div className="flex-1">
                 <h2 className="text-2xl font-semibold mb-1">

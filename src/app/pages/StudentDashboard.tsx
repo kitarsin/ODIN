@@ -6,6 +6,8 @@ import { Trophy, Key, Activity } from 'lucide-react';
 export function StudentDashboard() {
   const { user } = useAuth();
 
+  const isAvatarUrl = (value: string) => value.startsWith('http') || value.startsWith('data:');
+
   if (!user) return <div>Loading...</div>;
 
   return (
@@ -22,8 +24,16 @@ export function StudentDashboard() {
             </h2>
 
             <div className="flex flex-col items-center">
-              <div className="w-24 h-24 rounded-full flex items-center justify-center text-5xl mb-4 bg-muted">
-                {user.avatar}
+              <div className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center mb-4 bg-muted">
+                {isAvatarUrl(user.avatar) ? (
+                  <img
+                    src={user.avatar}
+                    alt="Profile avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-5xl">{user.avatar}</span>
+                )}
               </div>
               <h3 className="text-xl font-semibold mb-1">{user.name}</h3>
               <p className="text-sm mb-1 text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>

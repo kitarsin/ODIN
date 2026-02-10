@@ -109,7 +109,7 @@ export function Navigation() {
                   style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
                 >
                   <Gamepad2 className="w-4 h-4" />
-                  {isGameMode ? 'PLAY' : 'Odin Game'}
+                  {isGameMode ? 'PLAY' : 'Game'}
                 </Link>
                 <Link
                   to="/wiki"
