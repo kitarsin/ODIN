@@ -128,8 +128,11 @@ export function BasicExplorerGame() {
     const context = canvas.getContext('2d');
     if (!context) return;
 
-    const canMoveTo = (x: number, y: number) =>
-      x >= 0 && y >= 0 && x < GRID_COLS && y < GRID_ROWS;
+    const canMoveTo = (x: number, y: number) => {
+      const inBounds = x >= 0 && y >= 0 && x < GRID_COLS && y < GRID_ROWS;
+      const isTerminal = x === terminalPosition.x && y === terminalPosition.y;
+      return inBounds && !isTerminal;
+    };
 
     const drawMap = () => {
       context.fillStyle = COLORS.background;
