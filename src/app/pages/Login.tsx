@@ -151,14 +151,6 @@ export function Login() {
               </Link>
             </p>
           </div>
-
-          {/* Demo Credentials */}
-          <div className={`mt-6 pt-6 border-t ${isGameMode ? 'border-[#0f3460]' : 'border-[#334155]'}`}>
-            <p className={`text-xs text-center mb-2 ${isGameMode ? 'text-[#4ecdc4]' : 'text-[#64748B]'}`}
-               style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '8px' } : {}}>
-              {isGameMode ? 'DEMO ACCOUNTS:' : 'Demo Credentials:'}
-            </p>
-          </div>
         </div>
       </div>
     </div>
