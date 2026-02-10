@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigation } from '../components/Navigation';
 import { ChevronRight, ChevronLeft, Target, Code } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { BasicExplorerGame } from '../components/BasicExplorerGame';
 
 export function GameContainer() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -39,25 +40,8 @@ export function GameContainer() {
           <div className="h-full flex items-center justify-center">
             {/* Game Placeholder */}
             <div className="relative w-full max-w-6xl" style={{ aspectRatio: '16/9' }}>
-              <div className={`absolute inset-0 rounded-lg border-4 flex items-center justify-center transition-colors ${
-                'bg-card border-primary'
-              }`}>
-                <div className="text-center">
-                  <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center transition-colors ${
-                    'bg-primary/10'
-                  }`}>
-                    <Code className="w-10 h-10 text-primary" />
-                  </div>
-                  <p className="text-2xl mb-2 text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
-                    Game Placeholder
-                  </p>
-                  <p className="text-lg text-muted-foreground">Game Loads Here</p>
-                  <div className="mt-6 space-y-2 text-sm text-muted-foreground">
-                    <p>→ Navigate the Terminal District maze</p>
-                    <p>→ Use arrow keys to move</p>
-                    <p>→ Collect data packets to progress</p>
-                  </div>
-                </div>
+              <div className="absolute inset-0">
+                <BasicExplorerGame />
               </div>
 
               {/* Corner Labels */}
@@ -65,7 +49,7 @@ export function GameContainer() {
                 [GAME_WINDOW]
               </div>
               <div className="absolute -bottom-8 right-0 text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
-                Resolution: 1920x1080
+                Demo: Basic Explorer
               </div>
             </div>
           </div>
