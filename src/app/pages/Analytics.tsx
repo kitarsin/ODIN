@@ -25,38 +25,38 @@ export function Analytics() {
   ];
 
   const getColorForMastery = (mastery: number) => {
-    if (mastery >= 75) return 'bg-[#10B981]';
-    if (mastery >= 50) return 'bg-[#F59E0B]';
-    return 'bg-[#EF4444]';
+    if (mastery >= 75) return 'bg-primary';
+    if (mastery >= 50) return 'bg-amber-500';
+    return 'bg-destructive';
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'high': return 'text-[#EF4444]';
-      case 'medium': return 'text-[#F59E0B]';
-      default: return 'text-[#10B981]';
+      case 'high': return 'text-destructive';
+      case 'medium': return 'text-amber-500';
+      default: return 'text-primary';
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A]">
+    <div className="min-h-screen bg-background text-foreground transition-colors">
       <Navigation />
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-[#F1F5F9] mb-2 flex items-center gap-3">
-            <Activity className="w-7 h-7 text-[#10B981]" />
+          <h1 className="text-2xl font-semibold mb-2 flex items-center gap-3">
+            <Activity className="w-7 h-7 text-primary" />
             Analytics & Alerts
           </h1>
-          <p className="text-sm text-[#94A3B8]">Monitor student performance and system flags</p>
+          <p className="text-sm text-muted-foreground">Monitor student performance and system flags</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* At-Risk Students */}
-          <div className="bg-[#1E293B] border border-[#334155] rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-[#F1F5F9] mb-4 flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-[#EF4444]" />
+          <div className="border rounded-lg p-6 bg-card border-border transition-colors">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
               At-Risk Students
             </h2>
 
@@ -64,31 +64,31 @@ export function Analytics() {
               {atRiskStudents.map(student => (
                 <div
                   key={student.id}
-                  className="bg-[#0F172A] border border-[#334155] rounded-lg p-4 hover:border-[#EF4444]/50 transition-colors"
+                  className="border rounded-lg p-4 bg-muted/40 border-border hover:border-destructive/50 transition-colors"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#334155] rounded-full flex items-center justify-center text-xl">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl bg-muted">
                         {student.avatar}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-[#F1F5F9]">{student.name}</p>
-                        <p className="text-xs text-[#94A3B8]" style={{ fontFamily: 'var(--font-mono)' }}>
+                        <p className="text-sm font-medium">{student.name}</p>
+                        <p className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
                           {student.studentId} • {student.section}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-semibold text-[#EF4444]" style={{ fontFamily: 'var(--font-mono)' }}>
+                      <p className="text-lg font-semibold text-destructive" style={{ fontFamily: 'var(--font-mono)' }}>
                         {student.syncRate}%
                       </p>
-                      <p className="text-xs text-[#64748B]">Sync Rate</p>
+                      <p className="text-xs text-muted-foreground">Sync Rate</p>
                     </div>
                   </div>
 
-                  <div className="mt-3 pt-3 border-t border-[#334155]">
-                    <div className="flex items-center gap-2 text-xs text-[#94A3B8]">
-                      <TrendingDown className="w-3 h-3 text-[#EF4444]" />
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <TrendingDown className="w-3 h-3 text-destructive" />
                       <span>Struggling with: 2D Grids ({student.progress.grids}%)</span>
                     </div>
                   </div>
@@ -96,7 +96,7 @@ export function Analytics() {
               ))}
 
               {atRiskStudents.length === 0 && (
-                <div className="text-center py-8 text-[#64748B]">
+                <div className="text-center py-8 text-muted-foreground">
                   <p>No at-risk students detected</p>
                 </div>
               )}
@@ -104,18 +104,18 @@ export function Analytics() {
           </div>
 
           {/* Class Heatmap */}
-          <div className="bg-[#1E293B] border border-[#334155] rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-[#F1F5F9] mb-4">Class Heatmap</h2>
-            <p className="text-sm text-[#94A3B8] mb-6">Average mastery distribution by section</p>
+          <div className="border rounded-lg p-6 bg-card border-border transition-colors">
+            <h2 className="text-lg font-semibold mb-4">Class Heatmap</h2>
+            <p className="text-sm mb-6 text-muted-foreground">Average mastery distribution by section</p>
 
             <div className="space-y-4">
               {heatmapData.map(section => (
                 <div key={section.section}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-[#F1F5F9]" style={{ fontFamily: 'var(--font-mono)' }}>
+                    <span className="text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
                       {section.section}
                     </span>
-                    <span className="text-xs text-[#94A3B8]">
+                    <span className="text-xs text-muted-foreground">
                       {section.count} student{section.count !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -135,69 +135,69 @@ export function Analytics() {
                   </div>
 
                   <div className="flex justify-between text-xs">
-                    <span className="text-[#64748B]">0%</span>
-                    <span className="text-[#10B981]" style={{ fontFamily: 'var(--font-mono)' }}>
+                    <span className="text-muted-foreground">0%</span>
+                    <span className="text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
                       Avg: {section.avgMastery.toFixed(0)}%
                     </span>
-                    <span className="text-[#64748B]">100%</span>
+                    <span className="text-muted-foreground">100%</span>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* Legend */}
-            <div className="mt-6 pt-6 border-t border-[#334155]">
-              <p className="text-xs text-[#94A3B8] mb-3">Legend:</p>
+            <div className="mt-6 pt-6 border-t border-border">
+              <p className="text-xs mb-3 text-muted-foreground">Legend:</p>
               <div className="flex items-center gap-4 text-xs">
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-[#10B981]" />
-                  <span className="text-[#94A3B8]">High (75%+)</span>
+                  <div className="w-4 h-4 rounded bg-primary" />
+                  <span className="text-muted-foreground">High (75%+)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-[#F59E0B]" />
-                  <span className="text-[#94A3B8]">Medium (50-74%)</span>
+                  <div className="w-4 h-4 rounded bg-amber-500" />
+                  <span className="text-muted-foreground">Medium (50-74%)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-[#EF4444]" />
-                  <span className="text-[#94A3B8]">Low (&lt;50%)</span>
+                  <div className="w-4 h-4 rounded bg-destructive" />
+                  <span className="text-muted-foreground">Low (<50%)</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Behavior Logs */}
-          <div className="lg:col-span-2 bg-[#1E293B] border border-[#334155] rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-[#F1F5F9] mb-4">Behavior Logs</h2>
-            <p className="text-sm text-[#94A3B8] mb-6">Recent system flags and notable events</p>
+          <div className="lg:col-span-2 border rounded-lg p-6 bg-card border-border transition-colors">
+            <h2 className="text-lg font-semibold mb-4">Behavior Logs</h2>
+            <p className="text-sm mb-6 text-muted-foreground">Recent system flags and notable events</p>
 
-            <div className="bg-[#0F172A] border border-[#334155] rounded-lg overflow-hidden">
+            <div className="border rounded-lg overflow-hidden bg-muted/40 border-border transition-colors">
               <div className="max-h-96 overflow-y-auto">
                 {behaviorLogs.map((log, idx) => (
                   <div
                     key={log.id}
-                    className={`p-4 border-b border-[#334155] last:border-b-0 hover:bg-[#1E293B]/50 transition-colors ${
-                      idx % 2 === 0 ? 'bg-[#0F172A]' : 'bg-[#0F172A]/50'
+                    className={`p-4 border-b last:border-b-0 hover:bg-muted transition-colors ${
+                      idx % 2 === 0 ? 'bg-muted/30 border-border' : 'bg-muted/50 border-border'
                     }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-medium text-[#F1F5F9]">{log.student}</span>
-                          <span className="text-xs text-[#64748B]">•</span>
+                          <span className="text-sm font-medium">{log.student}</span>
+                          <span className="text-xs text-muted-foreground">•</span>
                           <span className={`text-sm ${getSeverityColor(log.severity)}`}>
                             {log.event}
                           </span>
                         </div>
-                        <p className="text-xs text-[#64748B]" style={{ fontFamily: 'var(--font-mono)' }}>
+                        <p className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
                           {log.timestamp}
                         </p>
                       </div>
                       <div className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                         log.severity === 'high' 
-                          ? 'bg-[#EF4444]/20 text-[#EF4444]'
+                          ? 'bg-destructive/20 text-destructive'
                           : log.severity === 'medium'
-                          ? 'bg-[#F59E0B]/20 text-[#F59E0B]'
-                          : 'bg-[#10B981]/20 text-[#10B981]'
+                          ? 'bg-amber-500/20 text-amber-600'
+                          : 'bg-primary/20 text-primary'
                       }`}>
                         {log.severity}
                       </div>

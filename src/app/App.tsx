@@ -7,20 +7,11 @@ import { Suspense } from 'react';
 // Fallback loading screen
 function LoadingScreen() {
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      backgroundColor: '#0F172A',
-      color: '#10B981',
-      fontFamily: 'monospace',
-      fontSize: '16px',
-      flexDirection: 'column',
-      gap: '20px'
-    }}>
-      <div style={{ fontSize: '24px' }}>⏳ Initializing ODIN System...</div>
-      <div style={{ fontSize: '12px', color: '#94A3B8' }}>Please wait while we establish connection</div>
+    <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+      <div className="flex flex-col items-center gap-5 font-mono text-base">
+        <div className="text-2xl">⏳ Initializing ODIN System...</div>
+        <div className="text-xs text-muted-foreground">Please wait while we establish connection</div>
+      </div>
     </div>
   );
 }

@@ -18,15 +18,13 @@ export function Register() {
   const { register } = useAuth();
   const [email, setEmail] = useState('');
   const navigate = useNavigate();
-  const { isGameMode, isDarkMode } = useTheme();
+  const { isGameMode } = useTheme();
 
   const getInputClass = () => {
     if (isGameMode) {
       return 'bg-[#1a1a2e] border-[#00ff41] text-[#00ff41] border-2 placeholder:text-[#0f3460]';
     }
-    return isDarkMode 
-      ? 'bg-[#0F172A] border-[#334155] text-[#F1F5F9] placeholder:text-[#64748B]'
-      : 'bg-white border-[#E5E7EB] text-[#1F2937] placeholder:text-[#9CA3AF]';
+    return 'bg-background border-border text-foreground placeholder:text-muted-foreground';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,14 +42,12 @@ export function Register() {
     }
   };
 
-  const bgClass = isGameMode 
-    ? 'bg-[#1a1a2e]'
-    : isDarkMode ? 'bg-[#0F172A]' : 'bg-[#F5F7FA]';
+  const bgClass = isGameMode ? 'bg-[#1a1a2e]' : 'bg-background';
 
-  const cardBgClass = isGameMode ? 'bg-[#16213e]' : isDarkMode ? 'bg-[#1E293B]' : 'bg-white';
-  const cardBorderClass = isGameMode ? 'border-[#00ff41]' : isDarkMode ? 'border-[#334155]' : 'border-[#E5E7EB]';
-  const textColorClass = isGameMode ? 'text-[#00ff41]' : isDarkMode ? 'text-[#F1F5F9]' : 'text-[#1F2937]';
-  const secondaryTextClass = isGameMode ? 'text-[#4ecdc4]' : isDarkMode ? 'text-[#94A3B8]' : 'text-[#6B7280]';
+  const cardBgClass = isGameMode ? 'bg-[#16213e]' : 'bg-card';
+  const cardBorderClass = isGameMode ? 'border-[#00ff41]' : 'border-border';
+  const textColorClass = isGameMode ? 'text-[#00ff41]' : 'text-foreground';
+  const secondaryTextClass = isGameMode ? 'text-[#4ecdc4]' : 'text-muted-foreground';
 
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 transition-all ${bgClass}`}>
@@ -62,9 +58,9 @@ export function Register() {
       <div className="w-full max-w-md">
         <div className={`border p-8 shadow-2xl transition-all ${isGameMode ? `bg-[#16213e] border-[#00ff41] shadow-[0_0_30px_rgba(0,255,65,0.3)] border-4 rounded` : `${cardBgClass} border-2 ${cardBorderClass} rounded-lg`}`}>
           <div className="flex flex-col items-center mb-8">
-            <div className={`w-16 h-16 rounded-lg flex items-center justify-center mb-4 relative ${isGameMode ? 'bg-[#00ff41] shadow-[0_0_20px_rgba(0,255,65,0.6)]' : isDarkMode ? 'bg-[#10B981]' : 'bg-[#059669]'}`}>
-              <Shield className={`w-10 h-10 ${isGameMode || isDarkMode ? 'text-[#0F172A]' : 'text-white'}`} strokeWidth={2.5} />
-              <Terminal className={`w-6 h-6 ${isGameMode || isDarkMode ? 'text-[#0F172A]' : 'text-white'} absolute bottom-2 right-2`} />
+            <div className={`w-16 h-16 rounded-lg flex items-center justify-center mb-4 relative ${isGameMode ? 'bg-[#00ff41] shadow-[0_0_20px_rgba(0,255,65,0.6)]' : 'bg-primary'}`}>
+              <Shield className={`w-10 h-10 ${isGameMode ? 'text-[#0F172A]' : 'text-primary-foreground'}`} strokeWidth={2.5} />
+              <Terminal className={`w-6 h-6 ${isGameMode ? 'text-[#0F172A]' : 'text-primary-foreground'} absolute bottom-2 right-2`} />
             </div>
             <h1 className={`text-2xl font-semibold mb-1 ${textColorClass}`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '20px' } : { fontFamily: 'var(--font-mono)' }}>
               {isGameMode ? '> CREATE_PROFILE' : 'Register New Account'}
@@ -153,7 +149,7 @@ export function Register() {
             </div>
 
             {error && (
-              <div className={`border rounded p-3 text-sm transition-all ${isGameMode ? 'bg-[#ff6b6b]/10 border-[#ff6b6b] text-[#ff6b6b] border-2' : isDarkMode ? 'bg-[#EF4444]/10 border-[#EF4444]/50 text-[#EF4444]' : 'bg-[#DC2626]/10 border-[#DC2626]/50 text-[#DC2626]'}`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}>
+              <div className={`border rounded p-3 text-sm transition-all ${isGameMode ? 'bg-[#ff6b6b]/10 border-[#ff6b6b] text-[#ff6b6b] border-2' : 'bg-destructive/10 border-destructive/50 text-destructive'}`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}>
                 {isGameMode ? '! ERROR: ' + error : error}
               </div>
             )}
@@ -161,7 +157,7 @@ export function Register() {
             <Button
               type="submit"
               disabled={loading}
-              className={`w-full font-semibold transition-all ${isGameMode ? 'bg-[#00ff41] hover:bg-[#00cc33] text-[#1a1a2e] border-2 border-[#00ff41] shadow-[0_0_15px_rgba(0,255,65,0.5)]' : isDarkMode ? 'bg-[#10B981] hover:bg-[#059669] text-[#0F172A]' : 'bg-[#059669] hover:bg-[#047857] text-white'}`}
+              className={`w-full font-semibold transition-all ${isGameMode ? 'bg-[#00ff41] hover:bg-[#00cc33] text-[#1a1a2e] border-2 border-[#00ff41] shadow-[0_0_15px_rgba(0,255,65,0.5)]' : 'bg-primary hover:bg-primary/90 text-primary-foreground'}`}
               style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '12px' } : {}}
             >
               {loading ? (isGameMode ? 'CREATING...' : 'Creating Account...') : (isGameMode ? '> REGISTER_' : 'Create Account')}
@@ -171,7 +167,7 @@ export function Register() {
           <div className="mt-6 text-center">
             <p className={`text-sm ${secondaryTextClass}`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '8px' } : {}}>
               {isGameMode ? 'ALREADY_EXIST?' : 'Already have an account?'}{' '}
-              <Link to="/login" className={`font-medium ${isGameMode ? 'text-[#ffe66d] hover:text-[#ffd700]' : isDarkMode ? 'text-[#10B981] hover:text-[#059669]' : 'text-[#059669] hover:text-[#047857]'}`}>
+              <Link to="/login" className={`font-medium ${isGameMode ? 'text-[#ffe66d] hover:text-[#ffd700]' : 'text-primary hover:text-primary/80'}`}>
                 {isGameMode ? 'LOGIN' : 'Sign In'}
               </Link>
             </p>

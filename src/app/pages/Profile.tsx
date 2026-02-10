@@ -9,55 +9,55 @@ export function Profile() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#0F172A]">
+    <div className="min-h-screen bg-background text-foreground transition-colors">
       <Navigation />
 
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-[#F1F5F9] mb-2 flex items-center gap-3">
-            <User className="w-7 h-7 text-[#10B981]" />
+          <h1 className="text-2xl font-semibold mb-2 flex items-center gap-3">
+            <User className="w-7 h-7 text-primary" />
             Profile
           </h1>
-          <p className="text-sm text-[#94A3B8]">Your account information and statistics</p>
+          <p className="text-sm text-muted-foreground">Your account information and statistics</p>
         </div>
 
         <div className="grid gap-6">
           {/* Profile Card */}
-          <div className="bg-[#1E293B] border border-[#334155] rounded-lg p-8">
+          <div className="border rounded-lg p-8 bg-card border-border transition-colors">
             <div className="flex items-start gap-6">
-              <div className="w-24 h-24 bg-[#334155] rounded-full flex items-center justify-center text-6xl">
+              <div className="w-24 h-24 rounded-full flex items-center justify-center text-6xl bg-muted">
                 {user.avatar}
               </div>
               <div className="flex-1">
-                <h2 className="text-2xl font-semibold text-[#F1F5F9] mb-1">
+                <h2 className="text-2xl font-semibold mb-1">
                     {user.full_name}
                 </h2>
-                <p className="text-lg text-[#3B82F6] mb-4" style={{ fontFamily: 'var(--font-mono)' }}>
+                <p className="text-lg mb-4 text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>
                   {user.student_id}
                 </p>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center gap-2 text-sm">
-                    <Mail className="w-4 h-4 text-[#94A3B8]" />
-                    <span className="text-[#94A3B8]">Section:</span>
-                    <span className="text-[#F1F5F9]" style={{ fontFamily: 'var(--font-mono)' }}>
+                    <Mail className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Section:</span>
+                    <span className="text-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
                       {user.section}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="w-4 h-4 text-[#94A3B8]" />
-                    <span className="text-[#94A3B8]">Last Login:</span>
-                    <span className="text-[#F1F5F9]">Today</span>
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Last Login:</span>
+                    <span className="text-foreground">Today</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <Award className="w-4 h-4 text-[#94A3B8]" />
-                    <span className="text-[#94A3B8]">Role:</span>
-                    <span className="text-[#10B981] capitalize">{user.role}</span>
+                    <Award className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Role:</span>
+                    <span className="text-primary capitalize">{user.role}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <span className="w-2 h-2 rounded-full bg-[#10B981]" />
-                    <span className="text-[#94A3B8]">Status:</span>
-                    <span className="text-[#10B981] capitalize">{user.status}</span>
+                    <span className="w-2 h-2 rounded-full bg-primary" />
+                    <span className="text-muted-foreground">Status:</span>
+                    <span className="text-primary capitalize">{user.status}</span>
                   </div>
                 </div>
               </div>
@@ -65,19 +65,19 @@ export function Profile() {
           </div>
 
           {/* Overall Progress */}
-          <div className="bg-[#1E293B] border border-[#334155] rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-[#F1F5F9] mb-6">Overall Progress</h3>
+          <div className="border rounded-lg p-6 bg-card border-border transition-colors">
+            <h3 className="text-lg font-semibold mb-6">Overall Progress</h3>
             
             <div className="mb-6">
               <div className="flex justify-between items-center mb-3">
-                <span className="text-sm text-[#F1F5F9]">Overall Sync Rate</span>
-                <span className="text-2xl font-semibold text-[#10B981]" style={{ fontFamily: 'var(--font-mono)' }}>
+                <span className="text-sm">Overall Sync Rate</span>
+                <span className="text-2xl font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
                   {user.syncRate}%
                 </span>
               </div>
-              <div className="h-4 bg-[#0F172A] rounded-full overflow-hidden">
+              <div className="h-4 rounded-full overflow-hidden bg-muted transition-colors">
                 <div
-                  className="h-full bg-gradient-to-r from-[#10B981] to-[#059669]"
+                  className="h-full bg-gradient-to-r from-primary to-primary/80"
                   style={{ width: `${user.syncRate}%` }}
                 />
               </div>
@@ -86,8 +86,8 @@ export function Profile() {
             <div className="grid gap-4">
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-[#F1F5F9]">Arrays Mastery</span>
-                  <span className="text-sm font-semibold text-[#10B981]" style={{ fontFamily: 'var(--font-mono)' }}>
+                  <span className="text-sm">Arrays Mastery</span>
+                  <span className="text-sm font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
                     {user.progress.arrays}%
                   </span>
                 </div>
@@ -96,8 +96,8 @@ export function Profile() {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-[#F1F5F9]">Loops Mastery</span>
-                  <span className="text-sm font-semibold text-[#10B981]" style={{ fontFamily: 'var(--font-mono)' }}>
+                  <span className="text-sm">Loops Mastery</span>
+                  <span className="text-sm font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
                     {user.progress.loops}%
                   </span>
                 </div>
@@ -106,8 +106,8 @@ export function Profile() {
 
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-[#F1F5F9]">2D Grids Mastery</span>
-                  <span className="text-sm font-semibold text-[#10B981]" style={{ fontFamily: 'var(--font-mono)' }}>
+                  <span className="text-sm">2D Grids Mastery</span>
+                  <span className="text-sm font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
                     {user.progress.grids}%
                   </span>
                 </div>
@@ -117,17 +117,17 @@ export function Profile() {
           </div>
 
           {/* Achievements */}
-          <div className="bg-[#1E293B] border border-[#334155] rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-[#F1F5F9] mb-6">Achievements</h3>
+          <div className="border rounded-lg p-6 bg-card border-border transition-colors">
+            <h3 className="text-lg font-semibold mb-6">Achievements</h3>
             
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {user.badges.map((badge: string, idx: number) => (
+              {user.badges.map((badge: string) => (
                 <div
                   key={badge}
-                  className="bg-[#10B981]/10 border border-[#10B981]/30 rounded-lg p-4 text-center"
+                  className="bg-primary/10 border border-primary/30 rounded-lg p-4 text-center"
                 >
                   <div className="text-3xl mb-2">🏆</div>
-                  <p className="text-xs text-[#10B981] font-semibold" style={{ fontFamily: 'var(--font-mono)' }}>
+                  <p className="text-xs text-primary font-semibold" style={{ fontFamily: 'var(--font-mono)' }}>
                     {badge.replace('-', ' ').toUpperCase()}
                   </p>
                 </div>
@@ -136,46 +136,46 @@ export function Profile() {
               {Array.from({ length: Math.max(0, 6 - user.badges.length) }).map((_, idx) => (
                 <div
                   key={`locked-${idx}`}
-                  className="bg-[#0F172A] border border-[#334155] rounded-lg p-4 text-center opacity-50"
+                  className="border rounded-lg p-4 text-center opacity-50 bg-muted/40 border-border transition-colors"
                 >
                   <div className="text-3xl mb-2">🔒</div>
-                  <p className="text-xs text-[#64748B]">Locked</p>
+                  <p className="text-xs text-muted-foreground">Locked</p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Statistics */}
-          <div className="bg-[#1E293B] border border-[#334155] rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-[#F1F5F9] mb-6">Statistics</h3>
+          <div className="border rounded-lg p-6 bg-card border-border transition-colors">
+            <h3 className="text-lg font-semibold mb-6">Statistics</h3>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-[#0F172A] border border-[#334155] rounded-lg p-4 text-center">
-                <p className="text-2xl font-semibold text-[#10B981]" style={{ fontFamily: 'var(--font-mono)' }}>
+              <div className="border rounded-lg p-4 text-center bg-muted/40 border-border transition-colors">
+                <p className="text-2xl font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
                   {user.badges.length * 5}
                 </p>
-                <p className="text-xs text-[#94A3B8] mt-1">Challenges Completed</p>
+                <p className="text-xs mt-1 text-muted-foreground">Challenges Completed</p>
               </div>
               
-              <div className="bg-[#0F172A] border border-[#334155] rounded-lg p-4 text-center">
-                <p className="text-2xl font-semibold text-[#3B82F6]" style={{ fontFamily: 'var(--font-mono)' }}>
+              <div className="border rounded-lg p-4 text-center bg-muted/40 border-border transition-colors">
+                <p className="text-2xl font-semibold text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>
                   {user.badges.length * 12}
                 </p>
-                <p className="text-xs text-[#94A3B8] mt-1">Hours Played</p>
+                <p className="text-xs mt-1 text-muted-foreground">Hours Played</p>
               </div>
               
-              <div className="bg-[#0F172A] border border-[#334155] rounded-lg p-4 text-center">
-                <p className="text-2xl font-semibold text-[#F59E0B]" style={{ fontFamily: 'var(--font-mono)' }}>
+              <div className="border rounded-lg p-4 text-center bg-muted/40 border-border transition-colors">
+                <p className="text-2xl font-semibold text-amber-500" style={{ fontFamily: 'var(--font-mono)' }}>
                   {user.badges.length}
                 </p>
-                <p className="text-xs text-[#94A3B8] mt-1">Keys Collected</p>
+                <p className="text-xs mt-1 text-muted-foreground">Keys Collected</p>
               </div>
               
-              <div className="bg-[#0F172A] border border-[#334155] rounded-lg p-4 text-center">
-                <p className="text-2xl font-semibold text-[#EC4899]" style={{ fontFamily: 'var(--font-mono)' }}>
+              <div className="border rounded-lg p-4 text-center bg-muted/40 border-border transition-colors">
+                <p className="text-2xl font-semibold text-pink-500" style={{ fontFamily: 'var(--font-mono)' }}>
                   #{user.id}
                 </p>
-                <p className="text-xs text-[#94A3B8] mt-1">Rank</p>
+                <p className="text-xs mt-1 text-muted-foreground">Rank</p>
               </div>
             </div>
           </div>

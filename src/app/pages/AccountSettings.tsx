@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import { Navigation } from '../components/Navigation';
 import { Lock, Upload } from 'lucide-react';
 
 const AccountSettings: React.FC = () => {
   const { user, updatePassword, updateProfileAvatar } = useAuth();
-  const { isGameMode, isDarkMode } = useTheme();
   const [avatar, setAvatar] = useState<string | null>(user?.avatar || null);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -68,17 +66,11 @@ const AccountSettings: React.FC = () => {
     }
   };
 
-  const bgColor = isDarkMode 
-    ? isGameMode ? 'bg-[#1a1a2e]' : 'bg-[#0F172A]'
-    : 'bg-[#F5F7FA]';
-  const cardColor = isDarkMode
-    ? isGameMode ? 'bg-[#16213e]' : 'bg-[#1E293B]'
-    : 'bg-white';
-  const textColor = isDarkMode ? 'text-[#F1F5F9]' : 'text-[#1F2937]';
-  const borderColor = isDarkMode ? 'border-[#334155]' : 'border-[#E5E7EB]';
-  const inputBg = isDarkMode
-    ? isGameMode ? 'bg-[#0f3460]' : 'bg-[#0F172A]'
-    : 'bg-white';
+  const bgColor = 'bg-background';
+  const cardColor = 'bg-card';
+  const textColor = 'text-foreground';
+  const borderColor = 'border-border';
+  const inputBg = 'bg-background';
 
   return (
     <div className={`min-h-screen ${bgColor} transition-colors`}>
@@ -89,7 +81,7 @@ const AccountSettings: React.FC = () => {
           <h1 className={`text-3xl font-semibold ${textColor} mb-2`}>
             Account Settings
           </h1>
-          <p className={isDarkMode ? 'text-[#94A3B8]' : 'text-[#6B7280]'}>
+          <p className="text-muted-foreground">
             Manage your account information and security
           </p>
         </div>
@@ -108,22 +100,22 @@ const AccountSettings: React.FC = () => {
                     <img 
                       src={avatar} 
                       alt="Avatar Preview" 
-                      className="w-24 h-24 rounded-full object-cover border-2 border-[#10B981]" 
+                      className="w-24 h-24 rounded-full object-cover border-2 border-primary" 
                     />
                   </div>
                 )}
                 <div className="flex-1">
-                  <label className={`block ${isDarkMode ? 'text-[#94A3B8]' : 'text-[#6B7280]'} mb-2 text-sm`}>
+                  <label className="block text-muted-foreground mb-2 text-sm">
                     Choose image
                   </label>
                   <input 
                     type="file" 
                     accept="image/*" 
                     onChange={handleAvatarChange}
-                    className={`block w-full text-sm ${isDarkMode ? 'text-[#94A3B8]' : 'text-[#6B7280]'} 
+                    className={`block w-full text-sm text-muted-foreground 
                       file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 
-                      file:text-sm file:font-semibold file:bg-[#10B981] file:text-[#0F172A]
-                      hover:file:bg-[#059669] transition-colors`}
+                      file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground
+                      hover:file:bg-primary/90 transition-colors`}
                   />
                 </div>
               </div>
@@ -145,7 +137,7 @@ const AccountSettings: React.FC = () => {
                     value={currentPassword} 
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${inputBg} ${textColor} 
-                      focus:outline-none focus:border-[#10B981] transition-colors`}
+                      focus:outline-none focus:border-primary transition-colors`}
                     placeholder="••••••••"
                   />
                 </div>
@@ -158,7 +150,7 @@ const AccountSettings: React.FC = () => {
                     value={newPassword} 
                     onChange={(e) => setNewPassword(e.target.value)}
                     className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${inputBg} ${textColor} 
-                      focus:outline-none focus:border-[#10B981] transition-colors`}
+                      focus:outline-none focus:border-primary transition-colors`}
                     placeholder="••••••••"
                   />
                 </div>
@@ -171,7 +163,7 @@ const AccountSettings: React.FC = () => {
                     value={confirmPassword} 
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className={`w-full px-4 py-2 rounded-lg border ${borderColor} ${inputBg} ${textColor} 
-                      focus:outline-none focus:border-[#10B981] transition-colors`}
+                      focus:outline-none focus:border-primary transition-colors`}
                     placeholder="••••••••"
                   />
                 </div>
@@ -187,7 +179,7 @@ const AccountSettings: React.FC = () => {
                   loading 
                     ? 'opacity-50 cursor-not-allowed'
                     : ''
-                } bg-[#10B981] text-[#0F172A] hover:bg-[#059669]`}
+                } bg-primary text-primary-foreground hover:bg-primary/90`}
               >
                 {loading ? 'Updating...' : 'Update Account'}
               </button>
@@ -197,12 +189,8 @@ const AccountSettings: React.FC = () => {
             {message && (
               <div className={`p-4 rounded-lg text-sm font-medium transition-colors ${
                 messageType === 'success'
-                  ? isDarkMode 
-                    ? 'bg-[#10B981]/20 text-[#10B981]'
-                    : 'bg-[#059669]/20 text-[#059669]'
-                  : isDarkMode
-                    ? 'bg-[#EF4444]/20 text-[#EF4444]'
-                    : 'bg-[#DC2626]/20 text-[#DC2626]'
+                  ? 'bg-primary/20 text-primary'
+                  : 'bg-destructive/20 text-destructive'
               }`}>
                 {message}
               </div>

@@ -17,7 +17,7 @@ export function Navigation() {
     <nav className={`border-b transition-all ${
       isGameMode 
         ? 'border-[#00ff41] bg-[#16213e] shadow-[0_0_10px_rgba(0,255,65,0.3)]' 
-        : 'border-[#334155] bg-[#1E293B]'
+        : 'border-border bg-card'
     }`}>
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
@@ -26,13 +26,13 @@ export function Navigation() {
             <div className={`w-10 h-10 rounded flex items-center justify-center transition-all ${
               isGameMode 
                 ? 'bg-[#00ff41] shadow-[0_0_15px_rgba(0,255,65,0.5)]' 
-                : 'bg-[#10B981]'
+                : 'bg-primary'
             }`}>
-              <Shield className={`w-6 h-6 ${isGameMode ? 'text-[#1a1a2e]' : 'text-[#0F172A]'}`} />
+              <Shield className={`w-6 h-6 ${isGameMode ? 'text-[#1a1a2e]' : 'text-primary-foreground'}`} />
             </div>
             <span 
               className={`text-xl font-semibold transition-all ${
-                isGameMode ? 'text-[#00ff41]' : 'text-[#F1F5F9]'
+                isGameMode ? 'text-[#00ff41]' : 'text-foreground'
               }`}
               style={isGameMode ? { fontFamily: 'var(--font-pixel)' } : { fontFamily: 'var(--font-mono)' }}
             >
@@ -50,10 +50,10 @@ export function Navigation() {
                     isActive('/admin')
                       ? isGameMode 
                         ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
-                        : 'text-[#10B981] bg-[#10B981]/10'
+                        : 'text-primary bg-primary/10'
                       : isGameMode
                       ? 'text-[#4ecdc4] hover:text-[#00ff41]'
-                      : 'text-[#94A3B8] hover:text-[#F1F5F9]'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
                 >
@@ -66,10 +66,10 @@ export function Navigation() {
                     isActive('/admin/analytics')
                       ? isGameMode 
                         ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
-                        : 'text-[#10B981] bg-[#10B981]/10'
+                        : 'text-primary bg-primary/10'
                       : isGameMode
                       ? 'text-[#4ecdc4] hover:text-[#00ff41]'
-                      : 'text-[#94A3B8] hover:text-[#F1F5F9]'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
                 >
@@ -85,10 +85,10 @@ export function Navigation() {
                     isActive('/dashboard')
                       ? isGameMode 
                         ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
-                        : 'text-[#10B981] bg-[#10B981]/10'
+                        : 'text-primary bg-primary/10'
                       : isGameMode
                       ? 'text-[#4ecdc4] hover:text-[#00ff41]'
-                      : 'text-[#94A3B8] hover:text-[#F1F5F9]'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
                 >
@@ -101,10 +101,10 @@ export function Navigation() {
                     isActive('/play')
                       ? isGameMode 
                         ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
-                        : 'text-[#10B981] bg-[#10B981]/10'
+                        : 'text-primary bg-primary/10'
                       : isGameMode
                       ? 'text-[#4ecdc4] hover:text-[#00ff41]'
-                      : 'text-[#94A3B8] hover:text-[#F1F5F9]'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
                 >
@@ -117,10 +117,10 @@ export function Navigation() {
                     isActive('/wiki')
                       ? isGameMode 
                         ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
-                        : 'text-[#10B981] bg-[#10B981]/10'
+                        : 'text-primary bg-primary/10'
                       : isGameMode
                       ? 'text-[#4ecdc4] hover:text-[#00ff41]'
-                      : 'text-[#94A3B8] hover:text-[#F1F5F9]'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
                 >
@@ -133,10 +133,10 @@ export function Navigation() {
                     isActive('/profile')
                       ? isGameMode 
                         ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
-                        : 'text-[#10B981] bg-[#10B981]/10'
+                        : 'text-primary bg-primary/10'
                       : isGameMode
                       ? 'text-[#4ecdc4] hover:text-[#00ff41]'
-                      : 'text-[#94A3B8] hover:text-[#F1F5F9]'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
                 >
@@ -149,10 +149,10 @@ export function Navigation() {
                     isActive('/account-settings')
                       ? isGameMode 
                         ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
-                        : 'text-[#10B981] bg-[#10B981]/10'
+                        : 'text-primary bg-primary/10'
                       : isGameMode
                       ? 'text-[#4ecdc4] hover:text-[#00ff41]'
-                      : 'text-[#94A3B8] hover:text-[#F1F5F9]'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                   style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
                 >
@@ -167,14 +167,14 @@ export function Navigation() {
 
             {/* User Info & Logout */}
             <div className={`flex items-center gap-3 ml-4 pl-4 border-l ${
-              isGameMode ? 'border-[#00ff41]' : 'border-[#334155]'
+              isGameMode ? 'border-[#00ff41]' : 'border-border'
             }`}>
               <div className="text-right">
-                <div className={`text-sm ${isGameMode ? 'text-[#00ff41]' : 'text-[#F1F5F9]'}`}>
+                <div className={`text-sm ${isGameMode ? 'text-[#00ff41]' : 'text-foreground'}`}>
                   {user?.name}
                 </div>
                 <div 
-                  className={`text-xs ${isGameMode ? 'text-[#4ecdc4]' : 'text-[#94A3B8]'}`}
+                  className={`text-xs ${isGameMode ? 'text-[#4ecdc4]' : 'text-muted-foreground'}`}
                   style={{ fontFamily: 'var(--font-mono)' }}
                 >
                   {user?.studentId}
@@ -184,7 +184,7 @@ export function Navigation() {
                 onClick={async () => { await logout(); navigate('/login'); }}
                 variant="ghost"
                 size="sm"
-                className={isGameMode ? 'text-[#ff6b6b] hover:text-[#ff6b6b]' : 'text-[#94A3B8] hover:text-[#EF4444]'}
+                className={isGameMode ? 'text-[#ff6b6b] hover:text-[#ff6b6b]' : 'text-muted-foreground hover:text-destructive'}
               >
                 <LogOut className="w-4 h-4" />
               </Button>

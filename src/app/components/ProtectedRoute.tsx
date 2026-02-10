@@ -13,16 +13,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   // While loading, show loading screen
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        backgroundColor: '#0F172A',
-        color: '#10B981',
-        fontFamily: 'monospace',
-        fontSize: '16px'
-      }}>
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground font-mono text-base">
         ⏳ Initializing...
       </div>
     );

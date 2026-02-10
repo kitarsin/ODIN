@@ -52,16 +52,16 @@ export function UserModal({ isOpen, onClose, onSave, user }: UserModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-[#1E293B] border-[#334155] text-[#F1F5F9] sm:max-w-md">
+      <DialogContent className="bg-card border-border text-foreground sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl text-[#F1F5F9]">
+          <DialogTitle className="text-xl text-foreground">
             {user ? 'Edit User' : 'Add New User'}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-[#F1F5F9]">
+            <Label htmlFor="name" className="text-foreground">
               Full Name
             </Label>
             <Input
@@ -70,13 +70,13 @@ export function UserModal({ isOpen, onClose, onSave, user }: UserModalProps) {
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Enter full name"
-              className="bg-[#0F172A] border-[#334155] text-[#F1F5F9]"
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="studentId" className="text-[#F1F5F9]">
+            <Label htmlFor="studentId" className="text-foreground">
               Student ID
             </Label>
             <Input
@@ -85,14 +85,14 @@ export function UserModal({ isOpen, onClose, onSave, user }: UserModalProps) {
               value={formData.studentId}
               onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
               placeholder="Enter student ID"
-              className="bg-[#0F172A] border-[#334155] text-[#F1F5F9]"
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               style={{ fontFamily: 'var(--font-mono)' }}
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="section" className="text-[#F1F5F9]">
+            <Label htmlFor="section" className="text-foreground">
               Section
             </Label>
             <Input
@@ -101,21 +101,21 @@ export function UserModal({ isOpen, onClose, onSave, user }: UserModalProps) {
               value={formData.section}
               onChange={(e) => setFormData({ ...formData, section: e.target.value })}
               placeholder="e.g., CS-301A"
-              className="bg-[#0F172A] border-[#334155] text-[#F1F5F9]"
+              className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               style={{ fontFamily: 'var(--font-mono)' }}
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="role" className="text-[#F1F5F9]">
+            <Label htmlFor="role" className="text-foreground">
               Role
             </Label>
             <select
               id="role"
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value as 'student' | 'admin' })}
-              className="w-full px-3 py-2 bg-[#0F172A] border border-[#334155] rounded-md text-[#F1F5F9] text-sm"
+              className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground text-sm"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
               <option value="student">Student</option>
@@ -128,13 +128,13 @@ export function UserModal({ isOpen, onClose, onSave, user }: UserModalProps) {
               type="button"
               onClick={onClose}
               variant="outline"
-              className="border-[#334155] text-[#94A3B8] hover:bg-[#334155]"
+              className="border-border text-muted-foreground hover:bg-muted"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-[#10B981] hover:bg-[#059669] text-[#0F172A]"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               Save to Database
             </Button>

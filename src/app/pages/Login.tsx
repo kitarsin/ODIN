@@ -14,7 +14,7 @@ export function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const { isGameMode, isDarkMode } = useTheme();
+  const { isGameMode } = useTheme();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,42 +37,42 @@ export function Login() {
     if (isGameMode) {
       return 'bg-[#1a1a2e] bg-[linear-gradient(0deg,transparent_24%,rgba(0,255,65,.05)_25%,rgba(0,255,65,.05)_26%,transparent_27%,transparent_74%,rgba(0,255,65,.05)_75%,rgba(0,255,65,.05)_76%,transparent_77%,transparent),linear-gradient(90deg,transparent_24%,rgba(0,255,65,.05)_25%,rgba(0,255,65,.05)_26%,transparent_27%,transparent_74%,rgba(0,255,65,.05)_75%,rgba(0,255,65,.05)_76%,transparent_77%,transparent)] bg-[size:50px_50px]';
     }
-    return isDarkMode ? 'bg-[#0F172A]' : 'bg-[#F5F7FA]';
+    return 'bg-background';
   };
 
   const getCardBg = () => {
     if (isGameMode) return 'bg-[#16213e]';
-    return isDarkMode ? 'bg-[#1E293B]' : 'bg-white';
+    return 'bg-card';
   };
 
   const getCardBorder = () => {
     if (isGameMode) return 'border-[#00ff41]';
-    return isDarkMode ? 'border-[#334155]' : 'border-[#E5E7EB]';
+    return 'border-border';
   };
 
   const getTextColor = () => {
     if (isGameMode) return 'text-[#00ff41]';
-    return isDarkMode ? 'text-[#F1F5F9]' : 'text-[#1F2937]';
+    return 'text-foreground';
   };
 
   const getSecondaryText = () => {
     if (isGameMode) return 'text-[#4ecdc4]';
-    return isDarkMode ? 'text-[#94A3B8]' : 'text-[#6B7280]';
+    return 'text-muted-foreground';
   };
 
   const getInputBg = () => {
     if (isGameMode) return 'bg-[#1a1a2e]';
-    return isDarkMode ? 'bg-[#0F172A]' : 'bg-white';
+    return 'bg-background';
   };
 
   const getInputBorder = () => {
     if (isGameMode) return 'border-[#00ff41]';
-    return isDarkMode ? 'border-[#334155]' : 'border-[#E5E7EB]';
+    return 'border-border';
   };
 
   const getInputText = () => {
     if (isGameMode) return 'text-[#00ff41]';
-    return isDarkMode ? 'text-[#F1F5F9]' : 'text-[#1F2937]';
+    return 'text-foreground';
   };
 
   return (
@@ -93,10 +93,10 @@ export function Login() {
             <div className={`w-16 h-16 rounded-lg flex items-center justify-center mb-4 relative transition-all ${
               isGameMode
                 ? 'bg-[#00ff41] shadow-[0_0_20px_rgba(0,255,65,0.6)] animate-pulse'
-                : 'bg-[#10B981]'
+                : 'bg-primary'
             }`}>
-              <Shield className={`w-10 h-10 ${isGameMode ? 'text-[#1a1a2e]' : 'text-[#0F172A]'}`} strokeWidth={2.5} />
-              <Terminal className={`w-6 h-6 absolute bottom-2 right-2 ${isGameMode ? 'text-[#1a1a2e]' : 'text-[#0F172A]'}`} />
+              <Shield className={`w-10 h-10 ${isGameMode ? 'text-[#1a1a2e]' : 'text-primary-foreground'}`} strokeWidth={2.5} />
+              <Terminal className={`w-6 h-6 absolute bottom-2 right-2 ${isGameMode ? 'text-[#1a1a2e]' : 'text-primary-foreground'}`} />
             </div>
             <h1 
               className={`text-2xl font-semibold mb-1 transition-all ${getTextColor()}`}
@@ -125,7 +125,7 @@ export function Login() {
                 className={`transition-all ${
                   isGameMode
                     ? 'bg-[#1a1a2e] border-[#00ff41] text-[#00ff41] border-2 placeholder:text-[#0f3460] focus:shadow-[0_0_10px_rgba(0,255,65,0.5)]'
-                    : `${getInputBg()} border ${getInputBorder()} ${getInputText()} placeholder:${isDarkMode ? 'placeholder:text-[#64748B]' : 'placeholder:text-[#9CA3AF]'}`
+                    : `${getInputBg()} border ${getInputBorder()} ${getInputText()} placeholder:text-muted-foreground`
                 }`}
                 style={isGameMode ? { fontFamily: 'var(--font-mono)' } : { fontFamily: 'var(--font-mono)' }}
                 required
@@ -146,7 +146,7 @@ export function Login() {
                 className={`transition-all ${
                   isGameMode
                     ? 'bg-[#1a1a2e] border-[#00ff41] text-[#00ff41] border-2 placeholder:text-[#0f3460] focus:shadow-[0_0_10px_rgba(0,255,65,0.5)]'
-                    : `${getInputBg()} border ${getInputBorder()} ${getInputText()} placeholder:${isDarkMode ? 'placeholder:text-[#64748B]' : 'placeholder:text-[#9CA3AF]'}`
+                    : `${getInputBg()} border ${getInputBorder()} ${getInputText()} placeholder:text-muted-foreground`
                 }`}
                 required
               />
@@ -156,9 +156,7 @@ export function Login() {
               <div className={`border rounded p-3 text-sm transition-all ${
                 isGameMode
                   ? 'bg-[#ff6b6b]/10 border-[#ff6b6b] text-[#ff6b6b] border-2'
-                  : isDarkMode
-                    ? 'bg-[#EF4444]/10 border-[#EF4444]/50 text-[#EF4444]'
-                    : 'bg-[#DC2626]/10 border-[#DC2626]/50 text-[#DC2626]'
+                  : 'bg-destructive/10 border-destructive/50 text-destructive'
               }`}
                    style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}>
                 {isGameMode ? '! ERROR: ' + error : error}
@@ -171,7 +169,7 @@ export function Login() {
               className={`w-full font-semibold transition-all ${
                 isGameMode
                   ? 'bg-[#00ff41] hover:bg-[#00cc33] text-[#1a1a2e] border-2 border-[#00ff41] shadow-[0_0_15px_rgba(0,255,65,0.5)]'
-                  : 'bg-[#10B981] hover:bg-[#059669] text-[#0F172A]'
+                    : 'bg-primary hover:bg-primary/90 text-primary-foreground'
               }`}
               style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '12px' } : {}}
             >
@@ -186,8 +184,7 @@ export function Login() {
               {isGameMode ? 'NEW USER?' : 'Need access?'}{' '}
               <Link to="/register" className={`font-medium ${
                 isGameMode ? 'text-[#ffe66d] hover:text-[#ffd700]' : 
-                isDarkMode ? 'text-[#10B981] hover:text-[#059669]' : 
-                'text-[#059669] hover:text-[#047857]'
+                'text-primary hover:text-primary/80'
               }`}>
                 {isGameMode ? 'REGISTER' : 'Register New Account'}
               </Link>

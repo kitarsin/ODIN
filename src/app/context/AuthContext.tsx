@@ -139,36 +139,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Show error screen if initialization failed
   if (error) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        minHeight: '100vh',
-        backgroundColor: '#0F172A',
-        color: '#F1F5F9',
-        fontFamily: 'monospace',
-        padding: '20px',
-        textAlign: 'center'
-      }}>
-        <h1 style={{ color: '#EF4444', fontSize: '24px', marginBottom: '10px' }}>⚠️ Initialization Error</h1>
-        <p style={{ fontSize: '14px', marginBottom: '20px' }}>{error}</p>
-        <p style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '20px' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground font-mono px-5 text-center">
+        <h1 className="text-2xl text-destructive mb-2">⚠️ Initialization Error</h1>
+        <p className="text-sm mb-5">{error}</p>
+        <p className="text-xs text-muted-foreground mb-5">
           Check your browser console and Vercel environment variables.
         </p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#10B981',
-            color: '#0F172A',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontFamily: 'monospace',
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}
+          className="px-5 py-2 rounded bg-primary text-primary-foreground font-semibold text-sm"
         >
           Retry
         </button>

@@ -44,8 +44,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     // Apply color mode class (light or dark)
     if (colorMode === 'light') {
       root.classList.add('light-mode');
+      root.classList.remove('dark');
     } else {
       root.classList.remove('light-mode');
+      root.classList.add('dark');
     }
     
     // Save to localStorage
