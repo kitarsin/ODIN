@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
-import { useNavigate } from "react-router-dom";
+import { supabase } from "../../lib/supabaseClient";
+import { useNavigate } from "react-router";
 
 // 1. Update the User Type to match what your UI components expect
 type User = {
@@ -27,13 +27,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     // Check active session on load
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }: any) => {
       if (session) fetchProfile(session.user);
       else setLoading(false);
     });
 
     // Listen for changes (login/logout)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
       if (session) fetchProfile(session.user);
       else {
         setUser(null);
@@ -78,13 +78,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     navigate("/dashboard"); 
   };
 
-  const register = async (email, password, name, studentId, section) => {
+  const register = async (email: string, password: string, name: string, studentId: string, section: string) => {
     // 1. Create Auth User
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;

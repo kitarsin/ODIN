@@ -14,8 +14,6 @@ export function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const { isGameMode } = useTheme();
   const navigate = useNavigate();
 
@@ -76,7 +74,8 @@ export function Login() {
           </div>
 
           {/* Login Form */}
-          <div className="space-y-2">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
               <Label htmlFor="email" className={isGameMode ? 'text-[#00ff41]' : 'text-[#F1F5F9]'}>
                 {isGameMode ? 'EMAIL_ADDRESS' : 'Email Address'}
               </Label>

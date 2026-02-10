@@ -1,9 +1,9 @@
 import { Navigation } from '../components/Navigation';
 import { AlertTriangle, Activity, TrendingDown } from 'lucide-react';
-import { mockUsers } from '../context/AuthContext';
 
 export function Analytics() {
-  const students = mockUsers.filter(u => u.role === 'student');
+  // TODO: Fetch students from Supabase
+  const students: any[] = [];
   
   // Calculate at-risk students (sync rate < 60)
   const atRiskStudents = students.filter(s => s.syncRate < 60);

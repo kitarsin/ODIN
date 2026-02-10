@@ -169,7 +169,7 @@ export function StudentDashboard() {
               </div>
 
               <div className="mt-6 space-y-2">
-                {user.badges.map((badge, idx) => (
+                {user.badges.map((badge: string, idx: number) => (
                   <div
                     key={badge}
                     className="bg-[#0F172A] border border-[#334155] rounded p-3 flex items-center gap-3"

@@ -1,13 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigation } from '../components/Navigation';
 import { Search, UserPlus, Pencil, Trash2, Database } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Checkbox } from '../components/ui/checkbox';
-import { mockUsers } from '../context/AuthContext';
 import { UserModal } from '../components/UserModal';
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient'; // Import client
+import { supabase } from '../../lib/supabaseClient'; // Import client
 
 interface User {
   id: string;
@@ -56,7 +54,7 @@ export function AdminDatabase() {
       
       // Map DB fields to your UI 'User' type if they differ
       // e.g. DB has 'full_name', UI expects 'name'
-      const formattedUsers = data.map(u => ({
+      const formattedUsers = data.map((u: any) => ({
         id: u.id,
         name: u.full_name,
         studentId: u.student_id,
@@ -65,7 +63,7 @@ export function AdminDatabase() {
         avatar: u.avatar_url || '🧑‍🎓',
         syncRate: u.sync_rate || 0,
         lastLogin: u.created_at, // or a real last_login column if you added it
-        status: 'active'
+        status: 'active' as const
       }));
 
       setUsers(formattedUsers);

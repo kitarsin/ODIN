@@ -121,7 +121,7 @@ export function Profile() {
             <h3 className="text-lg font-semibold text-[#F1F5F9] mb-6">Achievements</h3>
             
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {user.badges.map((badge, idx) => (
+              {user.badges.map((badge: string, idx: number) => (
                 <div
                   key={badge}
                   className="bg-[#10B981]/10 border border-[#10B981]/30 rounded-lg p-4 text-center"
