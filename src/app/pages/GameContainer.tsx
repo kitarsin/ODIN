@@ -37,7 +37,7 @@ export function GameContainer() {
         {/* Main Game Area */}
         <div className="flex-1 p-6">
           <div className="h-full flex items-center justify-center">
-            {/* WebGL Canvas Placeholder */}
+            {/* Game Placeholder */}
             <div className="relative w-full max-w-6xl" style={{ aspectRatio: '16/9' }}>
               <div className="absolute inset-0 bg-[#1E293B] rounded-lg border-4 border-[#10B981] flex items-center justify-center">
                 <div className="text-center">
@@ -45,7 +45,7 @@ export function GameContainer() {
                     <Code className="w-10 h-10 text-[#10B981]" />
                   </div>
                   <p className="text-2xl text-[#10B981] mb-2" style={{ fontFamily: 'var(--font-mono)' }}>
-                    WebGL Canvas Placeholder
+                    Game Placeholder
                   </p>
                   <p className="text-lg text-[#94A3B8]">Game Loads Here</p>
                   <div className="mt-6 space-y-2 text-sm text-[#64748B]">
