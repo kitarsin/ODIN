@@ -236,6 +236,10 @@ export function BasicExplorerGame() {
     setTimeout(() => setSaveStatus('idle'), 1600);
   };
 
+  const handleExitTerminal = () => {
+    setLevel(1);
+  };
+
   return (
     <div className="h-full w-full">
       <div className="relative h-full w-full rounded-lg border-4 border-primary bg-card/60 p-3">
@@ -257,20 +261,29 @@ export function BasicExplorerGame() {
         {level === 2 && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/80 p-4">
             <div className="w-full max-w-3xl rounded-xl border border-border bg-card p-6 shadow-xl">
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
                     Level 2: Arrays
                   </p>
                   <h3 className="text-lg font-semibold">C# Array Practice</h3>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  className="rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
-                >
-                  {saveStatus === 'saving' ? 'Saving...' : 'Save Code'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleExitTerminal}
+                    className="rounded-md border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted"
+                  >
+                    Exit Terminal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    className="rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+                  >
+                    {saveStatus === 'saving' ? 'Submitting...' : 'Submit Code'}
+                  </button>
+                </div>
               </div>
 
               <textarea
