@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
-import { useNavigate } from "react-router";
 
 // 1. Update the User Type to match what your UI components expect
 type User = {
@@ -24,7 +23,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Check active session on load
@@ -91,7 +89,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    navigate("/dashboard"); 
+    // navigation should be handled by the caller (page) to avoid router/provider ordering issues
   };
 
   const register = async (email: string, password: string, name: string, studentId: string, section: string) => {
@@ -118,7 +116,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     await supabase.auth.signOut();
-    navigate("/");
   };
 
   // Show error screen if initialization failed

@@ -26,7 +26,8 @@ export function Register() {
       // Pass the arguments in the order your AuthContext expects:
       // register(email, password, fullName, studentId, section)
       await register(email, password, name, studentId, section);
-      // No need to navigate here, the AuthContext handles navigation or you can do it here
+      // Navigate after successful registration
+      navigate('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Registration failed.');
     } finally {

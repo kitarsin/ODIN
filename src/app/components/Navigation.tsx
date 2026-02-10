@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Shield, Home, Gamepad2, Book, User, Database, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -9,6 +9,7 @@ export function Navigation() {
   const { user, logout } = useAuth();
   const { isGameMode } = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -164,7 +165,7 @@ export function Navigation() {
                 </div>
               </div>
               <Button
-                onClick={logout}
+                onClick={async () => { await logout(); navigate('/login'); }}
                 variant="ghost"
                 size="sm"
                 className={isGameMode ? 'text-[#ff6b6b] hover:text-[#ff6b6b]' : 'text-[#94A3B8] hover:text-[#EF4444]'}
