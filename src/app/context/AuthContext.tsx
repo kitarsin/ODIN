@@ -86,6 +86,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Update password for current user
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+  };
+
+  // Update profile avatar for current user
+  const updateProfileAvatar = async (avatarUrl: string) => {
+    if (!user) throw new Error('No user logged in');
+    const { error } = await supabase
+      .from('profiles')
+      .update({ avatar_url: avatarUrl })
+      .eq('id', user.id);
+    if (error) throw error;
+    // Optionally update local state
+    setUser({ ...user, avatar: avatarUrl });
+  };
+
   const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
@@ -160,7 +178,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Always render children - let router handle the UI based on auth state
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, updatePassword, updateProfileAvatar }}>
       {children}
     </AuthContext.Provider>
   );

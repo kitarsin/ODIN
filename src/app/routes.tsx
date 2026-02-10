@@ -8,6 +8,7 @@ import { Profile } from './pages/Profile';
 import { AdminDatabase } from './pages/AdminDatabase';
 import { Analytics } from './pages/Analytics';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import AccountSettings from './pages/AccountSettings';
 
 export const router = createBrowserRouter([
   {
@@ -51,6 +52,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <Profile />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/account-settings',
+    element: (
+      <ProtectedRoute>
+        <AccountSettings />
       </ProtectedRoute>
     )
   },

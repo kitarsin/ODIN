@@ -143,6 +143,22 @@ export function Navigation() {
                   <User className="w-4 h-4" />
                   {isGameMode ? 'PROF' : 'Profile'}
                 </Link>
+                <Link
+                  to="/account-settings"
+                  className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${
+                    isActive('/account-settings')
+                      ? isGameMode 
+                        ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
+                        : 'text-[#10B981] bg-[#10B981]/10'
+                      : isGameMode
+                      ? 'text-[#4ecdc4] hover:text-[#00ff41]'
+                      : 'text-[#94A3B8] hover:text-[#F1F5F9]'
+                  }`}
+                  style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
+                >
+                  <User className="w-4 h-4" />
+                  {isGameMode ? 'ACC' : 'Account Settings'}
+                </Link>
               </>
             )}
 
