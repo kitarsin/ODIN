@@ -123,6 +123,68 @@
   --sidebar-ring: #10B981;
 }
 
+/* Light Mode - Academic */
+:root.light-mode {
+  --background: #F5F7FA;
+  --foreground: #1F2937;
+  --card: #FFFFFF;
+  --card-foreground: #1F2937;
+  --popover: #FFFFFF;
+  --popover-foreground: #1F2937;
+  --primary: #059669;
+  --primary-foreground: #FFFFFF;
+  --secondary: #2563EB;
+  --secondary-foreground: #FFFFFF;
+  --muted: #D1D5DB;
+  --muted-foreground: #6B7280;
+  --accent: #059669;
+  --accent-foreground: #FFFFFF;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --input-background: #FFFFFF;
+  --switch-background: #D1D5DB;
+  --ring: #059669;
+  --chart-1: #059669;
+  --chart-2: #2563EB;
+  --chart-3: #F59E0B;
+  --chart-4: #8B5CF6;
+  --chart-5: #EC4899;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1F2937;
+  --sidebar-primary: #059669;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #E5E7EB;
+  --sidebar-accent-foreground: #1F2937;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #059669;
+}
+
+/* Light Mode + Game Mode */
+:root.light-mode.game-mode {
+  --background: #F5F5FF;
+  --foreground: #1a1a2e;
+  --card: #FFFFFF;
+  --card-foreground: #1a1a2e;
+  --popover: #FFFFFF;
+  --popover-foreground: #1a1a2e;
+  --primary: #00cc00;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FF6B6B;
+  --secondary-foreground: #FFFFFF;
+  --muted: #E0E0E0;
+  --muted-foreground: #808080;
+  --accent: #FFD700;
+  --accent-foreground: #1a1a2e;
+  --destructive: #FF6B6B;
+  --destructive-foreground: #FFFFFF;
+  --border: #CCCCCC;
+  --input: #E0E0E0;
+  --input-background: #FFFFFF;
+  --ring: #00cc00;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

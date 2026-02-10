@@ -14,7 +14,7 @@ export function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const { isGameMode } = useTheme();
+  const { isGameMode, isDarkMode } = useTheme();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,12 +33,50 @@ export function Login() {
     }
   };
 
+  const getBgClass = () => {
+    if (isGameMode) {
+      return 'bg-[#1a1a2e] bg-[linear-gradient(0deg,transparent_24%,rgba(0,255,65,.05)_25%,rgba(0,255,65,.05)_26%,transparent_27%,transparent_74%,rgba(0,255,65,.05)_75%,rgba(0,255,65,.05)_76%,transparent_77%,transparent),linear-gradient(90deg,transparent_24%,rgba(0,255,65,.05)_25%,rgba(0,255,65,.05)_26%,transparent_27%,transparent_74%,rgba(0,255,65,.05)_75%,rgba(0,255,65,.05)_76%,transparent_77%,transparent)] bg-[size:50px_50px]';
+    }
+    return isDarkMode ? 'bg-[#0F172A]' : 'bg-[#F5F7FA]';
+  };
+
+  const getCardBg = () => {
+    if (isGameMode) return 'bg-[#16213e]';
+    return isDarkMode ? 'bg-[#1E293B]' : 'bg-white';
+  };
+
+  const getCardBorder = () => {
+    if (isGameMode) return 'border-[#00ff41]';
+    return isDarkMode ? 'border-[#334155]' : 'border-[#E5E7EB]';
+  };
+
+  const getTextColor = () => {
+    if (isGameMode) return 'text-[#00ff41]';
+    return isDarkMode ? 'text-[#F1F5F9]' : 'text-[#1F2937]';
+  };
+
+  const getSecondaryText = () => {
+    if (isGameMode) return 'text-[#4ecdc4]';
+    return isDarkMode ? 'text-[#94A3B8]' : 'text-[#6B7280]';
+  };
+
+  const getInputBg = () => {
+    if (isGameMode) return 'bg-[#1a1a2e]';
+    return isDarkMode ? 'bg-[#0F172A]' : 'bg-white';
+  };
+
+  const getInputBorder = () => {
+    if (isGameMode) return 'border-[#00ff41]';
+    return isDarkMode ? 'border-[#334155]' : 'border-[#E5E7EB]';
+  };
+
+  const getInputText = () => {
+    if (isGameMode) return 'text-[#00ff41]';
+    return isDarkMode ? 'text-[#F1F5F9]' : 'text-[#1F2937]';
+  };
+
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 transition-all ${
-      isGameMode 
-        ? 'bg-[#1a1a2e] bg-[linear-gradient(0deg,transparent_24%,rgba(0,255,65,.05)_25%,rgba(0,255,65,.05)_26%,transparent_27%,transparent_74%,rgba(0,255,65,.05)_75%,rgba(0,255,65,.05)_76%,transparent_77%,transparent),linear-gradient(90deg,transparent_24%,rgba(0,255,65,.05)_25%,rgba(0,255,65,.05)_26%,transparent_27%,transparent_74%,rgba(0,255,65,.05)_75%,rgba(0,255,65,.05)_76%,transparent_77%,transparent)] bg-[size:50px_50px]' 
-        : 'bg-[#0F172A]'
-    }`}>
+    <div className={`min-h-screen flex items-center justify-center p-4 transition-all ${getBgClass()}`}>
       {/* Theme Toggle - Top Right */}
       <div className="absolute top-4 right-4">
         <ThemeToggle />
@@ -48,7 +86,7 @@ export function Login() {
         <div className={`border p-8 shadow-2xl transition-all ${
           isGameMode
             ? 'bg-[#16213e] border-[#00ff41] shadow-[0_0_30px_rgba(0,255,65,0.3)] border-4'
-            : 'bg-[#1E293B] border-[#334155] rounded-lg'
+            : `${getCardBg()} border-2 ${getCardBorder()} rounded-lg`
         }`}>
           {/* Logo & Title */}
           <div className="flex flex-col items-center mb-8">
@@ -61,14 +99,12 @@ export function Login() {
               <Terminal className={`w-6 h-6 absolute bottom-2 right-2 ${isGameMode ? 'text-[#1a1a2e]' : 'text-[#0F172A]'}`} />
             </div>
             <h1 
-              className={`text-2xl font-semibold mb-1 transition-all ${
-                isGameMode ? 'text-[#00ff41]' : 'text-[#F1F5F9]'
-              }`}
+              className={`text-2xl font-semibold mb-1 transition-all ${getTextColor()}`}
               style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '20px' } : { fontFamily: 'var(--font-mono)' }}
             >
               {isGameMode ? '> ODIN SYSTEM' : 'ODIN Portal Access'}
             </h1>
-            <p className={`text-sm ${isGameMode ? 'text-[#4ecdc4]' : 'text-[#94A3B8]'}`}
+            <p className={`text-sm ${getSecondaryText()}`}
                style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '8px' } : {}}>
               {isGameMode ? 'PRESS START' : 'Initialize your session'}
             </p>
@@ -77,19 +113,19 @@ export function Login() {
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className={isGameMode ? 'text-[#00ff41]' : 'text-[#F1F5F9]'}>
+              <Label htmlFor="email" className={getTextColor()}>
                 {isGameMode ? 'EMAIL_ADDRESS' : 'Email Address'}
               </Label>
               <Input
                 id="email"
-                type="email" // Change type to email
-                value={email} // Bind to email state
+                type="email"
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={isGameMode ? 'ENTER_EMAIL' : 'Enter your email'}
                 className={`transition-all ${
                   isGameMode
                     ? 'bg-[#1a1a2e] border-[#00ff41] text-[#00ff41] border-2 placeholder:text-[#0f3460] focus:shadow-[0_0_10px_rgba(0,255,65,0.5)]'
-                    : 'bg-[#0F172A] border-[#334155] text-[#F1F5F9] placeholder:text-[#64748B]'
+                    : `${getInputBg()} border ${getInputBorder()} ${getInputText()} placeholder:${isDarkMode ? 'placeholder:text-[#64748B]' : 'placeholder:text-[#9CA3AF]'}`
                 }`}
                 style={isGameMode ? { fontFamily: 'var(--font-mono)' } : { fontFamily: 'var(--font-mono)' }}
                 required
@@ -97,7 +133,7 @@ export function Login() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className={isGameMode ? 'text-[#00ff41]' : 'text-[#F1F5F9]'}
+              <Label htmlFor="password" className={getTextColor()}
                      style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}>
                 {isGameMode ? 'PASSWORD' : 'Password'}
               </Label>
@@ -110,7 +146,7 @@ export function Login() {
                 className={`transition-all ${
                   isGameMode
                     ? 'bg-[#1a1a2e] border-[#00ff41] text-[#00ff41] border-2 placeholder:text-[#0f3460] focus:shadow-[0_0_10px_rgba(0,255,65,0.5)]'
-                    : 'bg-[#0F172A] border-[#334155] text-[#F1F5F9] placeholder:text-[#64748B]'
+                    : `${getInputBg()} border ${getInputBorder()} ${getInputText()} placeholder:${isDarkMode ? 'placeholder:text-[#64748B]' : 'placeholder:text-[#9CA3AF]'}`
                 }`}
                 required
               />
@@ -120,7 +156,9 @@ export function Login() {
               <div className={`border rounded p-3 text-sm transition-all ${
                 isGameMode
                   ? 'bg-[#ff6b6b]/10 border-[#ff6b6b] text-[#ff6b6b] border-2'
-                  : 'bg-[#EF4444]/10 border-[#EF4444]/50 text-[#EF4444]'
+                  : isDarkMode
+                    ? 'bg-[#EF4444]/10 border-[#EF4444]/50 text-[#EF4444]'
+                    : 'bg-[#DC2626]/10 border-[#DC2626]/50 text-[#DC2626]'
               }`}
                    style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}>
                 {isGameMode ? '! ERROR: ' + error : error}
@@ -143,10 +181,14 @@ export function Login() {
 
           {/* Register Link */}
           <div className="mt-6 text-center">
-            <p className={`text-sm ${isGameMode ? 'text-[#4ecdc4]' : 'text-[#94A3B8]'}`}
+            <p className={`text-sm ${getSecondaryText()}`}
                style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '8px' } : {}}>
               {isGameMode ? 'NEW USER?' : 'Need access?'}{' '}
-              <Link to="/register" className={`font-medium ${isGameMode ? 'text-[#ffe66d] hover:text-[#ffd700]' : 'text-[#10B981] hover:text-[#059669]'}`}>
+              <Link to="/register" className={`font-medium ${
+                isGameMode ? 'text-[#ffe66d] hover:text-[#ffd700]' : 
+                isDarkMode ? 'text-[#10B981] hover:text-[#059669]' : 
+                'text-[#059669] hover:text-[#047857]'
+              }`}>
                 {isGameMode ? 'REGISTER' : 'Register New Account'}
               </Link>
             </p>

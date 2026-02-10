@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Shield, Terminal } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 export function Register() {
   const [name, setName] = useState('');
@@ -16,6 +18,16 @@ export function Register() {
   const { register } = useAuth();
   const [email, setEmail] = useState('');
   const navigate = useNavigate();
+  const { isGameMode, isDarkMode } = useTheme();
+
+  const getInputClass = () => {
+    if (isGameMode) {
+      return 'bg-[#1a1a2e] border-[#00ff41] text-[#00ff41] border-2 placeholder:text-[#0f3460]';
+    }
+    return isDarkMode 
+      ? 'bg-[#0F172A] border-[#334155] text-[#F1F5F9] placeholder:text-[#64748B]'
+      : 'bg-white border-[#E5E7EB] text-[#1F2937] placeholder:text-[#9CA3AF]';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,10 +35,7 @@ export function Register() {
     setLoading(true);
 
     try {
-      // Pass the arguments in the order your AuthContext expects:
-      // register(email, password, fullName, studentId, section)
       await register(email, password, name, studentId, section);
-      // Navigate after successful registration
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Registration failed.');
@@ -35,123 +44,135 @@ export function Register() {
     }
   };
 
+  const bgClass = isGameMode 
+    ? 'bg-[#1a1a2e]'
+    : isDarkMode ? 'bg-[#0F172A]' : 'bg-[#F5F7FA]';
+
+  const cardBgClass = isGameMode ? 'bg-[#16213e]' : isDarkMode ? 'bg-[#1E293B]' : 'bg-white';
+  const cardBorderClass = isGameMode ? 'border-[#00ff41]' : isDarkMode ? 'border-[#334155]' : 'border-[#E5E7EB]';
+  const textColorClass = isGameMode ? 'text-[#00ff41]' : isDarkMode ? 'text-[#F1F5F9]' : 'text-[#1F2937]';
+  const secondaryTextClass = isGameMode ? 'text-[#4ecdc4]' : isDarkMode ? 'text-[#94A3B8]' : 'text-[#6B7280]';
+
   return (
-    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4">
+    <div className={`min-h-screen flex items-center justify-center p-4 transition-all ${bgClass}`}>
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+
       <div className="w-full max-w-md">
-        <div className="bg-[#1E293B] border border-[#334155] rounded-lg p-8 shadow-2xl">
-          {/* Logo & Title */}
+        <div className={`border p-8 shadow-2xl transition-all ${isGameMode ? `bg-[#16213e] border-[#00ff41] shadow-[0_0_30px_rgba(0,255,65,0.3)] border-4 rounded` : `${cardBgClass} border-2 ${cardBorderClass} rounded-lg`}`}>
           <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 bg-[#10B981] rounded-lg flex items-center justify-center mb-4 relative">
-              <Shield className="w-10 h-10 text-[#0F172A]" strokeWidth={2.5} />
-              <Terminal className="w-6 h-6 text-[#0F172A] absolute bottom-2 right-2" />
+            <div className={`w-16 h-16 rounded-lg flex items-center justify-center mb-4 relative ${isGameMode ? 'bg-[#00ff41] shadow-[0_0_20px_rgba(0,255,65,0.6)]' : isDarkMode ? 'bg-[#10B981]' : 'bg-[#059669]'}`}>
+              <Shield className={`w-10 h-10 ${isGameMode || isDarkMode ? 'text-[#0F172A]' : 'text-white'}`} strokeWidth={2.5} />
+              <Terminal className={`w-6 h-6 ${isGameMode || isDarkMode ? 'text-[#0F172A]' : 'text-white'} absolute bottom-2 right-2`} />
             </div>
-            <h1 className="text-2xl font-semibold text-[#F1F5F9] mb-1" style={{ fontFamily: 'var(--font-mono)' }}>
-              Register New Account
+            <h1 className={`text-2xl font-semibold mb-1 ${textColorClass}`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '20px' } : { fontFamily: 'var(--font-mono)' }}>
+              {isGameMode ? '> CREATE_PROFILE' : 'Register New Account'}
             </h1>
-            <p className="text-sm text-[#94A3B8]">Join the ODIN system</p>
+            <p className={`text-sm ${secondaryTextClass}`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '8px' } : {}}>
+              {isGameMode ? 'ENTER_DETAILS' : 'Join the ODIN system'}
+            </p>
           </div>
 
-          {/* Registration Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-[#F1F5F9]">
-                Full Name
+              <Label htmlFor="name" className={textColorClass}>
+                {isGameMode ? 'FULL_NAME' : 'Full Name'}
               </Label>
               <Input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your full name"
-                className="bg-[#0F172A] border-[#334155] text-[#F1F5F9] placeholder:text-[#64748B]"
+                placeholder={isGameMode ? 'ENTER_NAME' : 'Enter your full name'}
+                className={getInputClass()}
                 required
               />
             </div>
 
-            {/* Add Email Input Field inside the form, maybe before Password */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-[#F1F5F9]">
-                Email Address
+              <Label htmlFor="email" className={textColorClass}>
+                {isGameMode ? 'EMAIL_ADDRESS' : 'Email Address'}
               </Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="bg-[#0F172A] border-[#334155] text-[#F1F5F9] placeholder:text-[#64748B]"
+                placeholder={isGameMode ? 'ENTER_EMAIL' : 'Enter your email'}
+                className={getInputClass()}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="studentId" className="text-[#F1F5F9]">
-                Student ID
+              <Label htmlFor="studentId" className={textColorClass}>
+                {isGameMode ? 'STUDENT_ID' : 'Student ID'}
               </Label>
               <Input
                 id="studentId"
                 type="text"
                 value={studentId}
                 onChange={(e) => setStudentId(e.target.value)}
-                placeholder="Enter your student ID"
-                className="bg-[#0F172A] border-[#334155] text-[#F1F5F9] placeholder:text-[#64748B]"
+                placeholder={isGameMode ? 'ENTER_ID' : 'Enter your student ID'}
+                className={getInputClass()}
                 style={{ fontFamily: 'var(--font-mono)' }}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="section" className="text-[#F1F5F9]">
-                Class Section
+              <Label htmlFor="section" className={textColorClass}>
+                {isGameMode ? 'CLASS_SECTION' : 'Class Section'}
               </Label>
               <Input
                 id="section"
                 type="text"
                 value={section}
                 onChange={(e) => setSection(e.target.value)}
-                placeholder="e.g., CS-301A"
-                className="bg-[#0F172A] border-[#334155] text-[#F1F5F9] placeholder:text-[#64748B]"
+                placeholder={isGameMode ? 'E_G_CS_301A' : 'e.g., CS-301A'}
+                className={getInputClass()}
                 style={{ fontFamily: 'var(--font-mono)' }}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-[#F1F5F9]">
-                Password
+              <Label htmlFor="password" className={textColorClass}>
+                {isGameMode ? 'PASSWORD' : 'Password'}
               </Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Create a password"
-                className="bg-[#0F172A] border-[#334155] text-[#F1F5F9] placeholder:text-[#64748B]"
+                placeholder={isGameMode ? '········' : 'Choose a strong password'}
+                className={getInputClass()}
                 required
               />
             </div>
 
             {error && (
-              <div className="bg-[#EF4444]/10 border border-[#EF4444]/50 rounded p-3 text-sm text-[#EF4444]">
-                {error}
+              <div className={`border rounded p-3 text-sm transition-all ${isGameMode ? 'bg-[#ff6b6b]/10 border-[#ff6b6b] text-[#ff6b6b] border-2' : isDarkMode ? 'bg-[#EF4444]/10 border-[#EF4444]/50 text-[#EF4444]' : 'bg-[#DC2626]/10 border-[#DC2626]/50 text-[#DC2626]'}`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}>
+                {isGameMode ? '! ERROR: ' + error : error}
               </div>
             )}
 
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#10B981] hover:bg-[#059669] text-[#0F172A] font-semibold"
+              className={`w-full font-semibold transition-all ${isGameMode ? 'bg-[#00ff41] hover:bg-[#00cc33] text-[#1a1a2e] border-2 border-[#00ff41] shadow-[0_0_15px_rgba(0,255,65,0.5)]' : isDarkMode ? 'bg-[#10B981] hover:bg-[#059669] text-[#0F172A]' : 'bg-[#059669] hover:bg-[#047857] text-white'}`}
+              style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '12px' } : {}}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? (isGameMode ? 'CREATING...' : 'Creating Account...') : (isGameMode ? '> REGISTER_' : 'Create Account')}
             </Button>
           </form>
 
-          {/* Login Link */}
           <div className="mt-6 text-center">
-            <p className="text-sm text-[#94A3B8]">
-              Already have an account?{' '}
-              <Link to="/login" className="text-[#10B981] hover:text-[#059669] font-medium">
-                Initialize Session
+            <p className={`text-sm ${secondaryTextClass}`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '8px' } : {}}>
+              {isGameMode ? 'ALREADY_EXIST?' : 'Already have an account?'}{' '}
+              <Link to="/login" className={`font-medium ${isGameMode ? 'text-[#ffe66d] hover:text-[#ffd700]' : isDarkMode ? 'text-[#10B981] hover:text-[#059669]' : 'text-[#059669] hover:text-[#047857]'}`}>
+                {isGameMode ? 'LOGIN' : 'Sign In'}
               </Link>
             </p>
           </div>
