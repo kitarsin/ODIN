@@ -16,19 +16,6 @@ export function GameContainer() {
         <div className="max-w-7xl mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-primary" />
-                <span className="text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
-                  District: Terminal
-                </span>
-              </div>
-              <div className="h-4 w-px bg-border" />
-              <span className="text-sm text-muted-foreground">Level 3: Grid Navigation</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="text-sm text-muted-foreground">
-                Objectives: <span className="text-primary">2/5</span>
-              </div>
             </div>
           </div>
         </div>
