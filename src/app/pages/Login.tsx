@@ -158,17 +158,6 @@ export function Login() {
                style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '8px' } : {}}>
               {isGameMode ? 'DEMO ACCOUNTS:' : 'Demo Credentials:'}
             </p>
-            <div className={`text-xs space-y-1 ${isGameMode ? 'text-[#4ecdc4]' : 'text-[#94A3B8]'}`}
-                 style={{ fontFamily: 'var(--font-mono)' }}>
-              <div className="flex justify-between">
-                <span>{isGameMode ? 'PLAYER:' : 'Student:'}</span>
-                <span className={isGameMode ? 'text-[#00ff41]' : 'text-[#10B981]'}>STU001 / any password</span>
-              </div>
-              <div className="flex justify-between">
-                <span>{isGameMode ? 'ADMIN:' : 'Admin:'}</span>
-                <span className={isGameMode ? 'text-[#ffe66d]' : 'text-[#3B82F6]'}>ADMIN / any password</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
