@@ -28,7 +28,7 @@ export function Login() {
     if (success) {
       navigate('/dashboard');
     } else {
-      setError('Invalid credentials. Try STU001 or ADMIN');
+      setError('Invalid credentials. Please try again.');
     }
   };
 
