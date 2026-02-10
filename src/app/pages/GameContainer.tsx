@@ -116,7 +116,7 @@ export function GameContainer() {
                     <div>
                       <p className="text-xs mb-1 text-muted-foreground">Declaration:</p>
                       <code className="block p-2 rounded text-amber-500 text-xs bg-background border border-border transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>
-                        int[,] grid = { { 1, 2 }, { 3, 4 } };
+                        int[,] grid = {'{'} {'{'} 1, 2 {'}'}, {'{'} 3, 4 {'}'} {'}'};
                       </code>
                     </div>
                     <div>
