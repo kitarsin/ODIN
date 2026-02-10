@@ -33,7 +33,6 @@ export function BasicExplorerGame() {
   const levelRef = useRef<1 | 2>(1);
 
   const [level, setLevel] = useState<1 | 2>(1);
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [promptVisible, setPromptVisible] = useState(false);
   const [code, setCode] = useState('');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
@@ -200,12 +199,7 @@ export function BasicExplorerGame() {
 
         if (inRange && keysRef.current.e && timestamp - lastInteractRef.current >= INTERACT_DELAY_MS) {
           lastInteractRef.current = timestamp;
-          if (!dialogOpen) {
-            setDialogOpen(true);
-          } else {
-            setDialogOpen(false);
-            setLevel(2);
-          }
+          setLevel(2);
         }
       }
 
@@ -217,12 +211,7 @@ export function BasicExplorerGame() {
     const animationId = requestAnimationFrame(step);
 
     return () => cancelAnimationFrame(animationId);
-  }, [dialogOpen, height, level, width]);
-
-  const handleTransport = () => {
-    setDialogOpen(false);
-    setLevel(2);
-  };
+  }, [height, level, width]);
 
   const handleSave = async () => {
     if (!user) {
@@ -264,25 +253,6 @@ export function BasicExplorerGame() {
           </div>
         )}
 
-        {dialogOpen && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/70">
-            <div className="w-full max-w-md rounded-xl border border-primary/40 bg-card p-6 text-center shadow-lg">
-              <p className="text-lg text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
-                Transport to Level 2?
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Press E or click the button to continue.
-              </p>
-              <button
-                type="button"
-                onClick={handleTransport}
-                className="mt-4 rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
-              >
-                Transport
-              </button>
-            </div>
-          </div>
-        )}
 
         {level === 2 && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/80 p-4">
