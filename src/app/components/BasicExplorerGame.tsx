@@ -31,6 +31,7 @@ export function BasicExplorerGame() {
   const lastInteractRef = useRef(0);
   const promptVisibleRef = useRef(false);
   const levelRef = useRef<1 | 2>(1);
+  const interactRequestedRef = useRef(false);
 
   const [level, setLevel] = useState<1 | 2>(1);
   const [promptVisible, setPromptVisible] = useState(false);
@@ -44,6 +45,10 @@ export function BasicExplorerGame() {
 
   useEffect(() => {
     levelRef.current = level;
+    if (level === 2) {
+      keysRef.current = {};
+      interactRequestedRef.current = false;
+    }
   }, [level]);
 
   useEffect(() => {
@@ -67,13 +72,15 @@ export function BasicExplorerGame() {
         key === 'arrowright'
       ) {
         keysRef.current[key] = true;
+        if (key === 'e') {
+          interactRequestedRef.current = true;
+        }
         event.preventDefault();
       }
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
-      if (levelRef.current === 2) return;
       if (keysRef.current[key]) {
         keysRef.current[key] = false;
         event.preventDefault();
@@ -197,7 +204,12 @@ export function BasicExplorerGame() {
           setPromptVisible(inRange);
         }
 
-        if (inRange && keysRef.current.e && timestamp - lastInteractRef.current >= INTERACT_DELAY_MS) {
+        if (
+          inRange &&
+          interactRequestedRef.current &&
+          timestamp - lastInteractRef.current >= INTERACT_DELAY_MS
+        ) {
+          interactRequestedRef.current = false;
           lastInteractRef.current = timestamp;
           setLevel(2);
         }
@@ -237,6 +249,9 @@ export function BasicExplorerGame() {
   };
 
   const handleExitTerminal = () => {
+    keysRef.current = {};
+    interactRequestedRef.current = false;
+    lastInteractRef.current = performance.now();
     setLevel(1);
   };
 
