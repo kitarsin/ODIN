@@ -8,13 +8,33 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, loading } = useAuth();
 
-  if (!isAuthenticated) {
+  // While loading, show loading screen
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        backgroundColor: '#0F172A',
+        color: '#10B981',
+        fontFamily: 'monospace',
+        fontSize: '16px'
+      }}>
+        ⏳ Initializing...
+      </div>
+    );
+  }
+
+  // If not authenticated, redirect to login
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requireAdmin && user?.role !== 'admin') {
+  // If admin required but user is not admin, redirect to dashboard
+  if (requireAdmin && user.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;
   }
 

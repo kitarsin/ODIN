@@ -133,17 +133,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         backgroundColor: '#0F172A',
         color: '#F1F5F9',
         fontFamily: 'monospace',
-        padding: '20px'
+        padding: '20px',
+        textAlign: 'center'
       }}>
-        <h1>Initialization Error</h1>
-        <p>{error}</p>
-        <p style={{ fontSize: '12px', color: '#94A3B8', marginTop: '20px' }}>
-          Check your environment variables and browser console for more details.
+        <h1 style={{ color: '#EF4444', fontSize: '24px', marginBottom: '10px' }}>⚠️ Initialization Error</h1>
+        <p style={{ fontSize: '14px', marginBottom: '20px' }}>{error}</p>
+        <p style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '20px' }}>
+          Check your browser console and Vercel environment variables.
         </p>
+        <button 
+          onClick={() => window.location.reload()}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#10B981',
+            color: '#0F172A',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontFamily: 'monospace',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}
+        >
+          Retry
+        </button>
       </div>
     );
   }
 
+  // Always render children - let router handle the UI based on auth state
   return (
     <AuthContext.Provider value={{ user, login, register, logout, loading }}>
       {children}
