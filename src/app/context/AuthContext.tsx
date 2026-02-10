@@ -23,14 +23,24 @@ const AuthContext = createContext<any>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Check active session on load
-    supabase.auth.getSession().then(({ data: { session } }: any) => {
-      if (session) fetchProfile(session.user);
-      else setLoading(false);
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session } }: any) => {
+        if (session) {
+          fetchProfile(session.user);
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch((err: any) => {
+        console.error("Failed to get session:", err);
+        setError("Failed to initialize authentication");
+        setLoading(false);
+      });
 
     // Listen for changes (login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
@@ -41,7 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => subscription?.unsubscribe();
   }, []);
 
   // 2. THE FIX: Map Database Fields (snake_case) to UI Fields (camelCase)
@@ -111,9 +121,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     navigate("/");
   };
 
+  // Show error screen if initialization failed
+  if (error) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        minHeight: '100vh',
+        backgroundColor: '#0F172A',
+        color: '#F1F5F9',
+        fontFamily: 'monospace',
+        padding: '20px'
+      }}>
+        <h1>Initialization Error</h1>
+        <p>{error}</p>
+        <p style={{ fontSize: '12px', color: '#94A3B8', marginTop: '20px' }}>
+          Check your environment variables and browser console for more details.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <AuthContext.Provider value={{ user, login, register, logout, loading }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
