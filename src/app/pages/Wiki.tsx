@@ -27,13 +27,13 @@ export function Wiki() {
             
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Arrays are ordered collections of elements. Each element can be accessed using an index.
+                Arrays are ordered collections of elements in C#. Each element is accessed using a zero-based index.
               </p>
               
               <div className="border rounded-lg p-4 bg-muted/40 border-border transition-colors">
                 <p className="text-xs mb-2 text-muted-foreground">Declaration:</p>
                 <code className="block text-sm text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
-                  let numbers = [10, 20, 30, 40, 50];
+                  int[] numbers = { 10, 20, 30, 40, 50 };
                 </code>
               </div>
 
@@ -46,11 +46,9 @@ export function Wiki() {
               </div>
 
               <div className="border rounded-lg p-4 bg-muted/40 border-border transition-colors">
-                <p className="text-xs mb-2 text-muted-foreground">Common Methods:</p>
+                <p className="text-xs mb-2 text-muted-foreground">Common Properties:</p>
                 <code className="block text-sm text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
-                  numbers.push(60)    // add to end<br />
-                  numbers.pop()       // remove from end<br />
-                  numbers.length      // get array size
+                  numbers.Length      // get array size
                 </code>
               </div>
             </div>
@@ -67,14 +65,14 @@ export function Wiki() {
             
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Loops allow you to repeat code multiple times. Essential for iterating through arrays.
+                Loops allow you to repeat code multiple times. In C#, loops are essential for iterating through arrays.
               </p>
               
               <div className="border rounded-lg p-4 bg-muted/40 border-border transition-colors">
                 <p className="text-xs mb-2 text-muted-foreground">For Loop:</p>
                 <code className="block text-sm text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>
-                  for (let i = 0; i &lt; 5; i++) {'{'}<br />
-                  &nbsp;&nbsp;console.log(i);<br />
+                  for (int i = 0; i &lt; 5; i++) {'{'}<br />
+                  &nbsp;&nbsp;Console.WriteLine(i);<br />
                   {'}'}
                 </code>
               </div>
@@ -82,19 +80,19 @@ export function Wiki() {
               <div className="border rounded-lg p-4 bg-muted/40 border-border transition-colors">
                 <p className="text-xs mb-2 text-muted-foreground">While Loop:</p>
                 <code className="block text-sm text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>
-                  let i = 0;<br />
+                  int i = 0;<br />
                   while (i &lt; 5) {'{'}<br />
-                  &nbsp;&nbsp;console.log(i);<br />
+                  &nbsp;&nbsp;Console.WriteLine(i);<br />
                   &nbsp;&nbsp;i++;<br />
                   {'}'}
                 </code>
               </div>
 
               <div className="border rounded-lg p-4 bg-muted/40 border-border transition-colors">
-                <p className="text-xs mb-2 text-muted-foreground">For...of Loop (Arrays):</p>
+                <p className="text-xs mb-2 text-muted-foreground">foreach Loop (Arrays):</p>
                 <code className="block text-sm text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>
-                  for (let num of numbers) {'{'}<br />
-                  &nbsp;&nbsp;console.log(num);<br />
+                  foreach (int num in numbers) {'{'}<br />
+                  &nbsp;&nbsp;Console.WriteLine(num);<br />
                   {'}'}
                 </code>
               </div>
@@ -112,34 +110,34 @@ export function Wiki() {
             
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                2D arrays (grids) are arrays of arrays, useful for representing matrices, game boards, and maps.
+                2D arrays (rectangular arrays) store rows and columns. They are useful for matrices and maps.
               </p>
               
               <div className="border rounded-lg p-4 bg-muted/40 border-border transition-colors">
                 <p className="text-xs mb-2 text-muted-foreground">Declaration:</p>
                 <code className="block text-sm text-amber-500" style={{ fontFamily: 'var(--font-mono)' }}>
-                  let grid = [<br />
-                  &nbsp;&nbsp;[1, 2, 3],<br />
-                  &nbsp;&nbsp;[4, 5, 6],<br />
-                  &nbsp;&nbsp;[7, 8, 9]<br />
-                  ];
+                  int[,] grid = {'{'}<br />
+                  &nbsp;&nbsp;{'{'}1, 2, 3{'}'},<br />
+                  &nbsp;&nbsp;{'{'}4, 5, 6{'}'},<br />
+                  &nbsp;&nbsp;{'{'}7, 8, 9{'}'}<br />
+                  {'}'};
                 </code>
               </div>
 
               <div className="border rounded-lg p-4 bg-muted/40 border-border transition-colors">
                 <p className="text-xs mb-2 text-muted-foreground">Accessing Elements:</p>
                 <code className="block text-sm text-amber-500" style={{ fontFamily: 'var(--font-mono)' }}>
-                  grid[0][0]  // returns 1 (row 0, col 0)<br />
-                  grid[1][2]  // returns 6 (row 1, col 2)
+                  grid[0, 0]  // returns 1 (row 0, col 0)<br />
+                  grid[1, 2]  // returns 6 (row 1, col 2)
                 </code>
               </div>
 
               <div className="border rounded-lg p-4 bg-muted/40 border-border transition-colors">
                 <p className="text-xs mb-2 text-muted-foreground">Nested Loop Iteration:</p>
                 <code className="block text-sm text-amber-500" style={{ fontFamily: 'var(--font-mono)' }}>
-                  for (let row = 0; row &lt; grid.length; row++) {'{'}<br />
-                  &nbsp;&nbsp;for (let col = 0; col &lt; grid[row].length; col++) {'{'}<br />
-                  &nbsp;&nbsp;&nbsp;&nbsp;console.log(grid[row][col]);<br />
+                  for (int row = 0; row &lt; grid.GetLength(0); row++) {'{'}<br />
+                  &nbsp;&nbsp;for (int col = 0; col &lt; grid.GetLength(1); col++) {'{'}<br />
+                  &nbsp;&nbsp;&nbsp;&nbsp;Console.WriteLine(grid[row, col]);<br />
                   &nbsp;&nbsp;{'}'}<br />
                   {'}'}
                 </code>
@@ -157,7 +155,7 @@ export function Wiki() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary">•</span>
-                <span>Use .length to get the size of an array</span>
+                <span>Use .Length and GetLength() for sizes</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary">•</span>

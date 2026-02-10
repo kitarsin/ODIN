@@ -74,13 +74,13 @@ export function GameContainer() {
                     <div>
                       <p className="text-xs mb-1 text-muted-foreground">Declaration:</p>
                       <code className="block p-2 rounded text-primary text-xs bg-background border border-border transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>
-                        let arr = [1, 2, 3];
+                        int[] numbers = { 1, 2, 3 };
                       </code>
                     </div>
                     <div>
                       <p className="text-xs mb-1 text-muted-foreground">Access:</p>
                       <code className="block p-2 rounded text-primary text-xs bg-background border border-border transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>
-                        arr[0] // returns 1
+                        numbers[0] // returns 1
                       </code>
                     </div>
                   </div>
@@ -95,7 +95,7 @@ export function GameContainer() {
                     <div>
                       <p className="text-xs mb-1 text-muted-foreground">For Loop:</p>
                       <code className="block p-2 rounded text-secondary text-xs bg-background border border-border transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>
-                        for (let i=0; i&lt;n; i++)
+                        for (int i = 0; i &lt; n; i++)
                       </code>
                     </div>
                     <div>
@@ -116,13 +116,13 @@ export function GameContainer() {
                     <div>
                       <p className="text-xs mb-1 text-muted-foreground">Declaration:</p>
                       <code className="block p-2 rounded text-amber-500 text-xs bg-background border border-border transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>
-                        let grid = [[1,2],[3,4]];
+                        int[,] grid = { { 1, 2 }, { 3, 4 } };
                       </code>
                     </div>
                     <div>
                       <p className="text-xs mb-1 text-muted-foreground">Access:</p>
                       <code className="block p-2 rounded text-amber-500 text-xs bg-background border border-border transition-colors" style={{ fontFamily: 'var(--font-mono)' }}>
-                        grid[row][col]
+                        grid[row, col]
                       </code>
                     </div>
                   </div>
@@ -133,7 +133,7 @@ export function GameContainer() {
                   <h4 className="text-primary font-semibold mb-2 text-xs">💡 Quick Tips</h4>
                   <ul className="space-y-1 text-xs text-muted-foreground">
                     <li>• Use nested loops for 2D arrays</li>
-                    <li>• Always check array bounds</li>
+                    <li>• Use Length and GetLength()</li>
                     <li>• Index starts at 0</li>
                   </ul>
                 </div>
