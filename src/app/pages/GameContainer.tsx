@@ -56,7 +56,11 @@ export function GameContainer() {
       <Navigation />
 
       {/* Game Header */}
-      <div className="mx-auto grid h-[calc(100vh-140px)] max-w-7xl grid-cols-1 gap-6 px-6 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
+      <div
+        className={`mx-auto grid h-[calc(100vh-140px)] max-w-7xl grid-cols-1 gap-6 px-6 py-6 transition-[grid-template-columns] duration-500 ease-in-out lg:grid-cols-[minmax(0,1fr)_0px] ${
+          terminalOpen ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]' : ''
+        }`}
+      >
         <div className="flex h-full items-start justify-center">
           <div className="aspect-square w-full max-w-[720px]">
             <BasicExplorerGame
@@ -65,7 +69,12 @@ export function GameContainer() {
             />
           </div>
         </div>
-        {terminalOpen && (
+        <div
+          className={`min-w-0 transition-all duration-500 ease-in-out ${
+            terminalOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+          }`}
+          aria-hidden={!terminalOpen}
+        >
           <CodeEditorPanel
             code={code}
             onCodeChange={setCode}
@@ -74,7 +83,7 @@ export function GameContainer() {
             saveStatus={saveStatus}
             terminalOutput={terminalOutput}
           />
-        )}
+        </div>
       </div>
     </div>
   );
