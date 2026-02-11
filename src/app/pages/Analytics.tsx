@@ -10,6 +10,7 @@ type Student = {
   section: string;
   avatar: string;
   syncRate: number;
+  createdAt?: string;
   progress: {
     arrays: number;
     loops: number;
@@ -32,7 +33,7 @@ export function Analytics() {
         // Only select users that are students (exclude admins and system/test accounts)
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, full_name, student_id, section, avatar_url, sync_rate, role')
+          .select('id, full_name, student_id, section, avatar_url, sync_rate, role, created_at')
           .eq('role', 'student')
           .order('created_at', { ascending: false });
 
@@ -59,6 +60,7 @@ export function Analytics() {
             section: student.section,
             avatar: student.avatar_url || '🧑‍🎓',
             syncRate,
+            createdAt: student.created_at,
             progress: {
               arrays: 0,
               loops: 0,
@@ -92,13 +94,29 @@ export function Analytics() {
     return { section, avgMastery, count: sectionStudents.length };
   });
 
-  // Mock behavior logs
-  const behaviorLogs = [
-    { id: 1, student: 'Jordan Lee', event: 'Wheel Spinning Detected', timestamp: '2026-02-10 09:15', severity: 'high' },
-    { id: 2, student: 'Sarah Martinez', event: 'Low Activity Warning', timestamp: '2026-02-10 08:45', severity: 'medium' },
-    { id: 3, student: 'Jordan Lee', event: 'Multiple Failed Attempts', timestamp: '2026-02-09 16:30', severity: 'high' },
-    { id: 4, student: 'Alex Chen', event: 'Rapid Progress - Arrays Module', timestamp: '2026-02-09 14:20', severity: 'low' }
-  ];
+  const behaviorLogs = students.flatMap((student) => {
+    const logs = [
+      {
+        id: `${student.id}-registered`,
+        student: student.name,
+        event: 'Registered account',
+        timestamp: student.createdAt || new Date().toISOString(),
+        severity: 'low'
+      }
+    ];
+
+    if (student.syncRate < 60) {
+      logs.unshift({
+        id: `${student.id}-low-sync`,
+        student: student.name,
+        event: 'Low Sync Rate',
+        timestamp: student.createdAt || new Date().toISOString(),
+        severity: 'medium'
+      });
+    }
+
+    return logs;
+  });
 
   const getColorForMastery = (mastery: number) => {
     if (mastery >= 75) return 'bg-primary';
