@@ -62,7 +62,7 @@ export function GameContainer() {
 
       {/* Game Header */}
       <div className="flex flex-1 items-center justify-center px-6 py-6">
-        <div className={`flex h-full max-h-[85vh] items-center gap-6 ${terminalOpen ? '' : 'justify-center'}`}>
+        <div className="flex h-full max-h-[85vh] items-center justify-center gap-6">
           <div className="flex h-full items-center justify-center">
             <div className="aspect-square h-full max-h-full w-auto">
               <BasicExplorerGame
