@@ -66,6 +66,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) throw error;
 
       if (data) {
+        const rawSyncRate = Number(data.sync_rate);
+        const syncRate = Number.isFinite(rawSyncRate) ? rawSyncRate : 0;
         setUser({
           id: authUser.id,
           email: authUser.email,
@@ -74,7 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           section: data.section,
           role: data.role || 'student',
           avatar: data.avatar_url || '🧑‍🎓',
-          syncRate: data.sync_rate || 100, // MAP THIS
+          syncRate, // MAP THIS
           status: 'active',
           // Mocking these for now until you create real tables for them
           progress: { arrays: 0, loops: 0, grids: 0 },
