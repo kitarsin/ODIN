@@ -341,16 +341,6 @@ export function BasicExplorerGame({
               >
                 {battleActive ? 'BATTLE // ACTIVE' : 'ARENA // VISUAL'}
               </div>
-              {battleActive && (
-                <button
-                  type="button"
-                  onClick={onExitBattle}
-                  className="rounded-md border border-border bg-background/90 px-2 py-1 text-[10px] font-semibold text-foreground hover:bg-muted"
-                  style={{ fontFamily: 'var(--font-mono)' }}
-                >
-                  Exit Battle
-                </button>
-              )}
             </div>
 
             {!battleActive && promptVisible && (
@@ -373,8 +363,18 @@ export function BasicExplorerGame({
           </div>
 
           <div className="grid gap-2">
-            <div className="rounded-md border-2 border-border bg-card px-3 py-2 text-sm font-semibold text-foreground">
-              {battleActive ? 'Battle Log' : 'Demo Game'}
+            <div className="flex items-center justify-between rounded-md border-2 border-border bg-card px-3 py-2 text-sm font-semibold text-foreground">
+              <span>{battleActive ? 'Battle Log' : 'Demo Game'}</span>
+              {battleActive && (
+                <button
+                  type="button"
+                  onClick={onExitBattle}
+                  className="rounded-md border border-border bg-background/90 px-2 py-1 text-[10px] font-semibold text-foreground hover:bg-muted"
+                  style={{ fontFamily: 'var(--font-mono)' }}
+                >
+                  Exit Battle
+                </button>
+              )}
             </div>
             <div className="rounded-md border-2 border-border bg-card px-3 py-3 text-xs text-muted-foreground">
               {battleActive
