@@ -63,12 +63,12 @@ export function GameContainer() {
       {/* Game Header */}
       <div className="mx-auto flex w-full max-w-7xl flex-1 items-center justify-center px-6 py-4">
         <div
-          className={`flex w-full max-h-full flex-col items-stretch gap-4 lg:flex-row ${
+          className={`flex w-full max-h-[85vh] flex-col items-stretch gap-4 lg:flex-row ${
             battleMode ? 'lg:items-center lg:justify-center' : ''
           }`}
         >
-          <div className="flex min-h-0 flex-1 items-stretch justify-center max-h-full">
-            <div className="h-full w-full max-w-[900px] max-h-full">
+          <div className="flex min-h-0 flex-1 items-stretch justify-center h-full">
+            <div className="h-full w-full max-w-[820px]">
               <BasicExplorerGame
                 battleActive={battleMode}
                 onTerminalInteract={handleTerminalInteract}
