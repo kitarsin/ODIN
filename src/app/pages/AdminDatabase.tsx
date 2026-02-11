@@ -24,6 +24,7 @@ export function AdminDatabase() {
   const [_loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSection, setFilterSection] = useState('all');
+  const [roleFilter, setRoleFilter] = useState<'all' | 'student' | 'admin'>('all');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -36,7 +37,8 @@ export function AdminDatabase() {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          user.studentId.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSection = filterSection === 'all' || user.section === filterSection;
-    return matchesSearch && matchesSection;
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    return matchesSearch && matchesSection && matchesRole;
   });
 
   useEffect(() => {
@@ -180,6 +182,18 @@ export function AdminDatabase() {
                   {section === 'all' ? 'All Sections' : section}
                 </option>
               ))}
+            </select>
+
+            {/* Filter by Role */}
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value as 'all' | 'student' | 'admin')}
+              className="px-4 py-2 border rounded-md text-sm bg-background border-border text-foreground transition-colors"
+              style={{ fontFamily: 'var(--font-mono)' }}
+            >
+              <option value="all">All Roles</option>
+              <option value="student">Students</option>
+              <option value="admin">Admins</option>
             </select>
 
             {/* Add User Button */}

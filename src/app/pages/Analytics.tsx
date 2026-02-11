@@ -29,14 +29,26 @@ export function Analytics() {
       try {
         setLoadError(null);
         setLoading(true);
+        // Only select users that are students (exclude admins and system/test accounts)
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, full_name, student_id, section, avatar_url, sync_rate')
+          .select('id, full_name, student_id, section, avatar_url, sync_rate, role')
+          .eq('role', 'student')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        const formattedStudents = (data || []).map((student: any) => {
+        // Defensive client-side filter to remove any mock/test accounts
+        const liveStudents = (data || []).filter((s: any) => {
+          const sid = (s.student_id || '').toString().toLowerCase();
+          const name = (s.full_name || '').toString().toLowerCase();
+          // exclude obvious test/mock rows
+          if (!sid) return false;
+          if (sid.includes('mock') || name.includes('mock') || sid.includes('test')) return false;
+          return true;
+        });
+
+        const formattedStudents = (liveStudents || []).map((student: any) => {
           const rawSyncRate = Number(student.sync_rate);
           const syncRate = Number.isFinite(rawSyncRate) ? rawSyncRate : 0;
 
