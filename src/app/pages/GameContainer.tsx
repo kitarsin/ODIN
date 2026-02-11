@@ -62,7 +62,7 @@ export function GameContainer() {
 
       {/* Game Header */}
       <div className="flex flex-1 items-center justify-center px-6 py-6">
-        <div className="flex h-full max-h-[85vh] w-full max-w-7xl items-center justify-center gap-6">
+        <div className={`flex h-full max-h-[85vh] items-center gap-6 ${terminalOpen ? '' : 'justify-center'}`}>
           <div className="flex h-full items-center justify-center">
             <div className="aspect-square h-full max-h-full w-auto">
               <BasicExplorerGame
@@ -76,7 +76,7 @@ export function GameContainer() {
             className={`flex h-full w-[580px] flex-shrink-0 transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
               terminalOpen
                 ? 'opacity-100 translate-x-0'
-                : 'pointer-events-none opacity-0 translate-x-6'
+                : 'pointer-events-none opacity-0 translate-x-6 absolute'
             }`}
             aria-hidden={!terminalOpen}
           >
