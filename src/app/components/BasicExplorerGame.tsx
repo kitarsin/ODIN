@@ -213,9 +213,9 @@ export function BasicExplorerGame({
   }, [height, width]);
 
   return (
-    <div className="flex h-full w-full flex-col">
-      <div className="flex-1 rounded-2xl border-4 border-border bg-muted/60 p-4 shadow-inner">
-        <div className="grid h-full grid-rows-[minmax(0,1fr)_auto] gap-4">
+    <div className="grid h-full min-h-0 w-full grid-rows-[minmax(0,1fr)_auto] gap-2">
+      <div className="min-h-0 rounded-2xl border-4 border-border bg-muted/60 p-3 shadow-inner">
+        <div className="grid h-full grid-rows-[minmax(0,1fr)_auto] gap-3">
           <div className="relative rounded-xl border-4 border-border bg-card p-3">
             <div
               className="absolute left-3 top-3 rounded-md border border-border bg-background/80 px-2 py-1 text-[10px] text-muted-foreground"
@@ -294,7 +294,7 @@ export function BasicExplorerGame({
             )}
           </div>
 
-          <div className="grid gap-3">
+          <div className="grid gap-2">
             <div className="rounded-md border-2 border-border bg-card px-3 py-2 text-sm font-semibold text-foreground">
               {battleActive ? 'Battle Log' : 'Demo Game'}
             </div>
@@ -307,7 +307,7 @@ export function BasicExplorerGame({
         </div>
       </div>
 
-      <div className="mt-3 text-center text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
+      <div className="text-center text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
         {battleActive ? 'Battle engaged. Use the editor to cast code.' : 'WASD to move. Press E to interact.'}
       </div>
     </div>

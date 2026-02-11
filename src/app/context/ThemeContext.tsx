@@ -1,12 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-type ThemeMode = 'academic' | 'game';
 type ColorMode = 'light' | 'dark';
 
 interface ThemeContextType {
-  mode: ThemeMode;
   colorMode: ColorMode;
-  toggleMode: () => void;
   toggleColorMode: () => void;
   isGameMode: boolean;
   isDarkMode: boolean;
@@ -15,16 +12,10 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<ThemeMode>('academic');
   const [colorMode, setColorMode] = useState<ColorMode>('dark');
 
   useEffect(() => {
-    // Load saved modes from localStorage
-    const savedMode = localStorage.getItem('odin-theme-mode') as ThemeMode;
     const savedColorMode = localStorage.getItem('odin-color-mode') as ColorMode;
-    if (savedMode) {
-      setMode(savedMode);
-    }
     if (savedColorMode) {
       setColorMode(savedColorMode);
     }
@@ -33,13 +24,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Apply theme classes to root
     const root = document.documentElement;
-    
-    // Apply mode class (academic or game)
-    if (mode === 'game') {
-      root.classList.add('game-mode');
-    } else {
-      root.classList.remove('game-mode');
-    }
     
     // Apply color mode class (light or dark)
     if (colorMode === 'light') {
@@ -51,13 +35,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
     
     // Save to localStorage
-    localStorage.setItem('odin-theme-mode', mode);
     localStorage.setItem('odin-color-mode', colorMode);
-  }, [mode, colorMode]);
-
-  const toggleMode = () => {
-    setMode(prev => prev === 'academic' ? 'game' : 'academic');
-  };
+  }, [colorMode]);
 
   const toggleColorMode = () => {
     setColorMode(prev => prev === 'dark' ? 'light' : 'dark');
@@ -65,11 +44,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   return (
     <ThemeContext.Provider value={{ 
-      mode, 
       colorMode, 
-      toggleMode, 
       toggleColorMode,
-      isGameMode: mode === 'game',
+      isGameMode: false,
       isDarkMode: colorMode === 'dark'
     }}>
       {children}
