@@ -129,13 +129,18 @@ export function Login() {
               </Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
+                onChange={(event) => {
+                  setEmail(event.target.value);
                   if (error) setError('');
                 }}
+                onInput={(event) => {
+                  setEmail((event.target as HTMLInputElement).value);
+                }}
                 placeholder={isGameMode ? 'ENTER_EMAIL' : 'Enter your email'}
+                autoComplete="email"
                 className={`transition-all ${
                   isGameMode
                     ? 'bg-[#1a1a2e] border-[#00ff41] text-[#00ff41] border-2 placeholder:text-[#0f3460] focus:shadow-[0_0_10px_rgba(0,255,65,0.5)]'
@@ -153,13 +158,18 @@ export function Login() {
               </Label>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
+                onChange={(event) => {
+                  setPassword(event.target.value);
                   if (error) setError('');
                 }}
+                onInput={(event) => {
+                  setPassword((event.target as HTMLInputElement).value);
+                }}
                 placeholder={isGameMode ? '********' : 'Enter your password'}
+                autoComplete="current-password"
                 className={`transition-all ${
                   isGameMode
                     ? 'bg-[#1a1a2e] border-[#00ff41] text-[#00ff41] border-2 placeholder:text-[#0f3460] focus:shadow-[0_0_10px_rgba(0,255,65,0.5)]'

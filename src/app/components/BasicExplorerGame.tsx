@@ -47,8 +47,31 @@ export function BasicExplorerGame({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
+      const code = event.code?.toLowerCase();
       const canvas = canvasRef.current;
       if (!canvas) return;
+
+      const normalizedKey = (() => {
+        switch (code) {
+          case 'keyw':
+            return 'w';
+          case 'keya':
+            return 'a';
+          case 'keys':
+            return 's';
+          case 'keyd':
+            return 'd';
+          case 'arrowup':
+          case 'arrowdown':
+          case 'arrowleft':
+          case 'arrowright':
+            return code;
+          case 'keye':
+            return 'e';
+          default:
+            return key;
+        }
+      })();
       
       const activeElement = document.activeElement;
       const isCanvasFocused = activeElement === canvas || activeElement === canvas.parentElement;
@@ -60,18 +83,18 @@ export function BasicExplorerGame({
       
       if (isTyping && !isCanvasFocused) return;
       if (
-        key === 'w' ||
-        key === 'a' ||
-        key === 's' ||
-        key === 'd' ||
-        key === 'e' ||
-        key === 'arrowup' ||
-        key === 'arrowdown' ||
-        key === 'arrowleft' ||
-        key === 'arrowright'
+        normalizedKey === 'w' ||
+        normalizedKey === 'a' ||
+        normalizedKey === 's' ||
+        normalizedKey === 'd' ||
+        normalizedKey === 'e' ||
+        normalizedKey === 'arrowup' ||
+        normalizedKey === 'arrowdown' ||
+        normalizedKey === 'arrowleft' ||
+        normalizedKey === 'arrowright'
       ) {
-        keysRef.current[key] = true;
-        if (key === 'e') {
+        keysRef.current[normalizedKey] = true;
+        if (normalizedKey === 'e') {
           interactRequestedRef.current = true;
         }
         event.preventDefault();
@@ -80,8 +103,31 @@ export function BasicExplorerGame({
 
     const handleKeyUp = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
-      if (keysRef.current[key]) {
-        keysRef.current[key] = false;
+      const code = event.code?.toLowerCase();
+      const normalizedKey = (() => {
+        switch (code) {
+          case 'keyw':
+            return 'w';
+          case 'keya':
+            return 'a';
+          case 'keys':
+            return 's';
+          case 'keyd':
+            return 'd';
+          case 'arrowup':
+          case 'arrowdown':
+          case 'arrowleft':
+          case 'arrowright':
+            return code;
+          case 'keye':
+            return 'e';
+          default:
+            return key;
+        }
+      })();
+
+      if (keysRef.current[normalizedKey]) {
+        keysRef.current[normalizedKey] = false;
         event.preventDefault();
       }
     };
@@ -295,8 +341,10 @@ export function BasicExplorerGame({
                     ref={canvasRef}
                     width={width}
                     height={height}
+                    tabIndex={0}
                     className="h-full w-full rounded-lg"
                     style={{ imageRendering: 'pixelated' }}
+                    aria-label="Explorer arena"
                   />
                 )}
               </div>

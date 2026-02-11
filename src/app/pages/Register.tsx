@@ -89,13 +89,18 @@ export function Register() {
               </Label>
               <Input
                 id="name"
+                name="name"
                 type="text"
                 value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
+                onChange={(event) => {
+                  setName(event.target.value);
                   if (error) setError('');
                 }}
+                onInput={(event) => {
+                  setName((event.target as HTMLInputElement).value);
+                }}
                 placeholder={isGameMode ? 'ENTER_NAME' : 'Enter your full name'}
+                autoComplete="name"
                 className={getInputClass()}
                 required
               />
@@ -107,13 +112,18 @@ export function Register() {
               </Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
+                onChange={(event) => {
+                  setEmail(event.target.value);
                   if (error) setError('');
                 }}
+                onInput={(event) => {
+                  setEmail((event.target as HTMLInputElement).value);
+                }}
                 placeholder={isGameMode ? 'ENTER_EMAIL' : 'Enter your email'}
+                autoComplete="email"
                 className={getInputClass()}
                 required
               />
@@ -125,11 +135,15 @@ export function Register() {
               </Label>
               <Input
                 id="studentId"
+                name="studentId"
                 type="text"
                 value={studentId}
-                onChange={(e) => {
-                  setStudentId(e.target.value);
+                onChange={(event) => {
+                  setStudentId(event.target.value);
                   if (error) setError('');
+                }}
+                onInput={(event) => {
+                  setStudentId((event.target as HTMLInputElement).value);
                 }}
                 placeholder={isGameMode ? 'ENTER_ID' : 'Enter your student ID'}
                 className={getInputClass()}
@@ -144,13 +158,18 @@ export function Register() {
               </Label>
               <Input
                 id="section"
+                name="section"
                 type="text"
                 value={section}
-                onChange={(e) => {
-                  setSection(e.target.value);
+                onChange={(event) => {
+                  setSection(event.target.value);
                   if (error) setError('');
                 }}
+                onInput={(event) => {
+                  setSection((event.target as HTMLInputElement).value);
+                }}
                 placeholder={isGameMode ? 'E_G_CS_301A' : 'e.g., CS-301A'}
+                autoComplete="organization"
                 className={getInputClass()}
                 style={{ fontFamily: 'var(--font-mono)' }}
                 required
@@ -163,13 +182,18 @@ export function Register() {
               </Label>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
+                onChange={(event) => {
+                  setPassword(event.target.value);
                   if (error) setError('');
                 }}
+                onInput={(event) => {
+                  setPassword((event.target as HTMLInputElement).value);
+                }}
                 placeholder={isGameMode ? '········' : 'Choose a strong password'}
+                autoComplete="new-password"
                 className={getInputClass()}
                 required
               />
