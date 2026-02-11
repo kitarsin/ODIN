@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Shield, Home, Gamepad2, Book, User, Database, LogOut } from 'lucide-react';
+import { Shield, Home, Gamepad2, Book, User, Database, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from './ui/button';
@@ -73,7 +73,7 @@ export function Navigation() {
                   }`}
                   style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
                 >
-                  <User className="w-4 h-4" />
+                  <Settings className="w-4 h-4" />
                   {isGameMode ? 'ACC' : 'Settings'}
                 </Link>
                 <Link
@@ -188,7 +188,7 @@ export function Navigation() {
                   }`}
                   style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
                 >
-                  <User className="w-4 h-4" />
+                  <Settings className="w-4 h-4" />
                   {isGameMode ? 'ACC' : 'Settings'}
                 </Link>
               </>
