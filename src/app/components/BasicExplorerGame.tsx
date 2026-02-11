@@ -210,7 +210,7 @@ export function BasicExplorerGame({
         window.clearTimeout(terminalTimeoutRef.current);
       }
     };
-  }, [height, width]);
+  }, [height, width, battleActive, onTerminalInteract]);
 
   return (
     <div className="grid h-full min-h-0 w-full grid-rows-[minmax(0,1fr)_auto] gap-2">
