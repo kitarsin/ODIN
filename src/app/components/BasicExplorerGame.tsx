@@ -219,28 +219,32 @@ export function BasicExplorerGame({ battleActive = false, onTerminalInteract }: 
               {battleActive ? 'BATTLE // ACTIVE' : 'ARENA // VISUAL'}
             </div>
             {battleActive ? (
-              <div className="grid h-full grid-rows-[minmax(0,1fr)_auto] gap-4 rounded-lg bg-muted/40 p-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col items-start gap-2">
-                    <div className="rounded-md border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
-                      HERO // HP 86%
+              <div className="flex h-full w-full items-center justify-center">
+                <div className="aspect-square h-full w-full max-h-full max-w-full rounded-lg bg-muted/40 p-4">
+                  <div className="grid h-full grid-rows-[minmax(0,1fr)_auto] gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col items-start gap-2">
+                        <div className="rounded-md border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
+                          HERO // HP 86%
+                        </div>
+                        <div className="flex h-full w-full items-end">
+                          <div className="h-28 w-28 rounded-full border-4 border-border bg-gradient-to-b from-primary/30 to-primary/10" />
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <div className="rounded-md border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
+                          GLITCHED MAN // HP 62%
+                        </div>
+                        <div className="flex h-full w-full items-start justify-end">
+                          <div className="h-24 w-24 rounded-full border-4 border-border bg-gradient-to-b from-amber-500/40 to-amber-500/10" />
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex h-full w-full items-end">
-                      <div className="h-28 w-28 rounded-full border-4 border-border bg-gradient-to-b from-primary/30 to-primary/10" />
+                    <div className="flex items-center justify-center">
+                      <div className="h-3 w-full max-w-md rounded-full border border-border bg-background">
+                        <div className="h-full w-3/5 rounded-full bg-primary" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <div className="rounded-md border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
-                      GLITCHED MAN // HP 62%
-                    </div>
-                    <div className="flex h-full w-full items-start justify-end">
-                      <div className="h-24 w-24 rounded-full border-4 border-border bg-gradient-to-b from-amber-500/40 to-amber-500/10" />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-center">
-                  <div className="h-3 w-full max-w-md rounded-full border border-border bg-background">
-                    <div className="h-full w-3/5 rounded-full bg-primary" />
                   </div>
                 </div>
               </div>
