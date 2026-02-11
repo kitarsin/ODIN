@@ -58,7 +58,7 @@ export function GameContainer() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground transition-colors">
+    <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground transition-colors">
       <div className="group/nav fixed inset-x-0 top-0 z-40">
         <div className="h-3" />
         <div
@@ -82,12 +82,12 @@ export function GameContainer() {
 
       {/* Game Header */}
       <div
-        className={`mx-auto flex w-full max-w-7xl flex-1 flex-col items-stretch gap-6 px-6 py-6 lg:flex-row ${
+        className={`mx-auto flex w-full max-w-7xl flex-1 flex-col items-stretch gap-6 px-6 pb-6 pt-12 lg:flex-row ${
           battleMode ? 'lg:items-center lg:justify-center' : ''
         }`}
       >
-        <div className="flex min-h-[60vh] flex-1 items-stretch justify-center">
-          <div className="h-full w-full max-w-[920px]">
+        <div className="flex min-h-0 flex-1 items-stretch justify-center">
+          <div className="h-full w-full max-w-[980px]">
             <BasicExplorerGame
               battleActive={battleMode}
               onTerminalInteract={handleTerminalInteract}
@@ -96,7 +96,7 @@ export function GameContainer() {
           </div>
         </div>
         <div
-          className={`flex min-h-[60vh] min-w-0 overflow-hidden transition-[flex-basis,opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] lg:self-stretch lg:items-stretch ${
+          className={`flex min-h-0 min-w-0 overflow-hidden transition-[flex-basis,opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] lg:self-stretch lg:items-stretch ${
             terminalOpen
               ? 'opacity-100 lg:basis-[460px] lg:translate-x-0'
               : 'pointer-events-none opacity-0 lg:basis-0 lg:translate-x-6'
