@@ -58,14 +58,7 @@ export function GameContainer() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground transition-colors">
-      <div className="group/nav fixed inset-x-0 top-0 z-40">
-        <div className="h-3" />
-        <div
-          className="transition-[opacity,transform] duration-300 ease-out -translate-y-full opacity-0 group-hover/nav:translate-y-0 group-hover/nav:opacity-100"
-        >
-          <Navigation />
-        </div>
-      </div>
+      <Navigation />
 
       {/* Game Header */}
       <div className="mx-auto flex w-full max-w-7xl flex-1 items-center justify-center px-6 py-6">
