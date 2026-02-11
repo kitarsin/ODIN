@@ -56,9 +56,9 @@ export function GameContainer() {
       <Navigation />
 
       {/* Game Header */}
-      <div className="mx-auto flex h-[calc(100vh-140px)] max-w-7xl flex-col gap-6 px-6 py-6 lg:flex-row">
-        <div className="flex h-full items-start justify-center">
-          <div className="aspect-square w-full max-w-[720px]">
+      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-6 py-6 lg:flex-row">
+        <div className="flex min-h-[60vh] flex-1 items-stretch justify-center">
+          <div className="h-full w-full max-w-[920px]">
             <BasicExplorerGame
               battleActive={battleMode}
               onTerminalInteract={handleTerminalInteract}
@@ -68,7 +68,7 @@ export function GameContainer() {
         <div
           className={`min-w-0 overflow-hidden transition-[flex-basis,opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] lg:flex lg:items-stretch ${
             terminalOpen
-              ? 'opacity-100 lg:basis-[420px] lg:translate-x-0'
+              ? 'opacity-100 lg:basis-[460px] lg:translate-x-0'
               : 'pointer-events-none opacity-0 lg:basis-0 lg:translate-x-6'
           }`}
           aria-hidden={!terminalOpen}

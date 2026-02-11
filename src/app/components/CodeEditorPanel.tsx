@@ -20,8 +20,8 @@ export function CodeEditorPanel({
   terminalOutput
 }: CodeEditorPanelProps) {
   return (
-    <div className="flex h-full flex-col gap-6">
-      <div className="flex-1 rounded-xl border border-border bg-card p-4 shadow-sm">
+    <div className="flex h-full min-h-0 flex-col gap-6">
+      <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card p-4 shadow-sm">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Code className="h-4 w-4 text-primary" />
@@ -48,7 +48,7 @@ export function CodeEditorPanel({
           value={code}
           onChange={(event) => onCodeChange(event.target.value)}
           placeholder="// insert code here"
-          className="h-[calc(100%-32px)] w-full resize-none rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none"
+          className="min-h-0 flex-1 w-full resize-none rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none"
           style={{ fontFamily: 'var(--font-mono)' }}
         />
         <div
@@ -64,13 +64,13 @@ export function CodeEditorPanel({
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card p-4 shadow-sm">
         <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
           <Terminal className="h-4 w-4 text-primary" />
           Terminal Output
         </div>
         <div
-          className="min-h-[120px] whitespace-pre-wrap rounded-lg border border-border bg-muted/60 px-4 py-3 text-xs text-muted-foreground"
+          className="min-h-0 flex-1 whitespace-pre-wrap rounded-lg border border-border bg-muted/60 px-4 py-3 text-xs text-muted-foreground"
           style={{ fontFamily: 'var(--font-mono)' }}
         >
           {terminalOutput}
