@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Shield, Terminal } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, Shield, Terminal } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/button';
@@ -13,9 +13,12 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login, user, loading: authLoading } = useAuth();
   const { isGameMode } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryEmail = useMemo(() => new URLSearchParams(location.search).get('email') || '', [location.search]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,12 +40,19 @@ export function Login() {
   };
 
   useEffect(() => {
+    if (queryEmail && !email) {
+      setEmail(queryEmail);
+    }
+  }, [queryEmail, email]);
+
+  useEffect(() => {
     if (user && !authLoading) {
       navigate('/dashboard');
     }
   }, [user, authLoading, navigate]);
 
   const isSubmitting = loading || authLoading;
+  const canSubmit = email.trim().length > 0 && password.trim().length > 0;
 
   const getBgClass = () => {
     if (isGameMode) {
@@ -141,12 +151,14 @@ export function Login() {
                 }}
                 placeholder={isGameMode ? 'ENTER_EMAIL' : 'Enter your email'}
                 autoComplete="email"
+                autoFocus
                 className={`transition-all ${
                   isGameMode
                     ? 'bg-[#1a1a2e] border-[#00ff41] text-[#00ff41] border-2 placeholder:text-[#0f3460] focus:shadow-[0_0_10px_rgba(0,255,65,0.5)]'
                     : `${getInputBg()} border ${getInputBorder()} ${getInputText()} placeholder:text-muted-foreground`
                 }`}
                 style={isGameMode ? { fontFamily: 'var(--font-mono)' } : { fontFamily: 'var(--font-mono)' }}
+                disabled={isSubmitting}
                 required
               />
             </div>
@@ -156,27 +168,38 @@ export function Login() {
                      style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}>
                 {isGameMode ? 'PASSWORD' : 'Password'}
               </Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                value={password}
-                onChange={(event) => {
-                  setPassword(event.target.value);
-                  if (error) setError('');
-                }}
-                onInput={(event) => {
-                  setPassword((event.target as HTMLInputElement).value);
-                }}
-                placeholder={isGameMode ? '********' : 'Enter your password'}
-                autoComplete="current-password"
-                className={`transition-all ${
-                  isGameMode
-                    ? 'bg-[#1a1a2e] border-[#00ff41] text-[#00ff41] border-2 placeholder:text-[#0f3460] focus:shadow-[0_0_10px_rgba(0,255,65,0.5)]'
-                    : `${getInputBg()} border ${getInputBorder()} ${getInputText()} placeholder:text-muted-foreground`
-                }`}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    if (error) setError('');
+                  }}
+                  onInput={(event) => {
+                    setPassword((event.target as HTMLInputElement).value);
+                  }}
+                  placeholder={isGameMode ? '********' : 'Enter your password'}
+                  autoComplete="current-password"
+                  className={`pr-10 transition-all ${
+                    isGameMode
+                      ? 'bg-[#1a1a2e] border-[#00ff41] text-[#00ff41] border-2 placeholder:text-[#0f3460] focus:shadow-[0_0_10px_rgba(0,255,65,0.5)]'
+                      : `${getInputBg()} border ${getInputBorder()} ${getInputText()} placeholder:text-muted-foreground`
+                  }`}
+                  disabled={isSubmitting}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((value) => !value)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
 
             {error && (
@@ -185,14 +208,16 @@ export function Login() {
                   ? 'bg-[#ff6b6b]/10 border-[#ff6b6b] text-[#ff6b6b] border-2'
                   : 'bg-destructive/10 border-destructive/50 text-destructive'
               }`}
-                   style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}>
+                   style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
+                   role="alert"
+                   aria-live="polite">
                 {isGameMode ? '! ERROR: ' + error : error}
               </div>
             )}
 
             <Button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !canSubmit}
               className={`w-full font-semibold transition-all ${
                 isGameMode
                   ? 'bg-[#00ff41] hover:bg-[#00cc33] text-[#1a1a2e] border-2 border-[#00ff41] shadow-[0_0_15px_rgba(0,255,65,0.5)]'
@@ -209,7 +234,7 @@ export function Login() {
             <p className={`text-sm ${getSecondaryText()}`}
                style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '8px' } : {}}>
               {isGameMode ? 'NEW USER?' : 'Need access?'}{' '}
-              <Link to="/register" className={`font-medium ${
+              <Link to={`/register${email ? `?email=${encodeURIComponent(email)}` : ''}`} className={`font-medium ${
                 isGameMode ? 'text-[#ffe66d] hover:text-[#ffd700]' : 
                 'text-primary hover:text-primary/80'
               }`}>
