@@ -290,22 +290,6 @@ export function BasicExplorerGame({
             onClick={() => canvasRef.current?.focus()}
             title="Click to focus for WASD controls"
           >
-            <div
-              className="absolute left-3 top-3 rounded-md border border-border bg-background/80 px-2 py-1 text-[10px] text-muted-foreground"
-              style={{ fontFamily: 'var(--font-mono)' }}
-            >
-              {battleActive ? 'BATTLE // ACTIVE' : 'ARENA // VISUAL'}
-            </div>
-            {battleActive && (
-              <button
-                type="button"
-                onClick={onExitBattle}
-                className="absolute right-3 top-3 rounded-md border border-border bg-background/90 px-2 py-1 text-[10px] font-semibold text-foreground hover:bg-muted"
-                style={{ fontFamily: 'var(--font-mono)' }}
-              >
-                Exit Battle
-              </button>
-            )}
             <div className="flex h-full w-full items-center justify-center">
               <div className="aspect-square h-full max-h-full w-full max-w-full">
                 {battleActive ? (
@@ -348,6 +332,25 @@ export function BasicExplorerGame({
                   />
                 )}
               </div>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between gap-2">
+              <div
+                className="rounded-md border border-border bg-background/80 px-2 py-1 text-[10px] text-muted-foreground"
+                style={{ fontFamily: 'var(--font-mono)' }}
+              >
+                {battleActive ? 'BATTLE // ACTIVE' : 'ARENA // VISUAL'}
+              </div>
+              {battleActive && (
+                <button
+                  type="button"
+                  onClick={onExitBattle}
+                  className="rounded-md border border-border bg-background/90 px-2 py-1 text-[10px] font-semibold text-foreground hover:bg-muted"
+                  style={{ fontFamily: 'var(--font-mono)' }}
+                >
+                  Exit Battle
+                </button>
+              )}
             </div>
 
             {!battleActive && promptVisible && (
