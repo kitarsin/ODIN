@@ -4,8 +4,8 @@ const TILE_SIZE = 16;
 const MOVE_DELAY_MS = 120;
 const INTERACT_DELAY_MS = 220;
 
-const GRID_COLS = 28;
-const GRID_ROWS = 16;
+const GRID_COLS = 20;
+const GRID_ROWS = 20;
 const COLORS = {
   background: '#0b0f14',
   floor: '#1c2533',
@@ -31,7 +31,7 @@ export function BasicExplorerGame() {
 
   const width = GRID_COLS * TILE_SIZE;
   const height = GRID_ROWS * TILE_SIZE;
-  const terminalPosition = { x: 20, y: 8 };
+  const terminalPosition = { x: 14, y: 10 };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -231,26 +231,12 @@ export function BasicExplorerGame() {
             )}
           </div>
 
-          <div className="grid grid-cols-[minmax(0,1fr)_110px_140px] gap-3">
-            <div className="flex flex-col gap-3">
-              <div className="rounded-md border-2 border-border bg-card px-3 py-2 text-sm font-semibold text-foreground">
-                Glitched Man
-              </div>
-              <div className="rounded-md border-2 border-border bg-card px-3 py-3 text-xs text-muted-foreground">
-                His color array elements have been declared incorrectly! Decrement his G exposure (2nd index).
-              </div>
+          <div className="grid gap-3">
+            <div className="rounded-md border-2 border-border bg-card px-3 py-2 text-sm font-semibold text-foreground">
+              Glitched Man
             </div>
-
-            <div className="rounded-md border-2 border-border bg-card p-2">
-              <div className="flex h-full w-full items-center justify-center rounded bg-muted/70 text-[10px] text-muted-foreground">
-                Avatar
-              </div>
-            </div>
-
-            <div className="rounded-md border-2 border-border bg-card p-2">
-              <div className="flex h-full w-full items-center justify-center rounded bg-muted/70 text-[10px] text-muted-foreground">
-                Portrait
-              </div>
+            <div className="rounded-md border-2 border-border bg-card px-3 py-3 text-xs text-muted-foreground">
+              His color array elements have been declared incorrectly! Decrement his G exposure (2nd index).
             </div>
           </div>
         </div>

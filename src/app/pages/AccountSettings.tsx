@@ -15,6 +15,8 @@ const AccountSettings: React.FC = () => {
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   const [loading, setLoading] = useState(false);
 
+  const isAvatarUrl = (value: string) => value.startsWith('http') || value.startsWith('data:');
+
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setAvatarFile(e.target.files[0]);
@@ -96,15 +98,21 @@ const AccountSettings: React.FC = () => {
                 Profile Avatar
               </h2>
               <div className="flex flex-col sm:flex-row gap-6 items-start">
-                {avatar && (
-                  <div className="flex-shrink-0">
-                    <img 
-                      src={avatar} 
-                      alt="Avatar Preview" 
-                      className="w-24 h-24 rounded-full object-cover border-2 border-primary" 
-                    />
+                <div className="flex-shrink-0">
+                  <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-primary bg-muted">
+                    {avatar && isAvatarUrl(avatar) ? (
+                      <img
+                        src={avatar}
+                        alt="Avatar Preview"
+                        className="h-full w-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-4xl">
+                        {user?.avatar || '🧑‍🎓'}
+                      </span>
+                    )}
                   </div>
-                )}
+                </div>
                 <div className="flex-1">
                   <label className="block text-muted-foreground mb-2 text-sm">
                     Choose image
