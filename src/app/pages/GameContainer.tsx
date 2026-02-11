@@ -52,6 +52,11 @@ export function GameContainer() {
     setBattleMode(true);
   };
 
+  const handleExitBattle = () => {
+    setBattleMode(false);
+    setTerminalOpen(false);
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground transition-colors">
       <div className="group/nav fixed inset-x-0 top-0 z-40">
@@ -86,6 +91,7 @@ export function GameContainer() {
             <BasicExplorerGame
               battleActive={battleMode}
               onTerminalInteract={handleTerminalInteract}
+              onExitBattle={handleExitBattle}
             />
           </div>
         </div>
