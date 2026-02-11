@@ -39,92 +39,64 @@ export function BasicExplorerGame({
   const [promptVisible, setPromptVisible] = useState(false);
   const [terminalActive, setTerminalActive] = useState(false);
   const [isFocused, setIsFocused] = useState(true);
+  const [hasMoved, setHasMoved] = useState(false);
 
   const width = GRID_COLS * TILE_SIZE;
   const height = GRID_ROWS * TILE_SIZE;
   const terminalPosition = { x: 14, y: 10 };
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const key = event.key.toLowerCase();
+    const normalizeKey = (event: KeyboardEvent) => {
+      const key = event.key?.toLowerCase();
+      if (key === 'w' || key === 'a' || key === 's' || key === 'd' || key === 'e') {
+        return key;
+      }
+      if (key === 'arrowup' || key === 'arrowdown' || key === 'arrowleft' || key === 'arrowright') {
+        return key;
+      }
       const code = event.code?.toLowerCase();
-      const canvas = canvasRef.current;
-      if (!canvas) return;
+      switch (code) {
+        case 'keyw':
+          return 'w';
+        case 'keya':
+          return 'a';
+        case 'keys':
+          return 's';
+        case 'keyd':
+          return 'd';
+        case 'keye':
+          return 'e';
+        case 'arrowup':
+        case 'arrowdown':
+        case 'arrowleft':
+        case 'arrowright':
+          return code;
+        default:
+          return '';
+      }
+    };
 
-      const normalizedKey = (() => {
-        switch (code) {
-          case 'keyw':
-            return 'w';
-          case 'keya':
-            return 'a';
-          case 'keys':
-            return 's';
-          case 'keyd':
-            return 'd';
-          case 'arrowup':
-          case 'arrowdown':
-          case 'arrowleft':
-          case 'arrowright':
-            return code;
-          case 'keye':
-            return 'e';
-          default:
-            return key;
-        }
-      })();
-      
+    const handleKeyDown = (event: KeyboardEvent) => {
       const activeElement = document.activeElement;
-      const isCanvasFocused = activeElement === canvas || activeElement === canvas.parentElement;
-      
       const isTyping =
         activeElement instanceof HTMLInputElement ||
         activeElement instanceof HTMLTextAreaElement ||
         (activeElement instanceof HTMLElement && activeElement.isContentEditable);
-      
-      if (isTyping && !isCanvasFocused) return;
-      if (
-        normalizedKey === 'w' ||
-        normalizedKey === 'a' ||
-        normalizedKey === 's' ||
-        normalizedKey === 'd' ||
-        normalizedKey === 'e' ||
-        normalizedKey === 'arrowup' ||
-        normalizedKey === 'arrowdown' ||
-        normalizedKey === 'arrowleft' ||
-        normalizedKey === 'arrowright'
-      ) {
-        keysRef.current[normalizedKey] = true;
-        if (normalizedKey === 'e') {
-          interactRequestedRef.current = true;
-        }
-        event.preventDefault();
+      if (isTyping) return;
+
+      const normalizedKey = normalizeKey(event);
+      if (!normalizedKey) return;
+
+      keysRef.current[normalizedKey] = true;
+      if (normalizedKey === 'e') {
+        interactRequestedRef.current = true;
       }
+      event.preventDefault();
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      const key = event.key.toLowerCase();
-      const code = event.code?.toLowerCase();
-      const normalizedKey = (() => {
-        switch (code) {
-          case 'keyw':
-            return 'w';
-          case 'keya':
-            return 'a';
-          case 'keys':
-            return 's';
-          case 'keyd':
-            return 'd';
-          case 'arrowup':
-          case 'arrowdown':
-          case 'arrowleft':
-          case 'arrowright':
-            return code;
-          case 'keye':
-            return 'e';
-          default:
-            return key;
-        }
-      })();
+      const normalizedKey = normalizeKey(event);
+      if (!normalizedKey) return;
 
       if (keysRef.current[normalizedKey]) {
         keysRef.current[normalizedKey] = false;
@@ -132,9 +104,15 @@ export function BasicExplorerGame({
       }
     };
 
+    const handleWindowBlur = () => {
+      keysRef.current = {};
+      interactRequestedRef.current = false;
+    };
+
     const canvas = canvasRef.current;
     window.addEventListener('keydown', handleKeyDown, { passive: false });
     window.addEventListener('keyup', handleKeyUp, { passive: false });
+    window.addEventListener('blur', handleWindowBlur);
 
     const handleFocus = () => setIsFocused(true);
     const handleBlur = () => setIsFocused(false);
@@ -148,6 +126,7 @@ export function BasicExplorerGame({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('blur', handleWindowBlur);
       if (canvas) {
         canvas.removeEventListener('focus', handleFocus);
         canvas.removeEventListener('blur', handleBlur);
@@ -230,6 +209,9 @@ export function BasicExplorerGame({
           const nextY = playerRef.current.y + dy;
           if (canMoveTo(nextX, nextY)) {
             playerRef.current = { x: nextX, y: nextY };
+            if (!hasMoved) {
+              setHasMoved(true);
+            }
           }
           lastMoveRef.current = timestamp;
         }
@@ -349,6 +331,17 @@ export function BasicExplorerGame({
                 style={{ fontFamily: 'var(--font-mono)' }}
               >
                 Press E to interact
+              </div>
+            )}
+
+            {!battleActive && !isFocused && !hasMoved && (
+              <div
+                className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/20 backdrop-blur-[1px]"
+                style={{ fontFamily: 'var(--font-mono)' }}
+              >
+                <div className="rounded-full border border-border bg-background/90 px-4 py-2 text-[10px] text-muted-foreground">
+                  Click to focus for WASD controls
+                </div>
               </div>
             )}
 
