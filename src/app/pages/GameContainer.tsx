@@ -56,11 +56,7 @@ export function GameContainer() {
       <Navigation />
 
       {/* Game Header */}
-      <div
-        className={`mx-auto grid h-[calc(100vh-140px)] max-w-7xl grid-cols-1 gap-6 px-6 py-6 transition-[grid-template-columns] duration-500 ease-in-out lg:grid-cols-[minmax(0,1fr)_0px] ${
-          terminalOpen ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]' : ''
-        }`}
-      >
+      <div className="mx-auto flex h-[calc(100vh-140px)] max-w-7xl flex-col gap-6 px-6 py-6 lg:flex-row">
         <div className="flex h-full items-start justify-center">
           <div className="aspect-square w-full max-w-[720px]">
             <BasicExplorerGame
@@ -70,8 +66,10 @@ export function GameContainer() {
           </div>
         </div>
         <div
-          className={`min-w-0 transition-all duration-500 ease-in-out ${
-            terminalOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+          className={`min-w-0 overflow-hidden transition-[flex-basis,opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] lg:flex lg:items-stretch ${
+            terminalOpen
+              ? 'opacity-100 lg:basis-[420px] lg:translate-x-0'
+              : 'pointer-events-none opacity-0 lg:basis-0 lg:translate-x-6'
           }`}
           aria-hidden={!terminalOpen}
         >
