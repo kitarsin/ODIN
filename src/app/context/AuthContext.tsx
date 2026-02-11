@@ -117,9 +117,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const register = async (email: string, password: string, name: string, studentId: string, section: string) => {
+    setLoading(true);
     // 1. Create Auth User
     const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) throw error;
+    if (error) {
+      setLoading(false);
+      throw error;
+    }
 
     if (data.user) {
       // 2. Create Profile Entry using correct DB column names
@@ -134,7 +138,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             sync_rate: 100
           }
         ]);
-      if (profileError) throw profileError;
+      if (profileError) {
+        setLoading(false);
+        throw profileError;
+      }
+    }
+
+    if (!data.session) {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        setLoading(false);
+        throw signInError;
+      }
     }
   };
 

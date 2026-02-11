@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Shield, Terminal } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -15,7 +15,7 @@ export function Register() {
   const [section, setSection] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const navigate = useNavigate();
   const { isGameMode } = useTheme();
@@ -34,13 +34,25 @@ export function Register() {
 
     try {
       await register(email, password, name, studentId, section);
-      navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Registration failed.');
+      const message = (err?.message || '').toLowerCase();
+      if (message.includes('email not confirmed')) {
+        setError('Please confirm your email, then sign in.');
+      } else {
+        setError(err.message || 'Registration failed.');
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user && !authLoading) {
+      navigate('/dashboard');
+    }
+  }, [user, authLoading, navigate]);
+
+  const isSubmitting = loading || authLoading;
 
   const bgClass = isGameMode ? 'bg-[#1a1a2e]' : 'bg-background';
 
@@ -79,7 +91,10 @@ export function Register() {
                 id="name"
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (error) setError('');
+                }}
                 placeholder={isGameMode ? 'ENTER_NAME' : 'Enter your full name'}
                 className={getInputClass()}
                 required
@@ -94,7 +109,10 @@ export function Register() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (error) setError('');
+                }}
                 placeholder={isGameMode ? 'ENTER_EMAIL' : 'Enter your email'}
                 className={getInputClass()}
                 required
@@ -109,7 +127,10 @@ export function Register() {
                 id="studentId"
                 type="text"
                 value={studentId}
-                onChange={(e) => setStudentId(e.target.value)}
+                onChange={(e) => {
+                  setStudentId(e.target.value);
+                  if (error) setError('');
+                }}
                 placeholder={isGameMode ? 'ENTER_ID' : 'Enter your student ID'}
                 className={getInputClass()}
                 style={{ fontFamily: 'var(--font-mono)' }}
@@ -125,7 +146,10 @@ export function Register() {
                 id="section"
                 type="text"
                 value={section}
-                onChange={(e) => setSection(e.target.value)}
+                onChange={(e) => {
+                  setSection(e.target.value);
+                  if (error) setError('');
+                }}
                 placeholder={isGameMode ? 'E_G_CS_301A' : 'e.g., CS-301A'}
                 className={getInputClass()}
                 style={{ fontFamily: 'var(--font-mono)' }}
@@ -141,7 +165,10 @@ export function Register() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error) setError('');
+                }}
                 placeholder={isGameMode ? '········' : 'Choose a strong password'}
                 className={getInputClass()}
                 required
@@ -156,11 +183,11 @@ export function Register() {
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={isSubmitting}
               className={`w-full font-semibold transition-all ${isGameMode ? 'bg-[#00ff41] hover:bg-[#00cc33] text-[#1a1a2e] border-2 border-[#00ff41] shadow-[0_0_15px_rgba(0,255,65,0.5)]' : 'bg-primary hover:bg-primary/90 text-primary-foreground'}`}
               style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '12px' } : {}}
             >
-              {loading ? (isGameMode ? 'CREATING...' : 'Creating Account...') : (isGameMode ? '> REGISTER_' : 'Create Account')}
+              {isSubmitting ? (isGameMode ? 'CREATING...' : 'Creating Account...') : (isGameMode ? '> REGISTER_' : 'Create Account')}
             </Button>
           </form>
 
