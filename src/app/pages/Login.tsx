@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Shield, Terminal } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -13,7 +13,7 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user, loading: authLoading } = useAuth();
   const { isGameMode } = useTheme();
   const navigate = useNavigate();
 
@@ -24,14 +24,25 @@ export function Login() {
 
     try {
       await login(email, password);
-      // Navigate on success
-      navigate('/dashboard');
     } catch (err: any) {
-      setError('Invalid credentials.');
+      const message = (err?.message || '').toLowerCase();
+      if (message.includes('invalid login credentials')) {
+        setError('Email or password is incorrect.');
+      } else {
+        setError(err?.message || 'Unable to sign in. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user && !authLoading) {
+      navigate('/dashboard');
+    }
+  }, [user, authLoading, navigate]);
+
+  const isSubmitting = loading || authLoading;
 
   const getBgClass = () => {
     if (isGameMode) {
@@ -120,7 +131,10 @@ export function Login() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (error) setError('');
+                }}
                 placeholder={isGameMode ? 'ENTER_EMAIL' : 'Enter your email'}
                 className={`transition-all ${
                   isGameMode
@@ -141,7 +155,10 @@ export function Login() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error) setError('');
+                }}
                 placeholder={isGameMode ? '********' : 'Enter your password'}
                 className={`transition-all ${
                   isGameMode
@@ -165,7 +182,7 @@ export function Login() {
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={isSubmitting}
               className={`w-full font-semibold transition-all ${
                 isGameMode
                   ? 'bg-[#00ff41] hover:bg-[#00cc33] text-[#1a1a2e] border-2 border-[#00ff41] shadow-[0_0_15px_rgba(0,255,65,0.5)]'
@@ -173,7 +190,7 @@ export function Login() {
               }`}
               style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '12px' } : {}}
             >
-              {loading ? (isGameMode ? 'LOADING...' : 'Initializing...') : (isGameMode ? '> START_' : 'Initialize Session')}
+              {isSubmitting ? (isGameMode ? 'LOADING...' : 'Initializing...') : (isGameMode ? '> START_' : 'Initialize Session')}
             </Button>
           </form>
 

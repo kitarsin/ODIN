@@ -42,8 +42,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Listen for changes (login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
-      if (session) fetchProfile(session.user);
-      else {
+      if (session) {
+        setLoading(true);
+        fetchProfile(session.user);
+      } else {
         setUser(null);
         setLoading(false);
       }
@@ -105,8 +107,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const login = async (email: string, password: string) => {
+    setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    if (error) {
+      setLoading(false);
+      throw error;
+    }
     // navigation should be handled by the caller (page) to avoid router/provider ordering issues
   };
 
