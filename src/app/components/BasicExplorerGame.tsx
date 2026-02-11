@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { supabase } from '../../lib/supabaseClient';
-import { useAuth } from '../context/AuthContext';
 
 const TILE_SIZE = 16;
 const MOVE_DELAY_MS = 120;
@@ -8,8 +6,6 @@ const INTERACT_DELAY_MS = 220;
 
 const GRID_COLS = 28;
 const GRID_ROWS = 16;
-const QUESTION_ID = 'array-level-1';
-
 const COLORS = {
   background: '#0b0f14',
   floor: '#1c2533',
@@ -20,36 +16,22 @@ const COLORS = {
   terminalGlow: '#88fff4',
 };
 
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
-
 export function BasicExplorerGame() {
-  const { user } = useAuth();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const keysRef = useRef<Record<string, boolean>>({});
   const playerRef = useRef({ x: 3, y: 3 });
   const lastMoveRef = useRef(0);
   const lastInteractRef = useRef(0);
   const promptVisibleRef = useRef(false);
-  const levelRef = useRef<1 | 2>(1);
   const interactRequestedRef = useRef(false);
+  const terminalTimeoutRef = useRef<number | null>(null);
 
-  const [level, setLevel] = useState<1 | 2>(1);
   const [promptVisible, setPromptVisible] = useState(false);
-  const [code, setCode] = useState('');
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [terminalActive, setTerminalActive] = useState(false);
 
   const width = GRID_COLS * TILE_SIZE;
   const height = GRID_ROWS * TILE_SIZE;
   const terminalPosition = { x: 20, y: 8 };
-
-  useEffect(() => {
-    levelRef.current = level;
-    if (level === 2) {
-      keysRef.current = {};
-      interactRequestedRef.current = false;
-    }
-  }, [level]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -59,7 +41,7 @@ export function BasicExplorerGame() {
         activeElement instanceof HTMLInputElement ||
         activeElement instanceof HTMLTextAreaElement ||
         (activeElement instanceof HTMLElement && activeElement.isContentEditable);
-      if (levelRef.current === 2 || isTyping) return;
+      if (isTyping) return;
       if (
         key === 'w' ||
         key === 'a' ||
@@ -95,32 +77,6 @@ export function BasicExplorerGame() {
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
-
-  useEffect(() => {
-    if (!user || level !== 2) return;
-
-    const loadLatestSubmission = async () => {
-      setLoadError(null);
-      const { data, error } = await supabase
-        .from('submissions')
-        .select('code_snippet')
-        .eq('user_id', user.id)
-        .eq('question_id', QUESTION_ID)
-        .order('created_at', { ascending: false })
-        .limit(1);
-
-      if (error) {
-        setLoadError('Unable to load your last submission.');
-        return;
-      }
-
-      if (data && data.length > 0) {
-        setCode(data[0].code_snippet || '');
-      }
-    };
-
-    loadLatestSubmission();
-  }, [level, user]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -175,47 +131,51 @@ export function BasicExplorerGame() {
     };
 
     const step = (timestamp: number) => {
-      if (level === 1) {
-        const lastMove = lastMoveRef.current;
-        if (timestamp - lastMove >= MOVE_DELAY_MS) {
-          let dx = 0;
-          let dy = 0;
-          const keys = keysRef.current;
+      const lastMove = lastMoveRef.current;
+      if (timestamp - lastMove >= MOVE_DELAY_MS) {
+        let dx = 0;
+        let dy = 0;
+        const keys = keysRef.current;
 
-          if (keys.w || keys.arrowup) dy = -1;
-          else if (keys.s || keys.arrowdown) dy = 1;
-          else if (keys.a || keys.arrowleft) dx = -1;
-          else if (keys.d || keys.arrowright) dx = 1;
+        if (keys.w || keys.arrowup) dy = -1;
+        else if (keys.s || keys.arrowdown) dy = 1;
+        else if (keys.a || keys.arrowleft) dx = -1;
+        else if (keys.d || keys.arrowright) dx = 1;
 
-          if (dx !== 0 || dy !== 0) {
-            const nextX = playerRef.current.x + dx;
-            const nextY = playerRef.current.y + dy;
-            if (canMoveTo(nextX, nextY)) {
-              playerRef.current = { x: nextX, y: nextY };
-            }
-            lastMoveRef.current = timestamp;
+        if (dx !== 0 || dy !== 0) {
+          const nextX = playerRef.current.x + dx;
+          const nextY = playerRef.current.y + dy;
+          if (canMoveTo(nextX, nextY)) {
+            playerRef.current = { x: nextX, y: nextY };
           }
+          lastMoveRef.current = timestamp;
         }
+      }
 
-        const inRange =
-          Math.abs(playerRef.current.x - terminalPosition.x) +
-            Math.abs(playerRef.current.y - terminalPosition.y) <=
-          1;
+      const inRange =
+        Math.abs(playerRef.current.x - terminalPosition.x) +
+          Math.abs(playerRef.current.y - terminalPosition.y) <=
+        1;
 
-        if (inRange !== promptVisibleRef.current) {
-          promptVisibleRef.current = inRange;
-          setPromptVisible(inRange);
+      if (inRange !== promptVisibleRef.current) {
+        promptVisibleRef.current = inRange;
+        setPromptVisible(inRange);
+      }
+
+      if (
+        inRange &&
+        interactRequestedRef.current &&
+        timestamp - lastInteractRef.current >= INTERACT_DELAY_MS
+      ) {
+        interactRequestedRef.current = false;
+        lastInteractRef.current = timestamp;
+        setTerminalActive(true);
+        if (terminalTimeoutRef.current) {
+          window.clearTimeout(terminalTimeoutRef.current);
         }
-
-        if (
-          inRange &&
-          interactRequestedRef.current &&
-          timestamp - lastInteractRef.current >= INTERACT_DELAY_MS
-        ) {
-          interactRequestedRef.current = false;
-          lastInteractRef.current = timestamp;
-          setLevel(2);
-        }
+        terminalTimeoutRef.current = window.setTimeout(() => {
+          setTerminalActive(false);
+        }, 1500);
       }
 
       render();
@@ -225,110 +185,75 @@ export function BasicExplorerGame() {
     render();
     const animationId = requestAnimationFrame(step);
 
-    return () => cancelAnimationFrame(animationId);
-  }, [height, level, width]);
-
-  const handleSave = async () => {
-    if (!user) {
-      setSaveStatus('error');
-      return;
-    }
-
-    setSaveStatus('saving');
-    const { error } = await supabase.from('submissions').insert({
-      user_id: user.id,
-      question_id: QUESTION_ID,
-      code_snippet: code,
-      is_correct: false,
-    });
-
-    if (error) {
-      setSaveStatus('error');
-      return;
-    }
-
-    setSaveStatus('saved');
-    setTimeout(() => setSaveStatus('idle'), 1600);
-  };
-
-  const handleExitTerminal = () => {
-    keysRef.current = {};
-    interactRequestedRef.current = false;
-    lastInteractRef.current = performance.now();
-    setLevel(1);
-  };
+    return () => {
+      cancelAnimationFrame(animationId);
+      if (terminalTimeoutRef.current) {
+        window.clearTimeout(terminalTimeoutRef.current);
+      }
+    };
+  }, [height, width]);
 
   return (
-    <div className="h-full w-full">
-      <div className="relative h-full w-full rounded-lg border-4 border-primary bg-card/60 p-3">
-        <canvas
-          ref={canvasRef}
-          width={width}
-          height={height}
-          className="h-full w-full"
-          style={{ imageRendering: 'pixelated' }}
-        />
+    <div className="flex h-full w-full flex-col">
+      <div className="flex-1 rounded-2xl border-4 border-border bg-muted/60 p-4 shadow-inner">
+        <div className="grid h-full grid-rows-[minmax(0,1fr)_auto] gap-4">
+          <div className="relative rounded-xl border-4 border-border bg-card p-3">
+            <div
+              className="absolute left-3 top-3 rounded-md border border-border bg-background/80 px-2 py-1 text-[10px] text-muted-foreground"
+              style={{ fontFamily: 'var(--font-mono)' }}
+            >
+              ARENA // VISUAL
+            </div>
+            <canvas
+              ref={canvasRef}
+              width={width}
+              height={height}
+              className="h-full w-full rounded-lg"
+              style={{ imageRendering: 'pixelated' }}
+            />
 
-        {promptVisible && level === 1 && (
-          <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-full border border-primary/40 bg-background/90 px-4 py-1 text-xs text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
-            Press E to interact with the terminal
-          </div>
-        )}
-
-
-        {level === 2 && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 p-4">
-            <div className="w-full max-w-3xl rounded-xl border border-border bg-card p-6 shadow-xl">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
-                    Level 2: Arrays
-                  </p>
-                  <h3 className="text-lg font-semibold">C# Array Practice</h3>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleExitTerminal}
-                    className="rounded-md border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted"
-                  >
-                    Exit Terminal
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    className="rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
-                  >
-                    {saveStatus === 'saving' ? 'Submitting...' : 'Submit Code'}
-                  </button>
-                </div>
-              </div>
-
-              <textarea
-                value={code}
-                onChange={(event) => setCode(event.target.value)}
-                placeholder="// Write a C# array example here"
-                className="h-56 w-full resize-none rounded-md border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none"
+            {promptVisible && (
+              <div
+                className="absolute right-3 top-3 rounded-full border border-primary/40 bg-background/90 px-3 py-1 text-[10px] text-primary"
                 style={{ fontFamily: 'var(--font-mono)' }}
-              />
-
-              <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
-                <span>Focus: array declarations and 2D arrays.</span>
-                <span>
-                  {saveStatus === 'saved' && 'Saved.'}
-                  {saveStatus === 'error' && 'Save failed.'}
-                  {saveStatus === 'idle' && 'Unsaved.'}
-                </span>
+              >
+                Press E to interact
               </div>
+            )}
 
-              {loadError && (
-                <div className="mt-2 rounded border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-                  {loadError}
-                </div>
-              )}
+            {terminalActive && (
+              <div
+                className="absolute left-1/2 bottom-3 -translate-x-1/2 rounded-full border border-border bg-background/90 px-3 py-1 text-[10px] text-muted-foreground"
+                style={{ fontFamily: 'var(--font-mono)' }}
+              >
+                Terminal linked
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-[minmax(0,1fr)_110px_140px] gap-3">
+            <div className="flex flex-col gap-3">
+              <div className="rounded-md border-2 border-border bg-card px-3 py-2 text-sm font-semibold text-foreground">
+                Glitched Man
+              </div>
+              <div className="rounded-md border-2 border-border bg-card px-3 py-3 text-xs text-muted-foreground">
+                His color array elements have been declared incorrectly! Decrement his G exposure (2nd index).
+              </div>
+            </div>
+
+            <div className="rounded-md border-2 border-border bg-card p-2">
+              <div className="flex h-full w-full items-center justify-center rounded bg-muted/70 text-[10px] text-muted-foreground">
+                Avatar
+              </div>
+            </div>
+
+            <div className="rounded-md border-2 border-border bg-card p-2">
+              <div className="flex h-full w-full items-center justify-center rounded bg-muted/70 text-[10px] text-muted-foreground">
+                Portrait
+              </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
       <div className="mt-3 text-center text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
