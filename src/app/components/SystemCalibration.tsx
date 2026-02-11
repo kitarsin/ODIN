@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Activity, Zap, Brain, Code, Target, Shield } from 'lucide-react';
+import { getRankInfo } from '../utils/rank';
 
 // Types
 type CalibrationPhase = 'intro' | 'assessment' | 'calculating' | 'results';
@@ -279,26 +280,11 @@ export function SystemCalibration({ onComplete }: SystemCalibrationProps) {
 
     // Determine rank based on overall performance
     const percentage = (totalCorrect / CALIBRATION_QUESTIONS.length) * 100;
-    let rank = 'RECRUIT';
-    let level = 'Novice';
-
-    if (percentage >= 90) {
-      rank = 'ARCHITECT';
-      level = 'Elite';
-    } else if (percentage >= 75) {
-      rank = 'ENGINEER';
-      level = 'Advanced';
-    } else if (percentage >= 60) {
-      rank = 'SCRIPTER';
-      level = 'Intermediate';
-    } else if (percentage >= 40) {
-      rank = 'CODER';
-      level = 'Basic';
-    }
+    const rankInfo = getRankInfo(percentage);
 
     const result: AssessmentResult = {
-      rank,
-      level,
+      rank: rankInfo.rank,
+      level: rankInfo.level,
       scores: normalizedScores,
       totalCorrect,
       totalQuestions: CALIBRATION_QUESTIONS.length

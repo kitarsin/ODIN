@@ -2,9 +2,12 @@ import { Navigation } from '../components/Navigation';
 import { useAuth } from '../context/AuthContext';
 import { User, Mail, Calendar, Award } from 'lucide-react';
 import { Progress } from '../components/ui/progress';
+import { getRankInfo } from '../utils/rank';
 
 export function Profile() {
   const { user } = useAuth();
+
+  const rankInfo = getRankInfo(user?.syncRate ?? 0);
 
   const isAvatarUrl = (value: string) => value.startsWith('http') || value.startsWith('data:');
 
@@ -40,10 +43,10 @@ export function Profile() {
               </div>
               <div className="flex-1">
                 <h2 className="text-2xl font-semibold mb-1">
-                    {user.full_name}
+                    {user.name}
                 </h2>
                 <p className="text-lg mb-4 text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>
-                  {user.student_id}
+                  {user.studentId}
                 </p>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -183,7 +186,7 @@ export function Profile() {
               
               <div className="border rounded-lg p-4 text-center bg-muted/40 border-border transition-colors">
                 <p className="text-2xl font-semibold text-pink-500" style={{ fontFamily: 'var(--font-mono)' }}>
-                  #{user.id}
+                  {rankInfo.rank}
                 </p>
                 <p className="text-xs mt-1 text-muted-foreground">Rank</p>
               </div>

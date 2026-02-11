@@ -25,12 +25,12 @@ const mockLevels: Level[] = [
   { id: 6, title: '2D Arrays', description: 'Multi-dimensional array operations', isUnlocked: false, isCompleted: false, xpReward: 350 },
 ];
 
-const mockLeaderboard: LeaderboardEntry[] = [
-  { rank: 1, name: 'Alex_Chen', xp: 2450, level: 12 },
-  { rank: 2, name: 'Sarah_K', xp: 2180, level: 11 },
-  { rank: 3, name: 'DevMaster99', xp: 1920, level: 10 },
-  { rank: 4, name: 'You', xp: 1650, level: 8 },
-  { rank: 5, name: 'CodeNinja', xp: 1430, level: 8 },
+const mockLeaderboard: Omit<LeaderboardEntry, 'rank'>[] = [
+  { name: 'Alex_Chen', xp: 2450, level: 12 },
+  { name: 'Sarah_K', xp: 2180, level: 11 },
+  { name: 'DevMaster99', xp: 1920, level: 10 },
+  { name: 'You', xp: 1650, level: 8 },
+  { name: 'CodeNinja', xp: 1430, level: 8 },
 ];
 
 interface DashboardProps {
@@ -42,6 +42,9 @@ export function Dashboard({ onSelectLevel }: DashboardProps) {
   const userLevel = 8;
   const streakDays = 7;
   const badges = 12;
+  const leaderboard = [...mockLeaderboard]
+    .sort((a, b) => b.xp - a.xp)
+    .map((entry, index) => ({ ...entry, rank: index + 1 }));
 
   return (
     <div className="w-full h-full bg-background text-foreground flex flex-col overflow-hidden">
@@ -171,9 +174,9 @@ export function Dashboard({ onSelectLevel }: DashboardProps) {
             </div>
 
             <div className="space-y-3">
-              {mockLeaderboard.map((entry) => (
+              {leaderboard.map((entry) => (
                 <div
-                  key={entry.rank}
+                  key={entry.name}
                   className={`
                     p-4 rounded-lg backdrop-blur-sm transition-all
                     ${entry.name === 'You' 

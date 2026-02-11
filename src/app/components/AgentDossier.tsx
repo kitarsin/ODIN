@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Upload, Trophy, Zap, Flame, Lock, Bell, AlertTriangle, Trash2 } from 'lucide-react';
+import { getRankInfo, getScoreFromXP } from '../utils/rank';
 
 export function AgentDossier() {
   const [showDangerZone, setShowDangerZone] = useState(false);
@@ -21,6 +22,7 @@ export function AgentDossier() {
   };
 
   const progressPercentage = (userStats.currentXP / userStats.nextLevelXP) * 100;
+  const rankInfo = getRankInfo(getScoreFromXP(userStats.currentXP));
 
   return (
     <div className="h-full bg-background text-foreground overflow-auto p-4 lg:p-8">
@@ -143,7 +145,7 @@ export function AgentDossier() {
                     <Zap className="w-5 h-5 text-[#00E676]" />
                     <span className="text-xs text-muted-foreground code-font">RANK</span>
                   </div>
-                  <p className="text-2xl font-bold text-[#00E676]">#4</p>
+                  <p className="text-2xl font-bold text-[#00E676]">{rankInfo.rank}</p>
                 </div>
 
                 <div className="p-4 rounded-lg bg-[#FF5252]/10 border border-[#FF5252]/30">
