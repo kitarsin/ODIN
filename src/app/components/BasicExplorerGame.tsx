@@ -38,6 +38,7 @@ export function BasicExplorerGame({
 
   const [promptVisible, setPromptVisible] = useState(false);
   const [terminalActive, setTerminalActive] = useState(false);
+  const [isFocused, setIsFocused] = useState(true);
 
   const width = GRID_COLS * TILE_SIZE;
   const height = GRID_ROWS * TILE_SIZE;
@@ -46,12 +47,18 @@ export function BasicExplorerGame({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
       const activeElement = document.activeElement;
+      const isCanvasFocused = activeElement === canvas || activeElement === canvas.parentElement;
+      
       const isTyping =
         activeElement instanceof HTMLInputElement ||
         activeElement instanceof HTMLTextAreaElement ||
         (activeElement instanceof HTMLElement && activeElement.isContentEditable);
-      if (isTyping) return;
+      
+      if (isTyping && !isCanvasFocused) return;
       if (
         key === 'w' ||
         key === 'a' ||
@@ -79,12 +86,26 @@ export function BasicExplorerGame({
       }
     };
 
+    const canvas = canvasRef.current;
     window.addEventListener('keydown', handleKeyDown, { passive: false });
     window.addEventListener('keyup', handleKeyUp, { passive: false });
+
+    const handleFocus = () => setIsFocused(true);
+    const handleBlur = () => setIsFocused(false);
+    
+    if (canvas) {
+      canvas.addEventListener('focus', handleFocus);
+      canvas.addEventListener('blur', handleBlur);
+      canvas.tabIndex = 0;
+    }
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      if (canvas) {
+        canvas.removeEventListener('focus', handleFocus);
+        canvas.removeEventListener('blur', handleBlur);
+      }
     };
   }, []);
 
@@ -216,7 +237,13 @@ export function BasicExplorerGame({
     <div className="grid h-full min-h-0 w-full grid-rows-[minmax(0,1fr)_auto] gap-2">
       <div className="min-h-0 rounded-2xl border-4 border-border bg-muted/60 p-3 shadow-inner">
         <div className="grid h-full grid-rows-[minmax(0,1fr)_auto] gap-3">
-          <div className="relative rounded-xl border-4 border-border bg-card p-3">
+          <div 
+            className={`relative rounded-xl border-4 border-border bg-card p-3 transition-all cursor-pointer ${
+              isFocused ? 'ring-2 ring-primary/50' : 'hover:ring-2 hover:ring-primary/30'
+            }`}
+            onClick={() => canvasRef.current?.focus()}
+            title="Click to focus for WASD controls"
+          >
             <div
               className="absolute left-3 top-3 rounded-md border border-border bg-background/80 px-2 py-1 text-[10px] text-muted-foreground"
               style={{ fontFamily: 'var(--font-mono)' }}

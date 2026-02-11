@@ -63,24 +63,16 @@ export function GameContainer() {
       {/* Game Header */}
       <div className="flex flex-1 items-center justify-center px-6 py-6">
         <div className="flex h-full max-h-[85vh] items-center justify-center gap-6">
-          <div className="flex h-full items-center justify-center">
-            <div className="aspect-square h-full max-h-full w-auto">
-              <BasicExplorerGame
-                battleActive={battleMode}
-                onTerminalInteract={handleTerminalInteract}
-                onExitBattle={handleExitBattle}
-              />
-            </div>
+          <div className="aspect-square h-full max-h-full w-auto">
+            <BasicExplorerGame
+              battleActive={battleMode}
+              onTerminalInteract={handleTerminalInteract}
+              onExitBattle={handleExitBattle}
+            />
           </div>
-          <div
-            className={`flex h-full w-[580px] flex-shrink-0 transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-              terminalOpen
-                ? 'opacity-100 translate-x-0'
-                : 'pointer-events-none opacity-0 translate-x-6 absolute'
-            }`}
-            aria-hidden={!terminalOpen}
-          >
-            <CodeEditorPanel
+          {terminalOpen && (
+            <div className="flex h-full w-[580px] flex-shrink-0 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]">
+              <CodeEditorPanel
               code={code}
               onCodeChange={setCode}
               onRun={handleRun}
@@ -88,7 +80,8 @@ export function GameContainer() {
               saveStatus={saveStatus}
               terminalOutput={terminalOutput}
             />
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
