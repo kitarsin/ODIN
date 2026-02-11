@@ -71,7 +71,7 @@ export function GameContainer() {
             />
           </div>
           {terminalOpen && (
-            <div className="flex h-full w-[580px] flex-shrink-0 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]">
+            <div className="flex h-full w-[292px] flex-shrink-0 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]">
               <CodeEditorPanel
               code={code}
               onCodeChange={setCode}
