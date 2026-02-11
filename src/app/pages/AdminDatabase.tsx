@@ -30,6 +30,8 @@ export function AdminDatabase() {
 
   const sections = ['all', ...Array.from(new Set(users.map(u => u.section)))];
 
+  const isAvatarUrl = (value: string) => value.startsWith('http') || value.startsWith('data:');
+
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          user.studentId.toLowerCase().includes(searchQuery.toLowerCase());
@@ -244,8 +246,16 @@ export function AdminDatabase() {
                       />
                     </td>
                     <td className="px-4 py-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl bg-muted">
-                        {user.avatar}
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl bg-muted overflow-hidden">
+                        {isAvatarUrl(user.avatar) ? (
+                          <img
+                            src={user.avatar}
+                            alt={`${user.name} avatar`}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span>{user.avatar}</span>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm">{user.name}</td>

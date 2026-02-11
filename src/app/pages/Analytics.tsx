@@ -1,9 +1,71 @@
+import { useEffect, useState } from 'react';
 import { Navigation } from '../components/Navigation';
 import { AlertTriangle, Activity, TrendingDown } from 'lucide-react';
+import { supabase } from '../../lib/supabaseClient';
+
+type Student = {
+  id: string;
+  name: string;
+  studentId: string;
+  section: string;
+  avatar: string;
+  syncRate: number;
+  progress: {
+    arrays: number;
+    loops: number;
+    grids: number;
+  };
+};
 
 export function Analytics() {
-  // TODO: Fetch students from Supabase
-  const students: any[] = [];
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const isAvatarUrl = (value: string) => value.startsWith('http') || value.startsWith('data:');
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        setLoadError(null);
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, student_id, section, avatar_url, sync_rate')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const formattedStudents = (data || []).map((student: any) => {
+          const rawSyncRate = Number(student.sync_rate);
+          const syncRate = Number.isFinite(rawSyncRate) ? rawSyncRate : 0;
+
+          return {
+            id: student.id,
+            name: student.full_name,
+            studentId: student.student_id,
+            section: student.section,
+            avatar: student.avatar_url || '🧑‍🎓',
+            syncRate,
+            progress: {
+              arrays: 0,
+              loops: 0,
+              grids: 0
+            }
+          };
+        });
+
+        setStudents(formattedStudents);
+      } catch (error) {
+        console.error('Error fetching students:', error);
+        setLoadError('Unable to load student analytics.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, []);
   
   // Calculate at-risk students (sync rate < 60)
   const atRiskStudents = students.filter(s => s.syncRate < 60);
@@ -12,7 +74,9 @@ export function Analytics() {
   const sections = Array.from(new Set(students.map(s => s.section)));
   const heatmapData = sections.map(section => {
     const sectionStudents = students.filter(s => s.section === section);
-    const avgMastery = sectionStudents.reduce((sum, s) => sum + s.syncRate, 0) / sectionStudents.length;
+    const avgMastery = sectionStudents.length > 0
+      ? sectionStudents.reduce((sum, s) => sum + s.syncRate, 0) / sectionStudents.length
+      : 0;
     return { section, avgMastery, count: sectionStudents.length };
   });
 
@@ -61,15 +125,35 @@ export function Analytics() {
             </h2>
 
             <div className="space-y-3">
-              {atRiskStudents.map(student => (
+              {loading && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>Loading students...</p>
+                </div>
+              )}
+
+              {!loading && loadError && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>{loadError}</p>
+                </div>
+              )}
+
+              {!loading && !loadError && atRiskStudents.map(student => (
                 <div
                   key={student.id}
                   className="border rounded-lg p-4 bg-muted/40 border-border hover:border-destructive/50 transition-colors"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl bg-muted">
-                        {student.avatar}
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl bg-muted overflow-hidden">
+                        {isAvatarUrl(student.avatar) ? (
+                          <img
+                            src={student.avatar}
+                            alt={`${student.name} avatar`}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span>{student.avatar}</span>
+                        )}
                       </div>
                       <div>
                         <p className="text-sm font-medium">{student.name}</p>
@@ -95,7 +179,7 @@ export function Analytics() {
                 </div>
               ))}
 
-              {atRiskStudents.length === 0 && (
+              {!loading && !loadError && atRiskStudents.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
                   <p>No at-risk students detected</p>
                 </div>
@@ -109,7 +193,7 @@ export function Analytics() {
             <p className="text-sm mb-6 text-muted-foreground">Average mastery distribution by section</p>
 
             <div className="space-y-4">
-              {heatmapData.map(section => (
+              {!loading && !loadError && heatmapData.map(section => (
                 <div key={section.section}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
@@ -143,6 +227,12 @@ export function Analytics() {
                   </div>
                 </div>
               ))}
+
+              {!loading && !loadError && heatmapData.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No section data available</p>
+                </div>
+              )}
             </div>
 
             {/* Legend */}

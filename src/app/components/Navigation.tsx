@@ -45,6 +45,38 @@ export function Navigation() {
             {user?.role === 'admin' ? (
               <>
                 <Link
+                  to="/profile"
+                  className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${
+                    isActive('/profile')
+                      ? isGameMode 
+                        ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
+                        : 'text-primary bg-primary/10'
+                      : isGameMode
+                      ? 'text-[#4ecdc4] hover:text-[#00ff41]'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
+                >
+                  <User className="w-4 h-4" />
+                  {isGameMode ? 'PROF' : 'Profile'}
+                </Link>
+                <Link
+                  to="/account-settings"
+                  className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${
+                    isActive('/account-settings')
+                      ? isGameMode 
+                        ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
+                        : 'text-primary bg-primary/10'
+                      : isGameMode
+                      ? 'text-[#4ecdc4] hover:text-[#00ff41]'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
+                >
+                  <User className="w-4 h-4" />
+                  {isGameMode ? 'ACC' : 'Settings'}
+                </Link>
+                <Link
                   to="/admin"
                   className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${
                     isActive('/admin')
