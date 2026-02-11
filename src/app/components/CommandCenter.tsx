@@ -9,30 +9,23 @@ interface Student {
   compilations: number;
 }
 
-const mockStudents: Student[] = [
-  { id: 'USR_001', name: 'Alex Chen', currentMission: 'Loop Fundamentals', status: 'online', errorRate: 12, compilations: 8 },
-  { id: 'USR_002', name: 'Sarah Kim', currentMission: 'Array Methods', status: 'stuck', errorRate: 45, compilations: 15 },
-  { id: 'USR_003', name: 'Mike Rodriguez', currentMission: '2D Arrays', status: 'online', errorRate: 8, compilations: 4 },
-  { id: 'USR_004', name: 'Emma Watson', currentMission: 'Index Logic', status: 'stuck', errorRate: 52, compilations: 22 },
-  { id: 'USR_005', name: 'James Liu', currentMission: 'Advanced Loops', status: 'online', errorRate: 15, compilations: 6 },
-  { id: 'USR_006', name: 'Olivia Brown', currentMission: 'Array Basics', status: 'offline', errorRate: 0, compilations: 0 },
-];
+interface AnalyticsPoint {
+  time: string;
+  errors: number;
+}
 
-const mockAnalyticsData = [
-  { time: '10:00', errors: 12 },
-  { time: '10:15', errors: 18 },
-  { time: '10:30', errors: 25 },
-  { time: '10:45', errors: 22 },
-  { time: '11:00', errors: 15 },
-  { time: '11:15', errors: 28 },
-  { time: '11:30', errors: 35 },
-  { time: '11:45', errors: 30 },
-];
-
-export function CommandCenter() {
-  const totalStudents = mockStudents.length;
-  const onlineStudents = mockStudents.filter(s => s.status === 'online').length;
-  const stuckStudents = mockStudents.filter(s => s.status === 'stuck').length;
+export function CommandCenter({
+  students = [],
+  analyticsData = [],
+}: {
+  students?: Student[];
+  analyticsData?: AnalyticsPoint[];
+}) {
+  const totalStudents = students.length;
+  const onlineStudents = students.filter(s => s.status === 'online').length;
+  const stuckStudents = students.filter(s => s.status === 'stuck').length;
+  const onlinePercent = totalStudents > 0 ? (onlineStudents / totalStudents) * 100 : 0;
+  const stuckPercent = totalStudents > 0 ? (stuckStudents / totalStudents) * 100 : 0;
 
   return (
     <div className="h-full bg-background text-foreground overflow-auto p-4 lg:p-8">
@@ -69,7 +62,7 @@ export function CommandCenter() {
               <Circle className="w-8 h-8 text-[#00E676] fill-[#00E676]" />
             </div>
             <div className="h-1 bg-secondary rounded-full overflow-hidden">
-              <div className="h-full bg-[#00E676]" style={{ width: `${(onlineStudents / totalStudents) * 100}%` }} />
+              <div className="h-full bg-[#00E676]" style={{ width: `${onlinePercent}%` }} />
             </div>
           </div>
 
@@ -82,7 +75,7 @@ export function CommandCenter() {
               <AlertCircle className="w-8 h-8 text-[#FF5252]" />
             </div>
             <div className="h-1 bg-secondary rounded-full overflow-hidden">
-              <div className="h-full bg-[#FF5252] animate-pulse" style={{ width: `${(stuckStudents / totalStudents) * 100}%` }} />
+              <div className="h-full bg-[#FF5252] animate-pulse" style={{ width: `${stuckPercent}%` }} />
             </div>
           </div>
 
@@ -119,60 +112,66 @@ export function CommandCenter() {
 
             {/* Student Cards Grid */}
             <div className="grid grid-cols-2 gap-4">
-              {mockStudents.map((student) => (
-                <div
-                  key={student.id}
-                  className={`
-                    p-4 rounded-lg backdrop-blur-sm border transition-all
-                    ${student.status === 'stuck' 
-                      ? 'bg-[#FF5252]/10 border-[#FF5252] animate-pulse shadow-[0_0_20px_rgba(255,82,82,0.3)]' 
-                      : student.status === 'online'
-                      ? 'bg-secondary/50 border-[#00E676]/30 hover:border-[#00E676]'
-                      : 'bg-secondary/30 border-border/50 opacity-60'
-                    }
-                  `}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className={`w-2 h-2 rounded-full ${
-                          student.status === 'online' ? 'bg-[#00E676]' :
-                          student.status === 'stuck' ? 'bg-[#FF5252] animate-pulse' :
-                          'bg-muted-foreground'
-                        }`} />
-                        <span className="font-semibold truncate">{student.name}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground code-font truncate">
-                        {student.id}
-                      </p>
-                    </div>
-                    {student.status === 'stuck' && (
-                      <AlertCircle className="w-5 h-5 text-[#FF5252] shrink-0 animate-pulse" />
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Mission:</span>
-                      <span className="code-font text-[#2979FF]">{student.currentMission}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Error Rate:</span>
-                      <span className={`code-font font-semibold ${
-                        student.errorRate > 40 ? 'text-[#FF5252]' :
-                        student.errorRate > 20 ? 'text-[#FFAB00]' :
-                        'text-[#00E676]'
-                      }`}>
-                        {student.errorRate}%
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Compiles:</span>
-                      <span className="code-font">{student.compilations}</span>
-                    </div>
-                  </div>
+              {students.length === 0 ? (
+                <div className="col-span-2 rounded-lg border border-dashed border-border/60 bg-secondary/10 p-6 text-center text-sm text-muted-foreground">
+                  No active agents yet.
                 </div>
-              ))}
+              ) : (
+                students.map((student) => (
+                  <div
+                    key={student.id}
+                    className={`
+                      p-4 rounded-lg backdrop-blur-sm border transition-all
+                      ${student.status === 'stuck' 
+                        ? 'bg-[#FF5252]/10 border-[#FF5252] animate-pulse shadow-[0_0_20px_rgba(255,82,82,0.3)]' 
+                        : student.status === 'online'
+                        ? 'bg-secondary/50 border-[#00E676]/30 hover:border-[#00E676]'
+                        : 'bg-secondary/30 border-border/50 opacity-60'
+                      }
+                    `}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className={`w-2 h-2 rounded-full ${
+                            student.status === 'online' ? 'bg-[#00E676]' :
+                            student.status === 'stuck' ? 'bg-[#FF5252] animate-pulse' :
+                            'bg-muted-foreground'
+                          }`} />
+                          <span className="font-semibold truncate">{student.name}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground code-font truncate">
+                          {student.id}
+                        </p>
+                      </div>
+                      {student.status === 'stuck' && (
+                        <AlertCircle className="w-5 h-5 text-[#FF5252] shrink-0 animate-pulse" />
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Mission:</span>
+                        <span className="code-font text-[#2979FF]">{student.currentMission}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Error Rate:</span>
+                        <span className={`code-font font-semibold ${
+                          student.errorRate > 40 ? 'text-[#FF5252]' :
+                          student.errorRate > 20 ? 'text-[#FFAB00]' :
+                          'text-[#00E676]'
+                        }`}>
+                          {student.errorRate}%
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Compiles:</span>
+                        <span className="code-font">{student.compilations}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -194,48 +193,57 @@ export function CommandCenter() {
                 ))}
               </div>
 
-              {/* Chart */}
-              <svg className="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#00E676" />
-                    <stop offset="100%" stopColor="#2979FF" />
-                  </linearGradient>
-                  <filter id="glow">
-                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"/>
-                      <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                  </filter>
-                </defs>
-                <polyline
-                  fill="none"
-                  stroke="url(#lineGradient)"
-                  strokeWidth="3"
-                  filter="url(#glow)"
-                  points={mockAnalyticsData.map((d, i) => 
-                    `${(i / (mockAnalyticsData.length - 1)) * 400},${200 - (d.errors / 40) * 200}`
-                  ).join(' ')}
-                />
-                {/* Data points */}
-                {mockAnalyticsData.map((d, i) => (
-                  <circle
-                    key={i}
-                    cx={(i / (mockAnalyticsData.length - 1)) * 400}
-                    cy={200 - (d.errors / 40) * 200}
-                    r="4"
-                    fill="#00E676"
-                    className="drop-shadow-[0_0_6px_rgba(0,230,118,0.8)]"
+              {analyticsData.length === 0 ? (
+                <div className="relative z-10 flex h-full items-center justify-center text-sm text-muted-foreground">
+                  No analytics data yet.
+                </div>
+              ) : (
+                <svg className="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#00E676" />
+                      <stop offset="100%" stopColor="#2979FF" />
+                    </linearGradient>
+                    <filter id="glow">
+                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                      <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  <polyline
+                    fill="none"
+                    stroke="url(#lineGradient)"
+                    strokeWidth="3"
+                    filter="url(#glow)"
+                    points={analyticsData.map((d, i) => {
+                      const maxIndex = Math.max(analyticsData.length - 1, 1);
+                      return `${(i / maxIndex) * 400},${200 - (d.errors / 40) * 200}`;
+                    }).join(' ')}
                   />
-                ))}
-              </svg>
+                  {/* Data points */}
+                  {analyticsData.map((d, i) => {
+                    const maxIndex = Math.max(analyticsData.length - 1, 1);
+                    return (
+                      <circle
+                        key={i}
+                        cx={(i / maxIndex) * 400}
+                        cy={200 - (d.errors / 40) * 200}
+                        r="4"
+                        fill="#00E676"
+                        className="drop-shadow-[0_0_6px_rgba(0,230,118,0.8)]"
+                      />
+                    );
+                  })}
+                </svg>
+              )}
             </div>
 
             {/* X-axis labels */}
             <div className="flex justify-between text-xs text-muted-foreground code-font mb-6">
-              <span>{mockAnalyticsData[0].time}</span>
-              <span>{mockAnalyticsData[mockAnalyticsData.length - 1].time}</span>
+              <span>{analyticsData[0]?.time ?? '--:--'}</span>
+              <span>{analyticsData[analyticsData.length - 1]?.time ?? '--:--'}</span>
             </div>
 
             {/* Stats */}
@@ -288,51 +296,59 @@ export function CommandCenter() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30">
-                {mockStudents.map((student, index) => (
-                  <tr
-                    key={student.id}
-                    className={`
-                      transition-colors hover:bg-secondary/30
-                      ${index % 2 === 0 ? 'bg-secondary/10' : 'bg-transparent'}
-                    `}
-                  >
-                    <td className="px-6 py-4 code-font text-sm text-[#2979FF]">
-                      {student.id}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      {student.name}
-                    </td>
-                    <td className="px-6 py-4 code-font text-sm text-muted-foreground">
-                      {student.currentMission}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${
-                          student.status === 'online' ? 'bg-[#00E676]' :
-                          student.status === 'stuck' ? 'bg-[#FF5252]' :
-                          'bg-muted-foreground'
-                        }`} />
-                        <span className={`text-xs code-font uppercase ${
-                          student.status === 'online' ? 'text-[#00E676]' :
-                          student.status === 'stuck' ? 'text-[#FF5252]' :
-                          'text-muted-foreground'
-                        }`}>
-                          {student.status}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 rounded hover:bg-[#2979FF]/20 transition-colors group">
-                          <Eye className="w-4 h-4 text-muted-foreground group-hover:text-[#2979FF]" />
-                        </button>
-                        <button className="p-2 rounded hover:bg-[#FFAB00]/20 transition-colors group">
-                          <Key className="w-4 h-4 text-muted-foreground group-hover:text-[#FFAB00]" />
-                        </button>
-                      </div>
+                {students.length === 0 ? (
+                  <tr className="bg-secondary/10">
+                    <td colSpan={5} className="px-6 py-8 text-center text-sm text-muted-foreground">
+                      No agents to display.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  students.map((student, index) => (
+                    <tr
+                      key={student.id}
+                      className={`
+                        transition-colors hover:bg-secondary/30
+                        ${index % 2 === 0 ? 'bg-secondary/10' : 'bg-transparent'}
+                      `}
+                    >
+                      <td className="px-6 py-4 code-font text-sm text-[#2979FF]">
+                        {student.id}
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        {student.name}
+                      </td>
+                      <td className="px-6 py-4 code-font text-sm text-muted-foreground">
+                        {student.currentMission}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${
+                            student.status === 'online' ? 'bg-[#00E676]' :
+                            student.status === 'stuck' ? 'bg-[#FF5252]' :
+                            'bg-muted-foreground'
+                          }`} />
+                          <span className={`text-xs code-font uppercase ${
+                            student.status === 'online' ? 'text-[#00E676]' :
+                            student.status === 'stuck' ? 'text-[#FF5252]' :
+                            'text-muted-foreground'
+                          }`}>
+                            {student.status}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button className="p-2 rounded hover:bg-[#2979FF]/20 transition-colors group">
+                            <Eye className="w-4 h-4 text-muted-foreground group-hover:text-[#2979FF]" />
+                          </button>
+                          <button className="p-2 rounded hover:bg-[#FFAB00]/20 transition-colors group">
+                            <Key className="w-4 h-4 text-muted-foreground group-hover:text-[#FFAB00]" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
