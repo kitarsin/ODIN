@@ -233,10 +233,10 @@ export function BasicExplorerGame() {
 
           <div className="grid gap-3">
             <div className="rounded-md border-2 border-border bg-card px-3 py-2 text-sm font-semibold text-foreground">
-              Glitched Man
+              Demo Game
             </div>
             <div className="rounded-md border-2 border-border bg-card px-3 py-3 text-xs text-muted-foreground">
-              His color array elements have been declared incorrectly! Decrement his G exposure (2nd index).
+              Interact with the terminal and cast your code!
             </div>
           </div>
         </div>

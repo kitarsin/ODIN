@@ -49,15 +49,6 @@ export function GameContainer() {
       <Navigation />
 
       {/* Game Header */}
-      <div className="border-b border-border bg-card transition-colors">
-        <div className="max-w-7xl mx-auto px-6 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="mx-auto grid h-[calc(100vh-140px)] max-w-7xl grid-cols-1 gap-6 px-6 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
         <div className="flex h-full items-start justify-center">
           <div className="aspect-square w-full max-w-[720px]">
