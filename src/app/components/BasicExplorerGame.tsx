@@ -16,7 +16,12 @@ const COLORS = {
   terminalGlow: '#88fff4',
 };
 
-export function BasicExplorerGame() {
+type BasicExplorerGameProps = {
+  battleActive?: boolean;
+  onTerminalInteract?: () => void;
+};
+
+export function BasicExplorerGame({ battleActive = false, onTerminalInteract }: BasicExplorerGameProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const keysRef = useRef<Record<string, boolean>>({});
   const playerRef = useRef({ x: 3, y: 3 });
@@ -131,6 +136,12 @@ export function BasicExplorerGame() {
     };
 
     const step = (timestamp: number) => {
+      if (battleActive) {
+        render();
+        requestAnimationFrame(step);
+        return;
+      }
+
       const lastMove = lastMoveRef.current;
       if (timestamp - lastMove >= MOVE_DELAY_MS) {
         let dx = 0;
@@ -170,6 +181,9 @@ export function BasicExplorerGame() {
         interactRequestedRef.current = false;
         lastInteractRef.current = timestamp;
         setTerminalActive(true);
+        if (onTerminalInteract) {
+          onTerminalInteract();
+        }
         if (terminalTimeoutRef.current) {
           window.clearTimeout(terminalTimeoutRef.current);
         }
@@ -202,48 +216,80 @@ export function BasicExplorerGame() {
               className="absolute left-3 top-3 rounded-md border border-border bg-background/80 px-2 py-1 text-[10px] text-muted-foreground"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
-              ARENA // VISUAL
+              {battleActive ? 'BATTLE // ACTIVE' : 'ARENA // VISUAL'}
             </div>
-            <canvas
-              ref={canvasRef}
-              width={width}
-              height={height}
-              className="h-full w-full rounded-lg"
-              style={{ imageRendering: 'pixelated' }}
-            />
-
-            {promptVisible && (
-              <div
-                className="absolute right-3 top-3 rounded-full border border-primary/40 bg-background/90 px-3 py-1 text-[10px] text-primary"
-                style={{ fontFamily: 'var(--font-mono)' }}
-              >
-                Press E to interact
+            {battleActive ? (
+              <div className="grid h-full grid-rows-[minmax(0,1fr)_auto] gap-4 rounded-lg bg-muted/40 p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col items-start gap-2">
+                    <div className="rounded-md border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
+                      HERO // HP 86%
+                    </div>
+                    <div className="flex h-full w-full items-end">
+                      <div className="h-28 w-28 rounded-full border-4 border-border bg-gradient-to-b from-primary/30 to-primary/10" />
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="rounded-md border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
+                      GLITCHED MAN // HP 62%
+                    </div>
+                    <div className="flex h-full w-full items-start justify-end">
+                      <div className="h-24 w-24 rounded-full border-4 border-border bg-gradient-to-b from-amber-500/40 to-amber-500/10" />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-center">
+                  <div className="h-3 w-full max-w-md rounded-full border border-border bg-background">
+                    <div className="h-full w-3/5 rounded-full bg-primary" />
+                  </div>
+                </div>
               </div>
-            )}
+            ) : (
+              <>
+                <canvas
+                  ref={canvasRef}
+                  width={width}
+                  height={height}
+                  className="h-full w-full rounded-lg"
+                  style={{ imageRendering: 'pixelated' }}
+                />
 
-            {terminalActive && (
-              <div
-                className="absolute left-1/2 bottom-3 -translate-x-1/2 rounded-full border border-border bg-background/90 px-3 py-1 text-[10px] text-muted-foreground"
-                style={{ fontFamily: 'var(--font-mono)' }}
-              >
-                Terminal linked
-              </div>
+                {promptVisible && (
+                  <div
+                    className="absolute right-3 top-3 rounded-full border border-primary/40 bg-background/90 px-3 py-1 text-[10px] text-primary"
+                    style={{ fontFamily: 'var(--font-mono)' }}
+                  >
+                    Press E to interact
+                  </div>
+                )}
+
+                {terminalActive && (
+                  <div
+                    className="absolute left-1/2 bottom-3 -translate-x-1/2 rounded-full border border-border bg-background/90 px-3 py-1 text-[10px] text-muted-foreground"
+                    style={{ fontFamily: 'var(--font-mono)' }}
+                  >
+                    Terminal linked
+                  </div>
+                )}
+              </>
             )}
           </div>
 
           <div className="grid gap-3">
             <div className="rounded-md border-2 border-border bg-card px-3 py-2 text-sm font-semibold text-foreground">
-              Demo Game
+              {battleActive ? 'Battle Log' : 'Demo Game'}
             </div>
             <div className="rounded-md border-2 border-border bg-card px-3 py-3 text-xs text-muted-foreground">
-              Interact with the terminal and cast your code!
+              {battleActive
+                ? 'Glitched Man challenges you! Cast your code to stabilize the signal.'
+                : 'Interact with the terminal and cast your code!'}
             </div>
           </div>
         </div>
       </div>
 
       <div className="mt-3 text-center text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
-        WASD to move. Press E to interact.
+        {battleActive ? 'Battle engaged. Use the editor to cast code.' : 'WASD to move. Press E to interact.'}
       </div>
     </div>
   );
