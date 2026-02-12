@@ -45,6 +45,12 @@ export function BasicExplorerGame({
   const height = GRID_ROWS * TILE_SIZE;
   const terminalPosition = { x: 14, y: 10 };
 
+  // Clear all keys when entering/exiting battle to prevent unintended movement
+  useEffect(() => {
+    keysRef.current = {};
+    interactRequestedRef.current = false;
+  }, [battleActive]);
+
   useEffect(() => {
     const normalizeKey = (event: KeyboardEvent) => {
       const key = event.key?.toLowerCase();
@@ -77,6 +83,9 @@ export function BasicExplorerGame({
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't process movement keys during battle
+      if (battleActive) return;
+
       const activeElement = document.activeElement;
       const isTyping =
         activeElement instanceof HTMLInputElement ||
@@ -270,7 +279,7 @@ export function BasicExplorerGame({
               isFocused ? 'ring-2 ring-primary/50' : 'hover:ring-2 hover:ring-primary/30'
             }`}
             onClick={() => canvasRef.current?.focus()}
-            title="Click to focus for WASD controls"
+            title="Click to focus for Arrow Key controls"
           >
             <div className="flex h-full w-full items-center justify-center">
               <div className="aspect-square h-full max-h-full w-full max-w-full">
@@ -340,7 +349,7 @@ export function BasicExplorerGame({
                 style={{ fontFamily: 'var(--font-mono)' }}
               >
                 <div className="rounded-full border border-border bg-background/90 px-4 py-2 text-[10px] text-muted-foreground">
-                  Click to focus for WASD controls
+                  Click to focus for Arrow Key controls
                 </div>
               </div>
             )}
@@ -379,7 +388,7 @@ export function BasicExplorerGame({
       </div>
 
       <div className="text-center text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
-        {battleActive ? 'Battle engaged. Use the editor to cast code.' : 'WASD to move. Press E to interact.'}
+        {battleActive ? 'Battle engaged. Use the editor to cast code.' : 'Arrow Keys to move. Press E to interact.'}
       </div>
     </div>
   );
