@@ -83,6 +83,21 @@ export function BasicExplorerGame({
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Check if this is a game control key and prevent default early for Windows compatibility
+      const key = event.key?.toLowerCase();
+      const code = event.code?.toLowerCase();
+      const isGameKey = 
+        key === 'w' || key === 'a' || key === 's' || key === 'd' || key === 'e' ||
+        key === 'arrowup' || key === 'arrowdown' || key === 'arrowleft' || key === 'arrowright' ||
+        code === 'keyw' || code === 'keya' || code === 'keys' || code === 'keyd' || code === 'keye' ||
+        code === 'arrowup' || code === 'arrowdown' || code === 'arrowleft' || code === 'arrowright';
+      
+      if (!isGameKey) return;
+
+      // Prevent default behavior immediately for game keys
+      event.preventDefault();
+      event.stopPropagation();
+
       // Don't process movement keys during battle
       if (battleActive) return;
 
@@ -100,16 +115,29 @@ export function BasicExplorerGame({
       if (normalizedKey === 'e') {
         interactRequestedRef.current = true;
       }
-      event.preventDefault();
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
+      // Check if this is a game control key and prevent default early
+      const key = event.key?.toLowerCase();
+      const code = event.code?.toLowerCase();
+      const isGameKey = 
+        key === 'w' || key === 'a' || key === 's' || key === 'd' || key === 'e' ||
+        key === 'arrowup' || key === 'arrowdown' || key === 'arrowleft' || key === 'arrowright' ||
+        code === 'keyw' || code === 'keya' || code === 'keys' || code === 'keyd' || code === 'keye' ||
+        code === 'arrowup' || code === 'arrowdown' || code === 'arrowleft' || code === 'arrowright';
+      
+      if (!isGameKey) return;
+
+      // Prevent default behavior immediately for game keys
+      event.preventDefault();
+      event.stopPropagation();
+
       const normalizedKey = normalizeKey(event);
       if (!normalizedKey) return;
 
       if (keysRef.current[normalizedKey]) {
         keysRef.current[normalizedKey] = false;
-        event.preventDefault();
       }
     };
 
@@ -119,8 +147,8 @@ export function BasicExplorerGame({
     };
 
     const canvas = canvasRef.current;
-    window.addEventListener('keydown', handleKeyDown, { passive: false });
-    window.addEventListener('keyup', handleKeyUp, { passive: false });
+    window.addEventListener('keydown', handleKeyDown, { passive: false, capture: true });
+    window.addEventListener('keyup', handleKeyUp, { passive: false, capture: true });
     window.addEventListener('blur', handleWindowBlur);
 
     const handleFocus = () => setIsFocused(true);
@@ -133,8 +161,8 @@ export function BasicExplorerGame({
     }
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('keydown', handleKeyDown, { capture: true });
+      window.removeEventListener('keyup', handleKeyUp, { capture: true });
       window.removeEventListener('blur', handleWindowBlur);
       if (canvas) {
         canvas.removeEventListener('focus', handleFocus);
