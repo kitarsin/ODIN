@@ -1,4 +1,7 @@
 import { Trophy, Flame, Bell, Lock, CheckCircle2, Star } from 'lucide-react';
+import logo64 from '../../img/brand/odin-logo-transparent-64.png';
+import logo128 from '../../img/brand/odin-logo-transparent-128.png';
+import logo256 from '../../img/brand/odin-logo-transparent-256.png';
 
 interface Level {
   id: number;
@@ -53,8 +56,15 @@ export function Dashboard({ onSelectLevel }: DashboardProps) {
         <div className="h-full px-4 lg:px-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#2979FF] to-[#00E676] flex items-center justify-center">
-                <span className="text-xl font-bold">O</span>
+              <div className="w-10 h-10 rounded-lg bg-card/60 border border-border/60 flex items-center justify-center shadow-[0_0_12px_rgba(39,228,208,0.25)]">
+                <img
+                  src={logo128}
+                  srcSet={`${logo64} 64w, ${logo128} 128w, ${logo256} 256w`}
+                  sizes="40px"
+                  alt="ODIN"
+                  className="w-7 h-7"
+                  style={{ imageRendering: 'pixelated' }}
+                />
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-xl font-semibold tracking-tight">ODIN</h1>

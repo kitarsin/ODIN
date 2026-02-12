@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Shield, Terminal } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
+import logo64 from '../../img/brand/odin-logo-transparent-64.png';
+import logo128 from '../../img/brand/odin-logo-transparent-128.png';
+import logo256 from '../../img/brand/odin-logo-transparent-256.png';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/button';
@@ -113,11 +116,17 @@ export function Login() {
           <div className="flex flex-col items-center mb-8">
             <div className={`w-16 h-16 rounded-lg flex items-center justify-center mb-4 relative transition-all ${
               isGameMode
-                ? 'bg-[#00ff41] shadow-[0_0_20px_rgba(0,255,65,0.6)] animate-pulse'
-                : 'bg-primary'
+                ? 'shadow-[0_0_20px_rgba(0,255,65,0.6)] animate-pulse'
+                : 'shadow-[0_0_18px_rgba(39,228,208,0.35)]'
             }`}>
-              <Shield className={`w-10 h-10 ${isGameMode ? 'text-[#1a1a2e]' : 'text-primary-foreground'}`} strokeWidth={2.5} />
-              <Terminal className={`w-6 h-6 absolute bottom-2 right-2 ${isGameMode ? 'text-[#1a1a2e]' : 'text-primary-foreground'}`} />
+              <img
+                src={logo128}
+                srcSet={`${logo64} 64w, ${logo128} 128w, ${logo256} 256w`}
+                sizes="64px"
+                alt="ODIN"
+                className="w-12 h-12"
+                style={{ imageRendering: 'pixelated' }}
+              />
             </div>
             <h1 
               className={`text-2xl font-semibold mb-1 transition-all ${getTextColor()}`}

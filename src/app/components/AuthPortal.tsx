@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Activity, Lock, User, AlertTriangle } from 'lucide-react';
+import { Lock, User, AlertTriangle } from 'lucide-react';
+import logo128 from '../../img/brand/odin-logo-transparent-128.png';
+import logo256 from '../../img/brand/odin-logo-transparent-256.png';
 
 interface AuthPortalProps {
   onLogin: (username: string) => void;
@@ -53,7 +55,14 @@ export function AuthPortal({ onLogin }: AuthPortalProps) {
             {/* Main Orb */}
             <div className="w-36 h-36 xl:w-48 xl:h-48 rounded-full bg-gradient-to-br from-[#2979FF] via-[#00E676] to-[#2979FF] flex items-center justify-center relative animate-pulse shadow-[0_0_80px_rgba(41,121,255,0.5)]">
               <div className="w-32 h-32 xl:w-44 xl:h-44 rounded-full bg-background flex items-center justify-center">
-                <Activity className="w-16 h-16 xl:w-20 xl:h-20 text-[#00E676] animate-pulse" />
+                <img
+                  src={logo256}
+                  srcSet={`${logo128} 128w, ${logo256} 256w`}
+                  sizes="96px"
+                  alt="ODIN"
+                  className="w-20 h-20 xl:w-28 xl:h-28"
+                  style={{ imageRendering: 'pixelated' }}
+                />
               </div>
               
               {/* Orbiting particles */}
