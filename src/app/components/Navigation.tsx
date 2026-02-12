@@ -1,5 +1,8 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Shield, Home, Gamepad2, Book, User, Database, LogOut, Settings } from 'lucide-react';
+import { Home, Gamepad2, Book, User, Database, LogOut, Settings } from 'lucide-react';
+import logo64 from '../../img/brand/odin-logo-64.png';
+import logo128 from '../../img/brand/odin-logo-128.png';
+import logo256 from '../../img/brand/odin-logo-256.png';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from './ui/button';
@@ -23,13 +26,14 @@ export function Navigation() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded flex items-center justify-center transition-all ${
-              isGameMode 
-                ? 'bg-[#00ff41] shadow-[0_0_15px_rgba(0,255,65,0.5)]' 
-                : 'bg-primary'
-            }`}>
-              <Shield className={`w-6 h-6 ${isGameMode ? 'text-[#1a1a2e]' : 'text-primary-foreground'}`} />
-            </div>
+            <img
+              src={logo128}
+              srcSet={`${logo64} 64w, ${logo128} 128w, ${logo256} 256w`}
+              sizes="40px"
+              alt="ODIN"
+              className={`w-10 h-10 ${isGameMode ? 'drop-shadow-[0_0_10px_rgba(0,255,65,0.6)]' : ''}`}
+              style={{ imageRendering: 'pixelated' }}
+            />
             <span 
               className={`text-xl font-semibold transition-all ${
                 isGameMode ? 'text-[#00ff41]' : 'text-foreground'
