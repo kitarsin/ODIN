@@ -216,6 +216,7 @@ export function Register() {
                   placeholder={isGameMode ? '········' : 'Choose a strong password'}
                   autoComplete="new-password"
                   className={`${getInputClass()} pr-10`}
+                  style={{ fontFamily: 'var(--font-mono)' }}
                   disabled={isSubmitting}
                   required
                 />

@@ -197,6 +197,7 @@ export function Login() {
                       ? 'bg-[#1a1a2e] border-[#00ff41] text-[#00ff41] border-2 placeholder:text-[#0f3460] focus:shadow-[0_0_10px_rgba(0,255,65,0.5)]'
                       : `${getInputBg()} border ${getInputBorder()} ${getInputText()} placeholder:text-muted-foreground`
                   }`}
+                  style={{ fontFamily: 'var(--font-mono)' }}
                   disabled={isSubmitting}
                   required
                 />
