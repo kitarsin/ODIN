@@ -17,7 +17,17 @@ interface User {
   syncRate: number;
   lastLogin: string;
   status: 'active' | 'inactive';
+  achievements: Achievement[];
 }
+
+type Achievement = {
+  id: string;
+  name: string;
+  emoji?: string;
+  description?: string;
+  unlockedAt?: string;
+  type?: 'success' | 'diagnosis';
+};
 
 export function AdminDatabase() {
   const [users, setUsers] = useState<User[]>([]); // Initialize empty
@@ -32,6 +42,21 @@ export function AdminDatabase() {
   const sections = ['all', ...Array.from(new Set(users.map(u => u.section)))];
 
   const isAvatarUrl = (value: string) => value.startsWith('http') || value.startsWith('data:');
+
+  const coerceJsonArray = (value: unknown): any[] => {
+    if (Array.isArray(value)) return value;
+    if (!value) return [];
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        console.warn('Failed to parse json array:', error);
+        return [];
+      }
+    }
+    return [];
+  };
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -67,7 +92,8 @@ export function AdminDatabase() {
         avatar: u.avatar_url || '🧑‍🎓',
         syncRate: u.sync_rate || 0,
         lastLogin: u.created_at, // or a real last_login column if you added it
-        status: 'active' as const
+        status: 'active' as const,
+        achievements: coerceJsonArray(u.achievements)
       }));
 
       setUsers(formattedUsers);
@@ -128,7 +154,8 @@ export function AdminDatabase() {
         avatar: '🧑‍🎓',
         syncRate: 50,
         lastLogin: new Date().toISOString(),
-        status: 'active'
+        status: 'active',
+        achievements: []
       };
       setUsers([...users, newUser]);
     }
@@ -140,6 +167,34 @@ export function AdminDatabase() {
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   };
+
+  const studentUsers = users.filter(user => user.role === 'student');
+  const totalAchievements = studentUsers.reduce(
+    (sum, student) => sum + (student.achievements?.length || 0),
+    0
+  );
+  const averageSyncRate = studentUsers.length
+    ? Math.round(studentUsers.reduce((sum, student) => sum + (student.syncRate || 0), 0) / studentUsers.length)
+    : 0;
+  const topAchievers = [...studentUsers]
+    .sort((a, b) => (b.achievements?.length || 0) - (a.achievements?.length || 0))
+    .slice(0, 5);
+  const recentAchievements = studentUsers
+    .flatMap(student =>
+      (student.achievements || []).map(achievement => ({
+        studentId: student.id,
+        studentName: student.name,
+        studentSection: student.section,
+        studentAvatar: student.avatar,
+        achievement
+      }))
+    )
+    .sort((a, b) => {
+      const aTime = a.achievement.unlockedAt ? new Date(a.achievement.unlockedAt).getTime() : 0;
+      const bTime = b.achievement.unlockedAt ? new Date(b.achievement.unlockedAt).getTime() : 0;
+      return bTime - aTime;
+    })
+    .slice(0, 6);
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
@@ -153,6 +208,117 @@ export function AdminDatabase() {
             Student Database
           </h1>
           <p className="text-sm text-muted-foreground">Manage user accounts and access permissions</p>
+        </div>
+
+        {/* Student Stats & Achievements */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="border rounded-lg p-6 bg-card border-border transition-colors">
+            <h2 className="text-sm font-semibold mb-3 text-muted-foreground">Student Count</h2>
+            <p className="text-3xl font-semibold" style={{ fontFamily: 'var(--font-mono)' }}>
+              {studentUsers.length}
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">Active student profiles</p>
+          </div>
+          <div className="border rounded-lg p-6 bg-card border-border transition-colors">
+            <h2 className="text-sm font-semibold mb-3 text-muted-foreground">Total Achievements</h2>
+            <p className="text-3xl font-semibold" style={{ fontFamily: 'var(--font-mono)' }}>
+              {totalAchievements}
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">Unlocked across all students</p>
+          </div>
+          <div className="border rounded-lg p-6 bg-card border-border transition-colors">
+            <h2 className="text-sm font-semibold mb-3 text-muted-foreground">Average Sync Rate</h2>
+            <p className="text-3xl font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
+              {averageSyncRate}%
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">Overall mastery signal</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="border rounded-lg p-6 bg-card border-border transition-colors">
+            <h2 className="text-lg font-semibold mb-4">Top Achievers</h2>
+            <div className="space-y-3">
+              {topAchievers.map(student => (
+                <div
+                  key={student.id}
+                  className="flex items-center justify-between border rounded-lg p-3 bg-muted/40 border-border"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl bg-muted overflow-hidden">
+                      {isAvatarUrl(student.avatar) ? (
+                        <img
+                          src={student.avatar}
+                          alt={`${student.name} avatar`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>{student.avatar}</span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{student.name}</p>
+                      <p className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
+                        {student.studentId} • {student.section}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
+                      {student.achievements?.length || 0}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Achievements</p>
+                  </div>
+                </div>
+              ))}
+              {topAchievers.length === 0 && (
+                <p className="text-sm text-muted-foreground">No achievements recorded yet.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="border rounded-lg p-6 bg-card border-border transition-colors">
+            <h2 className="text-lg font-semibold mb-4">Recent Achievements</h2>
+            <div className="space-y-3">
+              {recentAchievements.map(item => (
+                <div
+                  key={`${item.studentId}-${item.achievement.id}`}
+                  className="flex items-center justify-between border rounded-lg p-3 bg-muted/40 border-border"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl bg-muted overflow-hidden">
+                      {isAvatarUrl(item.studentAvatar) ? (
+                        <img
+                          src={item.studentAvatar}
+                          alt={`${item.studentName} avatar`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>{item.studentAvatar}</span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">
+                        {(item.achievement.emoji || '🏅') + ' '}
+                        {item.achievement.name || 'Achievement'}
+                      </p>
+                      <p className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
+                        {item.studentName} • {item.studentSection}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
+                      {item.achievement.unlockedAt ? formatDate(item.achievement.unlockedAt) : 'Unlogged'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {recentAchievements.length === 0 && (
+                <p className="text-sm text-muted-foreground">No recent achievement activity.</p>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Toolbar */}

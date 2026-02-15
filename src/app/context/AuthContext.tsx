@@ -165,8 +165,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) {
         throw error;
       }
-      // Wait for session to be established
-      await new Promise(resolve => setTimeout(resolve, 300));
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await fetchProfile(session.user);
+      } else {
+        setLoading(false);
+      }
     } catch (error) {
       setLoading(false);
       throw error;
