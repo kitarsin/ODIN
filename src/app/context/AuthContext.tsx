@@ -27,6 +27,21 @@ type Achievement = {
   type: 'success' | 'diagnosis';
 };
 
+const coerceJsonArray = (value: unknown): any[] => {
+  if (Array.isArray(value)) return value;
+  if (!value) return [];
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.warn('Failed to parse json array:', error);
+      return [];
+    }
+  }
+  return [];
+};
+
 const AuthContext = createContext<any>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -97,8 +112,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (data) {
         const rawSyncRate = Number(data.sync_rate);
         const syncRate = Number.isFinite(rawSyncRate) ? rawSyncRate : 0;
-        const achievementsData = data.achievements ? JSON.parse(data.achievements) : [];
-        const badgesData = data.badges ? JSON.parse(data.badges) : [];
+        const achievementsData = coerceJsonArray(data.achievements);
+        const badgesData = coerceJsonArray((data as any).badges);
+        const derivedBadges = achievementsData
+          .map((achievement: any) => achievement?.name)
+          .filter((name: unknown): name is string => typeof name === 'string' && name.length > 0);
         
         setUser({
           id: authUser.id,
@@ -111,7 +129,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           syncRate,
           status: 'active',
           progress: { arrays: 0, loops: 0, grids: 0 },
-          badges: badgesData,
+          badges: badgesData.length > 0 ? badgesData : derivedBadges,
           achievements: achievementsData
         });
       }
@@ -149,9 +167,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       // Wait for session to be established
       await new Promise(resolve => setTimeout(resolve, 300));
-    } finally {
-      // Don't set loading to false here - let onAuthStateChange handle it
-      // This prevents race conditions
+    } catch (error) {
+      setLoading(false);
+      throw error;
     }
   };
 
@@ -180,8 +198,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             sync_rate: 100,
             role: 'student',
             avatar_url: '🧑‍🎓',
-            badges: JSON.stringify([]),
-            achievements: JSON.stringify([])
+            achievements: []
           }
         ]);
       
@@ -200,9 +217,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       // Wait a brief moment for the auth state to update
       await new Promise(resolve => setTimeout(resolve, 500));
-    } finally {
-      // Don't set loading to false here - let onAuthStateChange handle it
-      // This prevents race conditions
+    } catch (error) {
+      setLoading(false);
+      throw error;
     }
   };
 
@@ -228,7 +245,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Update database
       const { error } = await supabase
         .from('profiles')
-        .update({ achievements: JSON.stringify(updatedAchievements) })
+        .update({ achievements: updatedAchievements })
         .eq('id', user.id);
 
       if (error) {
