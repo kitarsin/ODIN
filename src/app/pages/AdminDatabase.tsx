@@ -18,6 +18,7 @@ interface User {
   lastLogin: string;
   status: 'active' | 'inactive';
   achievements: Achievement[];
+  badges: string[];
 }
 
 type Achievement = {
@@ -121,18 +122,26 @@ export function AdminDatabase() {
       
       // Map DB fields to your UI 'User' type if they differ
       // e.g. DB has 'full_name', UI expects 'name'
-      const formattedUsers = data.map((u: any) => ({
+      const formattedUsers = data.map((u: any) => {
+        const achievements = dedupeAchievements(u.achievements);
+        const badges = dedupeBadges(u.badges);
+        const hasProgress = achievements.length > 0 || badges.length > 0;
+        const syncRate = hasProgress ? (u.sync_rate || 0) : 0;
+
+        return {
         id: u.id,
         name: u.full_name,
         studentId: u.student_id,
         role: u.role,
         section: u.section,
         avatar: u.avatar_url || '🧑‍🎓',
-        syncRate: u.sync_rate || 0,
+        syncRate,
         lastLogin: u.created_at, // or a real last_login column if you added it
         status: 'active' as const,
-        achievements: dedupeAchievements(u.achievements)
-      }));
+        achievements,
+        badges
+      };
+    });
 
       setUsers(formattedUsers);
     } catch (error) {
@@ -285,7 +294,8 @@ export function AdminDatabase() {
         syncRate: 50,
         lastLogin: new Date().toISOString(),
         status: 'active',
-        achievements: []
+        achievements: [],
+        badges: []
       };
       setUsers([...users, newUser]);
     }
@@ -325,6 +335,35 @@ export function AdminDatabase() {
       return bTime - aTime;
     })
     .slice(0, 6);
+
+  const handleResetSyncRate = async (student: User) => {
+    const hasProgress = (student.achievements?.length || 0) > 0 || (student.badges?.length || 0) > 0;
+    const confirmationMessage = hasProgress
+      ? 'This student has achievements or badges. Reset sync rate to 0 anyway?'
+      : 'Reset sync rate to 0 for this student?';
+
+    if (!confirm(confirmationMessage)) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ sync_rate: 0 })
+      .eq('id', student.id);
+
+    if (error) {
+      alert('Unable to reset sync rate.');
+      return;
+    }
+
+    setUsers((current) =>
+      current.map((user) =>
+        user.id === student.id
+          ? { ...user, syncRate: 0 }
+          : user
+      )
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
@@ -634,6 +673,16 @@ export function AdminDatabase() {
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
+                        {user.role === 'student' && (
+                          <Button
+                            onClick={() => handleResetSyncRate(user)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-primary hover:text-primary hover:bg-primary/10 transition-colors"
+                          >
+                            Reset Sync
+                          </Button>
+                        )}
                         <Button
                           onClick={() => handleDelete(user.id)}
                           variant="ghost"
