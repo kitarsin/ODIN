@@ -207,7 +207,7 @@ export function StudentDashboard() {
 
               {/* Sync Rate - Ensure your DB has this column or provide a default */}
               <span className="text-sm font-semibold text-primary">
-                {user.sync_rate || 100}%
+                {user.sync_rate || 0}%
               </span>
 
               {/* Progress & Badges */}

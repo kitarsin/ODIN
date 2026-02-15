@@ -42,6 +42,34 @@ const coerceJsonArray = (value: unknown): any[] => {
   return [];
 };
 
+const normalizeAchievementKey = (achievement: Pick<Achievement, 'name' | 'type'>) => {
+  return `${achievement.name}`.trim().toLowerCase() + '::' + achievement.type;
+};
+
+const dedupeAchievements = (achievements: Achievement[]) => {
+  const seen = new Set<string>();
+  const result: Achievement[] = [];
+  for (const achievement of achievements) {
+    const key = normalizeAchievementKey(achievement);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(achievement);
+  }
+  return result;
+};
+
+const dedupeBadges = (badges: string[]) => {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const badge of badges) {
+    const normalized = badge.trim();
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    result.push(normalized);
+  }
+  return result;
+};
+
 const AuthContext = createContext<any>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -111,12 +139,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (data) {
         const rawSyncRate = Number(data.sync_rate);
-        const syncRate = Number.isFinite(rawSyncRate) ? rawSyncRate : 0;
-        const achievementsData = coerceJsonArray(data.achievements);
-        const badgesData = coerceJsonArray((data as any).badges);
+        const achievementsData = dedupeAchievements(coerceJsonArray(data.achievements));
+        const badgesData = dedupeBadges(coerceJsonArray((data as any).badges));
+        const hasProgressSignals = achievementsData.length > 0 || badgesData.length > 0;
+        const syncRate = Number.isFinite(rawSyncRate)
+          ? rawSyncRate === 100 && !hasProgressSignals
+            ? 0
+            : rawSyncRate
+          : 0;
         const derivedBadges = achievementsData
           .map((achievement: any) => achievement?.name)
           .filter((name: unknown): name is string => typeof name === 'string' && name.length > 0);
+
+        if (rawSyncRate === 100 && !hasProgressSignals) {
+          await supabase
+            .from('profiles')
+            .update({ sync_rate: 0 })
+            .eq('id', authUser.id);
+        }
         
         setUser({
           id: authUser.id,
@@ -129,7 +169,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           syncRate,
           status: 'active',
           progress: { arrays: 0, loops: 0, grids: 0 },
-          badges: badgesData.length > 0 ? badgesData : derivedBadges,
+          badges: badgesData.length > 0 ? badgesData : dedupeBadges(derivedBadges),
           achievements: achievementsData
         });
       }
@@ -199,7 +239,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             full_name: name,
             student_id: studentId,
             section: section,
-            sync_rate: 100,
+            sync_rate: 0,
             role: 'student',
             avatar_url: '🧑‍🎓',
             achievements: []
@@ -244,12 +284,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         ...achievement,
       };
 
-      const updatedAchievements = [...(user.achievements || []), newAchievement];
+      const existingAchievements = dedupeAchievements(user.achievements || []);
+      const achievementKey = normalizeAchievementKey(newAchievement);
+      const alreadyUnlocked = existingAchievements.some(
+        (achievement) => normalizeAchievementKey(achievement) === achievementKey
+      );
+
+      if (alreadyUnlocked) {
+        return;
+      }
+
+      const updatedAchievements = [...existingAchievements, newAchievement];
+      const updatedBadges = dedupeBadges([...(user.badges || []), achievement.name]);
       
       // Update database
       const { error } = await supabase
         .from('profiles')
-        .update({ achievements: updatedAchievements })
+        .update({ achievements: updatedAchievements, badges: updatedBadges })
         .eq('id', user.id);
 
       if (error) {
@@ -261,7 +312,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser({
         ...user,
         achievements: updatedAchievements,
-        badges: [...(user.badges || []), achievement.name],
+        badges: updatedBadges,
       });
     } catch (error) {
       console.error('Error adding achievement:', error);

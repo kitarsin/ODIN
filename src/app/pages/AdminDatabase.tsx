@@ -38,6 +38,8 @@ export function AdminDatabase() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [maintenanceStatus, setMaintenanceStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
+  const [maintenanceMessage, setMaintenanceMessage] = useState('');
 
   const sections = ['all', ...Array.from(new Set(users.map(u => u.section)))];
 
@@ -56,6 +58,42 @@ export function AdminDatabase() {
       }
     }
     return [];
+  };
+
+  const dedupeBadges = (value: unknown) => {
+    const rawBadges = coerceJsonArray(value)
+      .filter((badge) => typeof badge === 'string') as string[];
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const badge of rawBadges) {
+      const normalized = badge.trim();
+      if (!normalized || seen.has(normalized)) continue;
+      seen.add(normalized);
+      result.push(normalized);
+    }
+    return result;
+  };
+
+  const normalizeAchievementKey = (achievement: Achievement) => {
+    const name = `${achievement.name || ''}`.trim().toLowerCase();
+    const type = `${achievement.type || ''}`.trim().toLowerCase();
+    return `${name}::${type}`;
+  };
+
+  const dedupeAchievements = (value: unknown) => {
+    const rawAchievements = coerceJsonArray(value)
+      .filter((achievement) => achievement && typeof achievement === 'object') as Achievement[];
+    const seen = new Set<string>();
+    const result: Achievement[] = [];
+
+    for (const achievement of rawAchievements) {
+      const key = normalizeAchievementKey(achievement);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      result.push(achievement);
+    }
+
+    return result;
   };
 
   const filteredUsers = users.filter(user => {
@@ -101,6 +139,98 @@ export function AdminDatabase() {
       console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDedupBadges = async () => {
+    if (!confirm('De-duplicate badges for all profiles? This will update stored data.')) {
+      return;
+    }
+
+    try {
+      setMaintenanceStatus('running');
+      setMaintenanceMessage('Scanning profiles...');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, badges');
+
+      if (error) throw error;
+
+      let updatedCount = 0;
+      const rows = data || [];
+
+      for (const row of rows) {
+        const dedupedBadges = dedupeBadges((row as any).badges);
+        const originalBadges = coerceJsonArray((row as any).badges);
+        const originalCount = originalBadges.length;
+
+        if (dedupedBadges.length !== originalCount) {
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ badges: dedupedBadges })
+            .eq('id', (row as any).id);
+
+          if (updateError) {
+            throw updateError;
+          }
+          updatedCount += 1;
+        }
+      }
+
+      setMaintenanceStatus('done');
+      setMaintenanceMessage(`Badges de-duplicated for ${updatedCount} profile(s).`);
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error de-duplicating badges:', error);
+      setMaintenanceStatus('error');
+      setMaintenanceMessage('Unable to de-duplicate badges. Check console for details.');
+    }
+  };
+
+  const handleDedupAchievements = async () => {
+    if (!confirm('De-duplicate achievements for all profiles? This will update stored data.')) {
+      return;
+    }
+
+    try {
+      setMaintenanceStatus('running');
+      setMaintenanceMessage('Scanning profiles...');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, achievements');
+
+      if (error) throw error;
+
+      let updatedCount = 0;
+      const rows = data || [];
+
+      for (const row of rows) {
+        const dedupedAchievements = dedupeAchievements((row as any).achievements);
+        const originalAchievements = coerceJsonArray((row as any).achievements);
+        const originalCount = originalAchievements.length;
+
+        if (dedupedAchievements.length !== originalCount) {
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ achievements: dedupedAchievements })
+            .eq('id', (row as any).id);
+
+          if (updateError) {
+            throw updateError;
+          }
+          updatedCount += 1;
+        }
+      }
+
+      setMaintenanceStatus('done');
+      setMaintenanceMessage(`Achievements de-duplicated for ${updatedCount} profile(s).`);
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error de-duplicating achievements:', error);
+      setMaintenanceStatus('error');
+      setMaintenanceMessage('Unable to de-duplicate achievements. Check console for details.');
     }
   };
 
@@ -319,6 +449,41 @@ export function AdminDatabase() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Maintenance */}
+        <div className="border rounded-lg p-6 bg-card border-border transition-colors mb-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold mb-1">Maintenance Utilities</h2>
+              <p className="text-sm text-muted-foreground">
+                One-time admin actions to fix legacy data issues.
+              </p>
+            </div>
+            <Button
+              onClick={handleDedupBadges}
+              disabled={maintenanceStatus === 'running'}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              {maintenanceStatus === 'running' ? 'Running...' : 'De-dup Badges'}
+            </Button>
+            <Button
+              onClick={handleDedupAchievements}
+              disabled={maintenanceStatus === 'running'}
+              className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+            >
+              {maintenanceStatus === 'running' ? 'Running...' : 'De-dup Achievements'}
+            </Button>
+          </div>
+          {maintenanceMessage && (
+            <div
+              className={`mt-4 text-sm ${
+                maintenanceStatus === 'error' ? 'text-destructive' : 'text-muted-foreground'
+              }`}
+            >
+              {maintenanceMessage}
+            </div>
+          )}
         </div>
 
         {/* Toolbar */}
