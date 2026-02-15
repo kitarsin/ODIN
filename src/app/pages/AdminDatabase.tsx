@@ -131,7 +131,7 @@ export function AdminDatabase() {
         syncRate: u.sync_rate || 0,
         lastLogin: u.created_at, // or a real last_login column if you added it
         status: 'active' as const,
-        achievements: coerceJsonArray(u.achievements)
+        achievements: dedupeAchievements(u.achievements)
       }));
 
       setUsers(formattedUsers);
