@@ -56,7 +56,9 @@ export function Register() {
         setError(err.message || 'Registration failed. Please try again.');
       }
       setLoading(false);
+      return;
     }
+    setLoading(false);
   };
 
   useEffect(() => {

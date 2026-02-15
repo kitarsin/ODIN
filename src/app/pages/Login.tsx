@@ -41,7 +41,9 @@ export function Login() {
         setError(err?.message || 'Unable to sign in. Please try again.');
       }
       setLoading(false);
+      return;
     }
+    setLoading(false);
   };
 
   useEffect(() => {
