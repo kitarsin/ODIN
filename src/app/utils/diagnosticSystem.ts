@@ -10,6 +10,103 @@ export interface DiagnosticResult {
   severity: 'minor' | 'moderate' | 'critical';
 }
 
+type SyntaxCheckResult = {
+  isValid: boolean;
+  message: string;
+};
+
+const CSHARP_KEYWORD_PATTERN = /\b(using|namespace|class|public|private|protected|internal|static|void|int|string|bool|double|float|decimal|var|if|else|for|foreach|while|switch|case|return|new|try|catch|finally)\b/;
+const JS_ONLY_PATTERN = /\bfunction\b|console\.log/i;
+const REQUIRED_CLASS_PATTERN = /\bclass\s+\w+/;
+const REQUIRED_MAIN_PATTERN = /\bstatic\s+void\s+Main\s*\(\s*string\s*\[\]\s*\w*\s*\)/;
+
+const hasBalancedSymbols = (code: string) => {
+  const stack: string[] = [];
+  const pairs: Record<string, string> = { ')': '(', ']': '[', '}': '{' };
+  for (const char of code) {
+    if (char === '(' || char === '[' || char === '{') stack.push(char);
+    if (char === ')' || char === ']' || char === '}') {
+      const expected = pairs[char];
+      if (!expected || stack.pop() !== expected) return false;
+    }
+  }
+  return stack.length === 0;
+};
+
+const checkCSharpSyntax = (code: string): SyntaxCheckResult => {
+  const trimmedCode = code.trim();
+  if (!trimmedCode) {
+    return { isValid: false, message: 'No code detected. Write some C# first.' };
+  }
+
+  if (!hasBalancedSymbols(code)) {
+    return { isValid: false, message: 'Brackets, parentheses, or braces are unbalanced.' };
+  }
+
+  if (JS_ONLY_PATTERN.test(code)) {
+    return { isValid: false, message: 'This looks like JavaScript, not C#.' };
+  }
+
+  if (!CSHARP_KEYWORD_PATTERN.test(code) && !/Console\.Write(Line)?/i.test(code)) {
+    return { isValid: false, message: 'No C# keywords or structures detected.' };
+  }
+
+  const nonEmptyLines = code
+    .split('\n')
+    .map((line) => line.split('//')[0].trim())
+    .filter((line) => line.length > 0);
+
+  const hasClass = REQUIRED_CLASS_PATTERN.test(code);
+  const hasMain = REQUIRED_MAIN_PATTERN.test(code);
+  const isSingleLineTopLevel = nonEmptyLines.length === 1;
+
+  if (!hasClass || !hasMain) {
+    if (!isSingleLineTopLevel) {
+      return { isValid: false, message: 'Missing a class declaration or Main method.' };
+    }
+    const oneLine = nonEmptyLines[0];
+    if (!oneLine.endsWith(';')) {
+      return { isValid: false, message: 'Single-line code must end with a semicolon.' };
+    }
+    if (!CSHARP_KEYWORD_PATTERN.test(oneLine) && !/Console\.Write(Line)?/i.test(oneLine)) {
+      return { isValid: false, message: 'Single-line code must use valid C# syntax.' };
+    }
+  }
+
+  const lines = code.split('\n');
+  for (const line of lines) {
+    const cleanedLine = line.split('//')[0].trim();
+    if (!cleanedLine) continue;
+    if (cleanedLine.endsWith('{') || cleanedLine.endsWith('}') || cleanedLine.endsWith(':')) continue;
+    if (/^(if|for|foreach|while|switch|catch|else|do|try|namespace|class|struct|enum)\b/i.test(cleanedLine)) {
+      continue;
+    }
+    if (cleanedLine.includes('=>') && cleanedLine.endsWith(';')) continue;
+    if (cleanedLine.endsWith(';')) continue;
+    if (cleanedLine.endsWith(')')) {
+      return { isValid: false, message: 'Missing semicolon at end of statement.' };
+    }
+  }
+
+  return { isValid: true, message: 'C# syntax looks valid.' };
+};
+
+export const diagnoseCSharpSyntax = (code: string): DiagnosticResult | null => {
+  const check = checkCSharpSyntax(code);
+  if (check.isValid) return null;
+
+  return {
+    diagnosticTitle: 'C# Syntax Error',
+    diagnosticMessage: check.message,
+    suggestions: [
+      'Check for missing semicolons at the end of statements',
+      'Make sure braces and parentheses are balanced',
+      'Use C# keywords like class, static, void, and return',
+    ],
+    severity: 'critical',
+  };
+};
+
 export function diagnoseCode(code: string, expectedPattern?: string): DiagnosticResult {
   const trimmedCode = code.trim();
 

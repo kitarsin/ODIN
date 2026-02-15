@@ -5,7 +5,7 @@ import { CodeEditorPanel } from '../components/CodeEditorPanel';
 import { AchievementModal, AchievementData } from '../components/AchievementModal';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../context/AuthContext';
-import { diagnoseCode } from '../utils/diagnosticSystem';
+import { diagnoseCode, diagnoseCSharpSyntax } from '../utils/diagnosticSystem';
 
 const QUESTION_ID = 'array-level-1';
 
@@ -25,8 +25,8 @@ export function GameContainer() {
     const elapsedMs = (Math.random() * 2 + 0.05).toFixed(2);
     const timestamp = new Date().toLocaleTimeString();
     
-    // Simulate code execution
-    const isSuccess = Math.random() > 0.3; // 70% success rate for demo
+    const syntaxDiagnostic = diagnoseCSharpSyntax(code);
+    const isSuccess = !syntaxDiagnostic;
 
     if (isSuccess) {
       setTerminalOutput(`✓ Code executed successfully\nOutput: [1, 2, 3, 4, 5]\nCompleted after ${elapsedMs}ms\n${timestamp}`);
@@ -54,8 +54,7 @@ export function GameContainer() {
         });
       }
     } else {
-      // Show diagnostic
-      const diagnostic = diagnoseCode(code, 'loop');
+      const diagnostic = syntaxDiagnostic || diagnoseCode(code, 'loop');
       const failureData: AchievementData = {
         status: 'failure',
         badgeName: 'Debugging Session',
