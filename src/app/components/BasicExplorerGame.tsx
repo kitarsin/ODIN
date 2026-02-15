@@ -94,19 +94,19 @@ export function BasicExplorerGame({
       
       if (!isGameKey) return;
 
-      // Prevent default behavior immediately for game keys
-      event.preventDefault();
-      event.stopPropagation();
-
-      // Don't process movement keys during battle
-      if (battleActive) return;
-
       const activeElement = document.activeElement;
       const isTyping =
         activeElement instanceof HTMLInputElement ||
         activeElement instanceof HTMLTextAreaElement ||
         (activeElement instanceof HTMLElement && activeElement.isContentEditable);
       if (isTyping) return;
+
+      // Prevent default behavior immediately for game keys
+      event.preventDefault();
+      event.stopPropagation();
+
+      // Don't process movement keys during battle
+      if (battleActive) return;
 
       const normalizedKey = normalizeKey(event);
       if (!normalizedKey) return;
@@ -128,6 +128,13 @@ export function BasicExplorerGame({
         code === 'arrowup' || code === 'arrowdown' || code === 'arrowleft' || code === 'arrowright';
       
       if (!isGameKey) return;
+
+      const activeElement = document.activeElement;
+      const isTyping =
+        activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement ||
+        (activeElement instanceof HTMLElement && activeElement.isContentEditable);
+      if (isTyping) return;
 
       // Prevent default behavior immediately for game keys
       event.preventDefault();
