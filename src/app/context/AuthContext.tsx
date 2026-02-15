@@ -15,6 +15,16 @@ type User = {
   // Add these defaults so your dashboard doesn't crash if they are missing
   progress: { arrays: number; loops: number; grids: number }; 
   badges: string[];
+  achievements: Achievement[];
+};
+
+type Achievement = {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  unlockedAt: string;
+  type: 'success' | 'diagnosis';
 };
 
 const AuthContext = createContext<any>(null);
@@ -63,24 +73,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('id', authUser.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching profile:", error);
+        // If profile doesn't exist yet, create default user object
+        setUser({
+          id: authUser.id,
+          email: authUser.email,
+          name: 'User',
+          studentId: '',
+          section: '',
+          role: 'student',
+          avatar: '🧑‍🎓',
+          syncRate: 0,
+          status: 'active',
+          progress: { arrays: 0, loops: 0, grids: 0 },
+          badges: [],
+          achievements: []
+        });
+        setLoading(false);
+        return;
+      }
 
       if (data) {
         const rawSyncRate = Number(data.sync_rate);
         const syncRate = Number.isFinite(rawSyncRate) ? rawSyncRate : 0;
+        const achievementsData = data.achievements ? JSON.parse(data.achievements) : [];
+        const badgesData = data.badges ? JSON.parse(data.badges) : [];
+        
         setUser({
           id: authUser.id,
           email: authUser.email,
-          name: data.full_name,         // MAP THIS
-          studentId: data.student_id,   // MAP THIS
-          section: data.section,
+          name: data.full_name || 'User',
+          studentId: data.student_id || '',
+          section: data.section || '',
           role: data.role || 'student',
           avatar: data.avatar_url || '🧑‍🎓',
-          syncRate, // MAP THIS
+          syncRate,
           status: 'active',
-          // Mocking these for now until you create real tables for them
           progress: { arrays: 0, loops: 0, grids: 0 },
-          badges: [] 
+          badges: badgesData,
+          achievements: achievementsData
         });
       }
     } catch (error) {
@@ -110,53 +142,109 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setLoading(false);
-      throw error;
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        throw error;
+      }
+      // Wait for session to be established
+      await new Promise(resolve => setTimeout(resolve, 300));
+    } finally {
+      // Don't set loading to false here - let onAuthStateChange handle it
+      // This prevents race conditions
     }
-    // navigation should be handled by the caller (page) to avoid router/provider ordering issues
   };
 
   const register = async (email: string, password: string, name: string, studentId: string, section: string) => {
     setLoading(true);
-    // 1. Create Auth User
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      setLoading(false);
-      throw error;
-    }
+    try {
+      // 1. Create Auth User
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        throw error;
+      }
 
-    if (data.user) {
+      if (!data.user) {
+        throw new Error('Failed to create user account');
+      }
+
       // 2. Create Profile Entry using correct DB column names
       const { error: profileError } = await supabase
         .from('profiles')
         .insert([
           { 
             id: data.user.id, 
-            full_name: name,       // Insert as full_name
-            student_id: studentId, // Insert as student_id
+            full_name: name,
+            student_id: studentId,
             section: section,
-            sync_rate: 100
+            sync_rate: 100,
+            role: 'student',
+            avatar_url: '🧑‍🎓',
+            badges: JSON.stringify([]),
+            achievements: JSON.stringify([])
           }
         ]);
+      
       if (profileError) {
-        setLoading(false);
-        throw profileError;
+        console.error('Profile creation error:', profileError);
+        throw new Error('Failed to create user profile. Please try again.');
       }
-    }
 
-    if (!data.session) {
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-      if (signInError) {
-        setLoading(false);
-        throw signInError;
+      // 3. Sign in the newly created user
+      if (!data.session) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) {
+          throw signInError;
+        }
       }
+      
+      // Wait a brief moment for the auth state to update
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } finally {
+      // Don't set loading to false here - let onAuthStateChange handle it
+      // This prevents race conditions
     }
   };
 
   const logout = async () => {
     await supabase.auth.signOut();
+  };
+
+  // Add a new achievement to the user's profile
+  const addAchievement = async (achievement: Omit<Achievement, 'id'>) => {
+    if (!user) {
+      console.error('No user logged in');
+      return;
+    }
+
+    try {
+      const newAchievement: Achievement = {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        ...achievement,
+      };
+
+      const updatedAchievements = [...(user.achievements || []), newAchievement];
+      
+      // Update database
+      const { error } = await supabase
+        .from('profiles')
+        .update({ achievements: JSON.stringify(updatedAchievements) })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error saving achievement:', error);
+        return;
+      }
+
+      // Update local state
+      setUser({
+        ...user,
+        achievements: updatedAchievements,
+        badges: [...(user.badges || []), achievement.name],
+      });
+    } catch (error) {
+      console.error('Error adding achievement:', error);
+    }
   };
 
   // Show error screen if initialization failed
@@ -180,7 +268,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Always render children - let router handle the UI based on auth state
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, updatePassword, updateProfileAvatar }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, updatePassword, updateProfileAvatar, addAchievement }}>
       {children}
     </AuthContext.Provider>
   );

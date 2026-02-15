@@ -37,14 +37,24 @@ export function Register() {
 
     try {
       await register(email, password, name, studentId, section);
+      // Registration successful - auth state will handle redirect
+      // Clear form to show clean state
+      setName('');
+      setEmail('');
+      setStudentId('');
+      setSection('');
+      setPassword('');
     } catch (err: any) {
       const message = (err?.message || '').toLowerCase();
       if (message.includes('email not confirmed')) {
         setError('Please confirm your email, then sign in.');
+      } else if (message.includes('already registered')) {
+        setError('This email is already registered. Please sign in instead.');
+      } else if (message.includes('password')) {
+        setError('Password must be at least 6 characters.');
       } else {
-        setError(err.message || 'Registration failed.');
+        setError(err.message || 'Registration failed. Please try again.');
       }
-    } finally {
       setLoading(false);
     }
   };
@@ -56,10 +66,12 @@ export function Register() {
   }, [queryEmail, email]);
 
   useEffect(() => {
-    if (user && !authLoading) {
-      navigate('/dashboard');
+    // Redirect only when: user is authenticated AND loading is complete AND error is not set
+    if (user && !authLoading && !loading && !error) {
+      // Use replace to prevent back button going to register
+      navigate('/dashboard', { replace: true });
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, loading, error, navigate]);
 
   const isSubmitting = loading || authLoading;
   const canSubmit =
@@ -117,6 +129,7 @@ export function Register() {
                 placeholder={isGameMode ? 'ENTER_NAME' : 'Enter your full name'}
                 autoComplete="name"
                 className={getInputClass()}
+                style={{ fontFamily: 'var(--font-mono)' }}
                 autoFocus
                 disabled={isSubmitting}
                 required
@@ -142,6 +155,7 @@ export function Register() {
                 placeholder={isGameMode ? 'ENTER_EMAIL' : 'Enter your email'}
                 autoComplete="email"
                 className={getInputClass()}
+                style={{ fontFamily: 'var(--font-mono)' }}
                 disabled={isSubmitting}
                 required
               />

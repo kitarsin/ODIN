@@ -2,25 +2,75 @@ import { Navigation } from '../components/Navigation';
 import { useState } from 'react';
 import { BasicExplorerGame } from '../components/BasicExplorerGame';
 import { CodeEditorPanel } from '../components/CodeEditorPanel';
+import { AchievementModal, AchievementData } from '../components/AchievementModal';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../context/AuthContext';
+import { diagnoseCode } from '../utils/diagnosticSystem';
 
 const QUESTION_ID = 'array-level-1';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 export function GameContainer() {
-  const { user } = useAuth();
+  const { user, addAchievement } = useAuth();
   const [code, setCode] = useState('');
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [terminalOutput, setTerminalOutput] = useState('Terminal output sample');
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [battleMode, setBattleMode] = useState(false);
+  const [achievementData, setAchievementData] = useState<AchievementData | null>(null);
+  const [showAchievement, setShowAchievement] = useState(false);
 
   const handleRun = () => {
     const elapsedMs = (Math.random() * 2 + 0.05).toFixed(2);
     const timestamp = new Date().toLocaleTimeString();
-    setTerminalOutput(`Compiled successfully after ${elapsedMs}ms\n${timestamp}`);
+    
+    // Simulate code execution
+    const isSuccess = Math.random() > 0.3; // 70% success rate for demo
+
+    if (isSuccess) {
+      setTerminalOutput(`✓ Code executed successfully\nOutput: [1, 2, 3, 4, 5]\nCompleted after ${elapsedMs}ms\n${timestamp}`);
+      
+      // Show success achievement
+      const successData: AchievementData = {
+        status: 'success',
+        badgeName: 'First Victory',
+        badgeEmoji: '⚔️',
+        title: 'Code Executed',
+        description: 'Your code ran without errors!',
+        successMessage: 'Great job! Your logic is correct!',
+      };
+      setAchievementData(successData);
+      setShowAchievement(true);
+
+      // Add to user achievements
+      if (user && addAchievement) {
+        addAchievement({
+          name: 'First Victory',
+          emoji: '⚔️',
+          description: 'Successfully executed code without errors',
+          unlockedAt: new Date().toISOString(),
+          type: 'success',
+        });
+      }
+    } else {
+      // Show diagnostic
+      const diagnostic = diagnoseCode(code, 'loop');
+      const failureData: AchievementData = {
+        status: 'failure',
+        badgeName: 'Debugging Session',
+        badgeEmoji: '🔍',
+        title: 'Error Detected',
+        description: 'Your code needs some work. Let Odin help!',
+        diagnosticTitle: diagnostic.diagnosticTitle,
+        diagnosticMessage: diagnostic.diagnosticMessage,
+        suggestions: diagnostic.suggestions,
+      };
+      setAchievementData(failureData);
+      setShowAchievement(true);
+
+      setTerminalOutput(`✗ Runtime Error\n${diagnostic.diagnosticTitle}\nLine: ${Math.floor(Math.random() * 10) + 1}`);
+    }
   };
 
   const handleCastCode = async () => {
@@ -59,6 +109,15 @@ export function GameContainer() {
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground transition-colors">
       <Navigation />
+
+      {/* Achievement Modal */}
+      {achievementData && (
+        <AchievementModal
+          isOpen={showAchievement}
+          onClose={() => setShowAchievement(false)}
+          data={achievementData}
+        />
+      )}
 
       {/* Game Header */}
       <div className="flex flex-1 items-center justify-center px-6 py-6">

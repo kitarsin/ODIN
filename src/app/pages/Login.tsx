@@ -30,14 +30,16 @@ export function Login() {
 
     try {
       await login(email, password);
+      // Login successful - auth state will handle redirect
     } catch (err: any) {
       const message = (err?.message || '').toLowerCase();
       if (message.includes('invalid login credentials')) {
         setError('Email or password is incorrect.');
+      } else if (message.includes('email not confirmed')) {
+        setError('Please confirm your email before signing in.');
       } else {
         setError(err?.message || 'Unable to sign in. Please try again.');
       }
-    } finally {
       setLoading(false);
     }
   };
@@ -49,10 +51,12 @@ export function Login() {
   }, [queryEmail, email]);
 
   useEffect(() => {
-    if (user && !authLoading) {
-      navigate('/dashboard');
+    // Redirect only when: user is authenticated AND loading is complete AND error is not set
+    if (user && !authLoading && !loading && !error) {
+      // Use replace to prevent back button going to login
+      navigate('/dashboard', { replace: true });
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, loading, error, navigate]);
 
   const isSubmitting = loading || authLoading;
   const canSubmit = email.trim().length > 0 && password.trim().length > 0;

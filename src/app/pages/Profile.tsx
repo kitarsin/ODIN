@@ -133,29 +133,56 @@ export function Profile() {
           <div className="border rounded-lg p-6 bg-card border-border transition-colors">
             <h3 className="text-lg font-semibold mb-6">Achievements</h3>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {user.badges.map((badge: string) => (
-                <div
-                  key={badge}
-                  className="bg-primary/10 border border-primary/30 rounded-lg p-4 text-center"
-                >
-                  <div className="text-3xl mb-2">🏆</div>
-                  <p className="text-xs text-primary font-semibold" style={{ fontFamily: 'var(--font-mono)' }}>
-                    {badge.replace('-', ' ').toUpperCase()}
-                  </p>
+            {user.achievements && user.achievements.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {user.achievements.map((achievement) => (
+                  <div
+                    key={achievement.id}
+                    className="group bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30 rounded-lg p-4 text-center hover:border-primary/60 transition-all duration-300 cursor-pointer"
+                  >
+                    <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">
+                      {achievement.emoji}
+                    </div>
+                    <p className="text-xs text-primary font-semibold mb-2" style={{ fontFamily: 'var(--font-mono)' }}>
+                      {achievement.name.replace('-', ' ').toUpperCase()}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                      {achievement.description}
+                    </p>
+                    <p className="text-[9px] text-muted-foreground/60 mt-2">
+                      {new Date(achievement.unlockedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-2">No achievements yet</p>
+                <p className="text-xs text-muted-foreground">
+                  Start coding and unlock your first achievement!
+                </p>
+              </div>
+            )}
+
+            {/* Legacy badges display */}
+            {user.badges && user.badges.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-border">
+                <p className="text-xs text-muted-foreground mb-3">Legacy Badges</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {user.badges.map((badge: string) => (
+                    <div
+                      key={badge}
+                      className="bg-primary/10 border border-primary/30 rounded-lg p-4 text-center"
+                    >
+                      <div className="text-3xl mb-2">🏆</div>
+                      <p className="text-xs text-primary font-semibold" style={{ fontFamily: 'var(--font-mono)' }}>
+                        {badge.replace('-', ' ').toUpperCase()}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-              
-              {Array.from({ length: Math.max(0, 6 - user.badges.length) }).map((_, idx) => (
-                <div
-                  key={`locked-${idx}`}
-                  className="border rounded-lg p-4 text-center opacity-50 bg-muted/40 border-border transition-colors"
-                >
-                  <div className="text-3xl mb-2">🔒</div>
-                  <p className="text-xs text-muted-foreground">Locked</p>
-                </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Statistics */}
@@ -165,30 +192,30 @@ export function Profile() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="border rounded-lg p-4 text-center bg-muted/40 border-border transition-colors">
                 <p className="text-2xl font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
-                  {user.badges.length * 5}
+                  {(user.achievements?.length || 0) + (user.badges?.length || 0)}
                 </p>
-                <p className="text-xs mt-1 text-muted-foreground">Challenges Completed</p>
+                <p className="text-xs mt-1 text-muted-foreground">Total Achievements</p>
               </div>
               
               <div className="border rounded-lg p-4 text-center bg-muted/40 border-border transition-colors">
                 <p className="text-2xl font-semibold text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>
-                  {user.badges.length * 12}
+                  {(user.achievements?.filter(a => a.type === 'success').length || 0)}
                 </p>
-                <p className="text-xs mt-1 text-muted-foreground">Hours Played</p>
+                <p className="text-xs mt-1 text-muted-foreground">Victories</p>
               </div>
               
               <div className="border rounded-lg p-4 text-center bg-muted/40 border-border transition-colors">
                 <p className="text-2xl font-semibold text-amber-500" style={{ fontFamily: 'var(--font-mono)' }}>
-                  {user.badges.length}
+                  {(user.achievements?.filter(a => a.type === 'diagnosis').length || 0)}
                 </p>
-                <p className="text-xs mt-1 text-muted-foreground">Keys Collected</p>
+                <p className="text-xs mt-1 text-muted-foreground">Debug Sessions</p>
               </div>
               
               <div className="border rounded-lg p-4 text-center bg-muted/40 border-border transition-colors">
                 <p className="text-2xl font-semibold text-pink-500" style={{ fontFamily: 'var(--font-mono)' }}>
                   {rankInfo.rank}
                 </p>
-                <p className="text-xs mt-1 text-muted-foreground">Rank</p>
+                <p className="text-xs mt-1 text-muted-foreground">Current Rank</p>
               </div>
             </div>
           </div>
