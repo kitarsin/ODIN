@@ -78,12 +78,15 @@ export function GameContainer() {
       return;
     }
 
+    const syntaxDiagnostic = diagnoseCSharpSyntax(code);
+    const isCorrect = !syntaxDiagnostic;
+
     setSaveStatus('saving');
     const { error } = await supabase.from('submissions').insert({
       user_id: user.id,
       question_id: QUESTION_ID,
       code_snippet: code,
-      is_correct: false,
+      is_correct: isCorrect,
     });
 
     if (error) {
