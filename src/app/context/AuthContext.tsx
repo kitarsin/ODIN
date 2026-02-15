@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
+import { calculateSyncRate } from '../utils/achievementCatalog';
 
 // 1. Update the User Type to match what your UI components expect
 type User = {
@@ -141,20 +142,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const rawSyncRate = Number(data.sync_rate);
         const achievementsData = dedupeAchievements(coerceJsonArray(data.achievements));
         const badgesData = dedupeBadges(coerceJsonArray((data as any).badges));
-        const hasProgressSignals = achievementsData.length > 0 || badgesData.length > 0;
-        const syncRate = Number.isFinite(rawSyncRate)
-          ? rawSyncRate === 100 && !hasProgressSignals
-            ? 0
-            : rawSyncRate
-          : 0;
         const derivedBadges = achievementsData
           .map((achievement: any) => achievement?.name)
           .filter((name: unknown): name is string => typeof name === 'string' && name.length > 0);
+        const finalBadges = badgesData.length > 0 ? badgesData : dedupeBadges(derivedBadges);
+        const syncRate = calculateSyncRate(achievementsData, finalBadges);
 
-        if (rawSyncRate === 100 && !hasProgressSignals) {
+        if (Number.isFinite(rawSyncRate) && rawSyncRate !== syncRate) {
           await supabase
             .from('profiles')
-            .update({ sync_rate: 0 })
+            .update({ sync_rate: syncRate })
             .eq('id', authUser.id);
         }
         
@@ -169,7 +166,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           syncRate,
           status: 'active',
           progress: { arrays: 0, loops: 0, grids: 0 },
-          badges: badgesData.length > 0 ? badgesData : dedupeBadges(derivedBadges),
+          badges: finalBadges,
           achievements: achievementsData
         });
       }
@@ -296,11 +293,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const updatedAchievements = [...existingAchievements, newAchievement];
       const updatedBadges = dedupeBadges([...(user.badges || []), achievement.name]);
+      const syncRate = calculateSyncRate(updatedAchievements, updatedBadges);
       
       // Update database
       const { error } = await supabase
         .from('profiles')
-        .update({ achievements: updatedAchievements, badges: updatedBadges })
+        .update({ achievements: updatedAchievements, badges: updatedBadges, sync_rate: syncRate })
         .eq('id', user.id);
 
       if (error) {
@@ -313,6 +311,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         ...user,
         achievements: updatedAchievements,
         badges: updatedBadges,
+        syncRate,
       });
     } catch (error) {
       console.error('Error adding achievement:', error);

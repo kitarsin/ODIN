@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigation } from '../components/Navigation';
 import { AlertTriangle, Activity, TrendingDown } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
+import { calculateSyncRate } from '../utils/achievementCatalog';
 
 type Student = {
   id: string;
@@ -25,6 +26,51 @@ export function Analytics() {
 
   const isAvatarUrl = (value: string) => value.startsWith('http') || value.startsWith('data:');
 
+  const coerceJsonArray = (value: unknown): any[] => {
+    if (Array.isArray(value)) return value;
+    if (!value) return [];
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        console.warn('Failed to parse json array:', error);
+        return [];
+      }
+    }
+    return [];
+  };
+
+  const dedupeBadges = (value: unknown) => {
+    const rawBadges = coerceJsonArray(value)
+      .filter((badge) => typeof badge === 'string') as string[];
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const badge of rawBadges) {
+      const normalized = badge.trim();
+      if (!normalized || seen.has(normalized)) continue;
+      seen.add(normalized);
+      result.push(normalized);
+    }
+    return result;
+  };
+
+  const dedupeAchievements = (value: unknown) => {
+    const rawAchievements = coerceJsonArray(value)
+      .filter((achievement) => achievement && typeof achievement === 'object') as { name?: string; type?: string }[];
+    const seen = new Set<string>();
+    const result: { name?: string; type?: string }[] = [];
+    for (const achievement of rawAchievements) {
+      const name = `${achievement.name || ''}`.trim().toLowerCase();
+      const type = `${achievement.type || ''}`.trim().toLowerCase();
+      const key = `${name}::${type}`;
+      if (!name || seen.has(key)) continue;
+      seen.add(key);
+      result.push(achievement);
+    }
+    return result;
+  };
+
   useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -33,7 +79,7 @@ export function Analytics() {
         // Only select users that are students (exclude admins and system/test accounts)
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, full_name, student_id, section, avatar_url, sync_rate, role, created_at')
+          .select('id, full_name, student_id, section, avatar_url, sync_rate, role, created_at, achievements, badges')
           .eq('role', 'student')
           .order('created_at', { ascending: false });
 
@@ -50,8 +96,9 @@ export function Analytics() {
         });
 
         const formattedStudents = (liveStudents || []).map((student: any) => {
-          const rawSyncRate = Number(student.sync_rate);
-          const syncRate = Number.isFinite(rawSyncRate) ? rawSyncRate : 0;
+          const achievements = dedupeAchievements(student.achievements);
+          const badges = dedupeBadges(student.badges);
+          const syncRate = calculateSyncRate(achievements, badges);
 
           return {
             id: student.id,

@@ -6,6 +6,7 @@ import { Input } from '../components/ui/input';
 import { Checkbox } from '../components/ui/checkbox';
 import { UserModal } from '../components/UserModal';
 import { supabase } from '../../lib/supabaseClient'; // Import client
+import { calculateSyncRate } from '../utils/achievementCatalog';
 
 interface User {
   id: string;
@@ -125,8 +126,7 @@ export function AdminDatabase() {
       const formattedUsers = data.map((u: any) => {
         const achievements = dedupeAchievements(u.achievements);
         const badges = dedupeBadges(u.badges);
-        const hasProgress = achievements.length > 0 || badges.length > 0;
-        const syncRate = hasProgress ? (u.sync_rate || 0) : 0;
+        const syncRate = calculateSyncRate(achievements, badges);
 
         return {
         id: u.id,
@@ -135,7 +135,7 @@ export function AdminDatabase() {
         role: u.role,
         section: u.section,
         avatar: u.avatar_url || '🧑‍🎓',
-        syncRate,
+          syncRate,
         lastLogin: u.created_at, // or a real last_login column if you added it
         status: 'active' as const,
         achievements,
