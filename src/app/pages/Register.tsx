@@ -6,7 +6,6 @@ import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { ThemeToggle } from '../components/ThemeToggle';
 
 export function Register() {
   const [name, setName] = useState('');
@@ -92,10 +91,6 @@ export function Register() {
 
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 transition-all ${bgClass}`}>
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
-      </div>
-
       <div className="w-full max-w-md">
         <div className={`border p-8 shadow-2xl transition-all ${isGameMode ? `bg-[#16213e] border-[#00ff41] shadow-[0_0_30px_rgba(0,255,65,0.3)] border-4 rounded` : `${cardBgClass} border-2 ${cardBorderClass} rounded-lg`}`}>
           <div className="flex flex-col items-center mb-8">

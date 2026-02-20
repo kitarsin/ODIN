@@ -9,7 +9,6 @@ import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { ThemeToggle } from '../components/ThemeToggle';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -107,11 +106,6 @@ export function Login() {
 
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 transition-all ${getBgClass()}`}>
-      {/* Theme Toggle - Top Right */}
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
-      </div>
-
       <div className="w-full max-w-md">
         <div className={`border p-8 shadow-2xl transition-all ${
           isGameMode

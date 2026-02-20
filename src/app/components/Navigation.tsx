@@ -6,7 +6,6 @@ import logo256 from '../../img/brand/odin-logo-transparent-256.png';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from './ui/button';
-import { ThemeToggle } from './ThemeToggle';
 
 export function Navigation() {
   const { user, logout } = useAuth();
@@ -197,9 +196,6 @@ export function Navigation() {
                 </Link>
               </>
             )}
-
-            {/* Theme Toggle */}
-            <ThemeToggle />
 
             {/* User Info & Logout */}
             <div className={`flex items-center gap-3 ml-4 pl-4 border-l ${

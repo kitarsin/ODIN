@@ -31,8 +31,115 @@ type Achievement = {
   type?: 'success' | 'diagnosis';
 };
 
+const mockStudents: User[] = [
+  {
+    id: 'mock-student-1',
+    name: 'Alex Chen',
+    studentId: 'S001',
+    role: 'student',
+    section: 'Section A',
+    avatar: '👨‍💻',
+    syncRate: 85,
+    lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    status: 'active',
+    achievements: [
+      { id: 'ach-1', name: 'Array Master', emoji: '🎯', description: 'Mastered array operations', unlockedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+      { id: 'ach-2', name: 'Loop Expert', emoji: '🔄', description: 'Completed all loop challenges', unlockedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+      { id: 'ach-3', name: 'Syntax Ninja', emoji: '⚡', description: '0 compilation errors', unlockedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+      { id: 'ach-4', name: 'Debug Detective', emoji: '🔍', description: 'Successfully debugged 10 issues', unlockedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), type: 'diagnosis' },
+    ],
+    badges: ['Week Warrior', 'Early Bird', 'Consistency Champion'],
+  },
+  {
+    id: 'mock-student-2',
+    name: 'Sarah Kim',
+    studentId: 'S002',
+    role: 'student',
+    section: 'Section B',
+    avatar: '👩‍💼',
+    syncRate: 72,
+    lastLogin: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+    status: 'active',
+    achievements: [
+      { id: 'ach-5', name: 'Array Master', emoji: '🎯', description: 'Mastered array operations', unlockedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+      { id: 'ach-6', name: 'Loop Expert', emoji: '🔄', description: 'Completed all loop challenges', unlockedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+      { id: 'ach-7', name: 'Rising Star', emoji: '⭐', description: 'Reached 1000 XP', unlockedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+    ],
+    badges: ['Quick Learner', 'Problem Solver'],
+  },
+  {
+    id: 'mock-student-3',
+    name: 'Marcus Johnson',
+    studentId: 'S003',
+    role: 'student',
+    section: 'Section A',
+    avatar: '👨‍🎓',
+    syncRate: 58,
+    lastLogin: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+    status: 'active',
+    achievements: [
+      { id: 'ach-8', name: 'First Steps', emoji: '🚀', description: 'Completed first level', unlockedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+      { id: 'ach-9', name: 'Index Logic', emoji: '📍', description: 'Mastered array indexing', unlockedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+    ],
+    badges: ['Newcomer'],
+  },
+  {
+    id: 'mock-student-4',
+    name: 'Emma Rodriguez',
+    studentId: 'S004',
+    role: 'student',
+    section: 'Section C',
+    avatar: '👩‍🦰',
+    syncRate: 91,
+    lastLogin: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    status: 'active',
+    achievements: [
+      { id: 'ach-10', name: 'Array Master', emoji: '🎯', description: 'Mastered array operations', unlockedAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+      { id: 'ach-11', name: 'Loop Expert', emoji: '🔄', description: 'Completed all loop challenges', unlockedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+      { id: 'ach-12', name: 'Syntax Ninja', emoji: '⚡', description: '0 compilation errors', unlockedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+      { id: 'ach-13', name: 'Debug Detective', emoji: '🔍', description: 'Successfully debugged 10 issues', unlockedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), type: 'diagnosis' },
+      { id: 'ach-14', name: 'Rising Star', emoji: '⭐', description: 'Reached 1000 XP', unlockedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+    ],
+    badges: ['Week Warrior', 'Consistency Champion', 'Perfect Submissions', 'Speed Demon'],
+  },
+  {
+    id: 'mock-student-5',
+    name: 'David Park',
+    studentId: 'S005',
+    role: 'student',
+    section: 'Section B',
+    avatar: '👨‍🏫',
+    syncRate: 64,
+    lastLogin: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+    status: 'active',
+    achievements: [
+      { id: 'ach-15', name: 'Array Master', emoji: '🎯', description: 'Mastered array operations', unlockedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+      { id: 'ach-16', name: 'Loop Expert', emoji: '🔄', description: 'Completed all loop challenges', unlockedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+    ],
+    badges: ['Consistent', 'Team Player'],
+  },
+  {
+    id: 'mock-student-6',
+    name: 'Lisa Thompson',
+    studentId: 'S006',
+    role: 'student',
+    section: 'Section C',
+    avatar: '👩‍💻',
+    syncRate: 79,
+    lastLogin: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+    status: 'active',
+    achievements: [
+      { id: 'ach-17', name: 'Array Master', emoji: '🎯', description: 'Mastered array operations', unlockedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+      { id: 'ach-18', name: 'Loop Expert', emoji: '🔄', description: 'Completed all loop challenges', unlockedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+      { id: 'ach-19', name: 'Syntax Ninja', emoji: '⚡', description: '0 compilation errors', unlockedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+      { id: 'ach-20', name: 'Rising Star', emoji: '⭐', description: 'Reached 1000 XP', unlockedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
+    ],
+    badges: ['Week Warrior', 'Quick Learner'],
+  },
+];
+
 export function AdminDatabase() {
-  const [users, setUsers] = useState<User[]>([]); // Initialize empty
+  const [users, setUsers] = useState<User[]>(mockStudents); // Initialize with mock students
   const [_loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSection, setFilterSection] = useState('all');

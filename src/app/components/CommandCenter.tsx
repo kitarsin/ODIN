@@ -14,13 +14,33 @@ interface AnalyticsPoint {
   errors: number;
 }
 
+const mockStudents: Student[] = [
+  { id: 'USR_001', name: 'Alex Chen', currentMission: 'Loop Fundamentals', status: 'online', errorRate: 12, compilations: 8 },
+  { id: 'USR_002', name: 'Sarah Kim', currentMission: 'Array Methods', status: 'stuck', errorRate: 45, compilations: 15 },
+  { id: 'USR_003', name: 'Mike Rodriguez', currentMission: '2D Arrays', status: 'online', errorRate: 8, compilations: 4 },
+  { id: 'USR_004', name: 'Emma Watson', currentMission: 'Index Logic', status: 'stuck', errorRate: 52, compilations: 22 },
+  { id: 'USR_005', name: 'James Liu', currentMission: 'Advanced Loops', status: 'online', errorRate: 15, compilations: 6 },
+  { id: 'USR_006', name: 'Olivia Brown', currentMission: 'Array Basics', status: 'offline', errorRate: 0, compilations: 0 },
+];
+
+const mockAnalyticsData = [
+  { time: '10:00', errors: 12 },
+  { time: '10:15', errors: 18 },
+  { time: '10:30', errors: 25 },
+  { time: '10:45', errors: 22 },
+  { time: '11:00', errors: 15 },
+  { time: '11:15', errors: 28 },
+  { time: '11:30', errors: 35 },
+  { time: '11:45', errors: 30 },
+];
+
 export function CommandCenter({
-  students = [],
-  analyticsData = [],
+  students = mockStudents,
+  analyticsData = mockAnalyticsData,
 }: {
   students?: Student[];
   analyticsData?: AnalyticsPoint[];
-}) {
+} = {}) {
   const totalStudents = students.length;
   const onlineStudents = students.filter(s => s.status === 'online').length;
   const stuckStudents = students.filter(s => s.status === 'stuck').length;

@@ -6,127 +6,57 @@
   --font-mono: 'Roboto Mono', monospace;
   --font-pixel: 'Press Start 2P', cursive;
   
-  /* ODIN Custom Colors - Academic Mode */
+  /* ODIN Custom Colors - Light Mode (Eye-friendly) */
   --odin-gunmetal: #0B0E1A;
-  --odin-slate: #111827;
-  --odin-slate-border: #1F2A3A;
+  --odin-slate: #1A2332;
+  --odin-slate-border: #D2E2EA;
   --odin-terminal-green: #27E4D0;
   --odin-info-blue: #3BB6F6;
-  --odin-amber: #FFC857;
+  --odin-amber: #F5A623;
   
-  /* Game Mode Colors */
-  --game-bg: #0B0E1A;
-  --game-surface: #111827;
-  --game-border: #1F2A3A;
-  --game-accent: #27E4D0;
-  --game-secondary: #3BB6F6;
-  --game-tertiary: #64F1D1;
-  --game-warning: #FFC857;
-  
-  --background: #0B0E1A;
-  --foreground: #E6FFFB;
-  --card: #111827;
-  --card-foreground: #E6FFFB;
-  --popover: #111827;
-  --popover-foreground: #E6FFFB;
-  --primary: #27E4D0;
-  --primary-foreground: #0B0E1A;
-  --secondary: #3BB6F6;
-  --secondary-foreground: #0B0E1A;
-  --muted: #1B2636;
-  --muted-foreground: #9DB2C8;
-  --accent: #FFC857;
-  --accent-foreground: #0B0E1A;
-  --destructive: #F26D6D;
-  --destructive-foreground: #0B0E1A;
-  --border: #1F2A3A;
-  --input: #1F2A3A;
-  --input-background: #111827;
-  --switch-background: #1F2A3A;
+  /* Light Mode - Eye-friendly colors */
+  --background: #F8FBFC;
+  --foreground: #1A2332;
+  --card: #FFFFFF;
+  --card-foreground: #1A2332;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A2332;
+  --primary: #0DA99F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #246FBC;
+  --secondary-foreground: #FFFFFF;
+  --muted: #EBF0F5;
+  --muted-foreground: #5A7280;
+  --accent: #F5A623;
+  --accent-foreground: #FFFFFF;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: #D2E2EA;
+  --input: #D2E2EA;
+  --input-background: #FFFFFF;
+  --switch-background: #D2E2EA;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #27E4D0;
-  --chart-1: #27E4D0;
-  --chart-2: #3BB6F6;
-  --chart-3: #FFC857;
-  --chart-4: #64F1D1;
-  --chart-5: #F26D6D;
+  --ring: #0DA99F;
+  --chart-1: #0DA99F;
+  --chart-2: #246FBC;
+  --chart-3: #F5A623;
+  --chart-4: #1FAF97;
+  --chart-5: #DC2626;
   --radius: 0.5rem;
-  --sidebar: #111827;
-  --sidebar-foreground: #E6FFFB;
-  --sidebar-primary: #27E4D0;
-  --sidebar-primary-foreground: #0B0E1A;
-  --sidebar-accent: #1B2636;
-  --sidebar-accent-foreground: #E6FFFB;
-  --sidebar-border: #1F2A3A;
-  --sidebar-ring: #27E4D0;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1A2332;
+  --sidebar-primary: #0DA99F;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EBF0F5;
+  --sidebar-accent-foreground: #1A2332;
+  --sidebar-border: #D2E2EA;
+  --sidebar-ring: #0DA99F;
 }
 
 /* Game Mode - Light (Retro 8-bit) */
 .game-mode {
-  --background: #0B0E1A;
-  --foreground: #64F1D1;
-  --card: #111827;
-  --card-foreground: #64F1D1;
-  --popover: #111827;
-  --popover-foreground: #64F1D1;
-  --primary: #27E4D0;
-  --primary-foreground: #0B0E1A;
-  --secondary: #3BB6F6;
-  --secondary-foreground: #0B0E1A;
-  --muted: #1B2636;
-  --muted-foreground: #86C6E6;
-  --accent: #FFC857;
-  --accent-foreground: #0B0E1A;
-  --destructive: #F26D6D;
-  --destructive-foreground: #0B0E1A;
-  --border: #27E4D0;
-  --input: #1F2A3A;
-  --input-background: #111827;
-  --ring: #27E4D0;
-  --radius: 0rem;
-}
-
-.dark {
-  --background: #0B0E1A;
-  --foreground: #E6FFFB;
-  --card: #111827;
-  --card-foreground: #E6FFFB;
-  --popover: #111827;
-  --popover-foreground: #E6FFFB;
-  --primary: #27E4D0;
-  --primary-foreground: #0B0E1A;
-  --secondary: #3BB6F6;
-  --secondary-foreground: #0B0E1A;
-  --muted: #1B2636;
-  --muted-foreground: #9DB2C8;
-  --accent: #FFC857;
-  --accent-foreground: #0B0E1A;
-  --destructive: #F26D6D;
-  --destructive-foreground: #0B0E1A;
-  --border: #1F2A3A;
-  --input: #1F2A3A;
-  --ring: #27E4D0;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --chart-1: #27E4D0;
-  --chart-2: #3BB6F6;
-  --chart-3: #FFC857;
-  --chart-4: #64F1D1;
-  --chart-5: #F26D6D;
-  --sidebar: #111827;
-  --sidebar-foreground: #E6FFFB;
-  --sidebar-primary: #27E4D0;
-  --sidebar-primary-foreground: #0B0E1A;
-  --sidebar-accent: #1B2636;
-  --sidebar-accent-foreground: #E6FFFB;
-  --sidebar-border: #1F2A3A;
-  --sidebar-ring: #27E4D0;
-}
-
-/* Light Mode - Academic */
-:root.light-mode {
-  --background: #F4FBFB;
+  --background: #EEF8FB;
   --foreground: #0B1220;
   --card: #FFFFFF;
   --card-foreground: #0B1220;
@@ -145,21 +75,82 @@
   --border: #D2E2EA;
   --input: #D2E2EA;
   --input-background: #FFFFFF;
-  --switch-background: #D2E2EA;
   --ring: #18C9B9;
-  --chart-1: #18C9B9;
-  --chart-2: #2F8DE6;
-  --chart-3: #FFC857;
-  --chart-4: #64F1D1;
-  --chart-5: #E85757;
+}
+
+/* Dark mode styles removed - light mode only */
+.dark {
+  --background: #F8FBFC;
+  --foreground: #1A2332;
+  --card: #FFFFFF;
+  --card-foreground: #1A2332;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A2332;
+  --primary: #0DA99F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #246FBC;
+  --secondary-foreground: #FFFFFF;
+  --muted: #EBF0F5;
+  --muted-foreground: #5A7280;
+  --accent: #F5A623;
+  --accent-foreground: #FFFFFF;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: #D2E2EA;
+  --input: #D2E2EA;
+  --ring: #0DA99F;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: #0DA99F;
+  --chart-2: #246FBC;
+  --chart-3: #F5A623;
+  --chart-4: #1FAF97;
+  --chart-5: #DC2626;
   --sidebar: #FFFFFF;
-  --sidebar-foreground: #0B1220;
-  --sidebar-primary: #18C9B9;
-  --sidebar-primary-foreground: #04212B;
-  --sidebar-accent: #E2EEF3;
-  --sidebar-accent-foreground: #0B1220;
+  --sidebar-foreground: #1A2332;
+  --sidebar-primary: #0DA99F;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EBF0F5;
+  --sidebar-accent-foreground: #1A2332;
   --sidebar-border: #D2E2EA;
-  --sidebar-ring: #18C9B9;
+  --sidebar-ring: #0DA99F;
+}
+
+:root.light-mode {
+  --background: #F8FBFC;
+  --foreground: #1A2332;
+  --card: #FFFFFF;
+  --card-foreground: #1A2332;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A2332;
+  --primary: #0DA99F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #246FBC;
+  --secondary-foreground: #FFFFFF;
+  --muted: #EBF0F5;
+  --muted-foreground: #5A7280;
+  --accent: #F5A623;
+  --accent-foreground: #FFFFFF;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: #D2E2EA;
+  --input: #D2E2EA;
+  --input-background: #FFFFFF;
+  --switch-background: #D2E2EA;
+  --ring: #0DA99F;
+  --chart-1: #0DA99F;
+  --chart-2: #246FBC;
+  --chart-3: #F5A623;
+  --chart-4: #1FAF97;
+  --chart-5: #DC2626;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1A2332;
+  --sidebar-primary: #0DA99F;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EBF0F5;
+  --sidebar-accent-foreground: #1A2332;
+  --sidebar-border: #D2E2EA;
+  --sidebar-ring: #0DA99F;
 }
 
 /* Light Mode + Game Mode */
