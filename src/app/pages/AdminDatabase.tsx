@@ -250,9 +250,16 @@ export function AdminDatabase() {
       };
     });
 
-      setUsers(formattedUsers);
+      // Use mock students as fallback if no real users found
+      if (formattedUsers.length > 0) {
+        setUsers(formattedUsers);
+      } else {
+        setUsers(mockStudents);
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
+      // Use mock students as fallback on error
+      setUsers(mockStudents);
     } finally {
       setLoading(false);
     }
