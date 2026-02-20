@@ -36,9 +36,9 @@ const mockAnalyticsStudents: Student[] = [
     studentId: 'S002',
     section: 'Section B',
     avatar: '👩‍💼',
-    syncRate: 52,
+    syncRate: 45,
     createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-    progress: { arrays: 60, loops: 45, grids: 40 },
+    progress: { arrays: 50, loops: 35, grids: 30 },
   },
   {
     id: 'mock-student-3',

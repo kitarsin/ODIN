@@ -57,15 +57,13 @@ const mockStudents: User[] = [
     role: 'student',
     section: 'Section B',
     avatar: '👩‍💼',
-    syncRate: 72,
+    syncRate: 45,
     lastLogin: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
     status: 'active',
     achievements: [
       { id: 'ach-5', name: 'Array Master', emoji: '🎯', description: 'Mastered array operations', unlockedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
-      { id: 'ach-6', name: 'Loop Expert', emoji: '🔄', description: 'Completed all loop challenges', unlockedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
-      { id: 'ach-7', name: 'Rising Star', emoji: '⭐', description: 'Reached 1000 XP', unlockedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), type: 'success' },
     ],
-    badges: ['Quick Learner', 'Problem Solver'],
+    badges: ['Struggling Learner'],
   },
   {
     id: 'mock-student-3',
