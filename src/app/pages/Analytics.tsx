@@ -139,54 +139,9 @@ export function Analytics() {
       try {
         setLoadError(null);
         setLoading(true);
-        // Only select users that are students (exclude admins and system/test accounts)
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id, full_name, student_id, section, avatar_url, sync_rate, role, created_at, achievements, badges')
-          .eq('role', 'student')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        // Defensive client-side filter to remove any mock/test accounts
-        const liveStudents = (data || []).filter((s: any) => {
-          const sid = (s.student_id || '').toString().toLowerCase();
-          const name = (s.full_name || '').toString().toLowerCase();
-          // exclude obvious test/mock rows
-          if (!sid) return false;
-          if (sid.includes('mock') || name.includes('mock') || sid.includes('test')) return false;
-          return true;
-        });
-
-        const formattedStudents = (liveStudents || []).map((student: any) => {
-          const achievements = dedupeAchievements(student.achievements);
-          const badges = dedupeBadges(student.badges);
-          const syncRate = calculateSyncRate(achievements, badges);
-
-          return {
-            id: student.id,
-            name: student.full_name,
-            studentId: student.student_id,
-            section: student.section,
-            avatar: student.avatar_url || '🧑‍🎓',
-            syncRate,
-            createdAt: student.created_at,
-            progress: {
-              arrays: 0,
-              loops: 0,
-              grids: 0
-            }
-          };
-        });
-
-        // Use mock data as fallback if no real students found
-        if (formattedStudents.length === 0) {
-          setStudents(mockAnalyticsStudents);
-          setLoadError(null);
-        } else {
-          setStudents(formattedStudents);
-          setLoadError(null);
-        }
+        // Use mock students for analytics
+        setStudents(mockAnalyticsStudents);
+        setLoadError(null);
       } catch (error) {
         console.error('Error fetching students:', error);
         // Use mock data as fallback on error
@@ -225,41 +180,46 @@ export function Analytics() {
       severity: 'low'
     });
     
-    // Add progress logs based on sync rate
+    // Assign behaviors based on sync rate
     if (student.syncRate >= 85) {
       logs.push({
-        id: `${student.id}-high-progress`,
+        id: `${student.id}-behavior-active`,
         student: student.name,
-        event: 'High Performance Achieved',
+        event: 'Active Thinking',
         timestamp: new Date(new Date(student.createdAt || new Date()).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         severity: 'low'
       });
     } else if (student.syncRate >= 70) {
       logs.push({
-        id: `${student.id}-good-progress`,
+        id: `${student.id}-behavior-productive`,
         student: student.name,
-        event: 'Good Progress Maintained',
+        event: 'Productive Failure',
         timestamp: new Date(new Date(student.createdAt || new Date()).getTime() + 5 * 24 * 60 * 60 * 1000).toISOString(),
         severity: 'low'
       });
-    } else if (student.syncRate < 60) {
-      logs.unshift({
-        id: `${student.id}-low-sync`,
+    } else if (student.syncRate >= 60) {
+      logs.push({
+        id: `${student.id}-behavior-tinkering`,
         student: student.name,
-        event: 'Low Sync Rate Alert',
+        event: 'Tinkering',
+        timestamp: new Date(new Date(student.createdAt || new Date()).getTime() + 4 * 24 * 60 * 60 * 1000).toISOString(),
+        severity: 'low'
+      });
+    } else if (student.syncRate >= 50) {
+      logs.unshift({
+        id: `${student.id}-behavior-gaming`,
+        student: student.name,
+        event: 'Gaming the System',
         timestamp: new Date(new Date(student.createdAt || new Date()).getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
         severity: 'medium'
       });
-    }
-    
-    // Add achievement logs
-    if (student.syncRate >= 80) {
-      logs.push({
-        id: `${student.id}-achievement`,
+    } else {
+      logs.unshift({
+        id: `${student.id}-behavior-spinning`,
         student: student.name,
-        event: 'Unlocked Achievement: Array Master',
-        timestamp: new Date(new Date(student.createdAt || new Date()).getTime() + 10 * 24 * 60 * 60 * 1000).toISOString(),
-        severity: 'low'
+        event: 'Wheel Spinning',
+        timestamp: new Date(new Date(student.createdAt || new Date()).getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+        severity: 'high'
       });
     }
     

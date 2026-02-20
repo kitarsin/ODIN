@@ -220,42 +220,8 @@ export function AdminDatabase() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      // Fetch from your 'profiles' table
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Map DB fields to your UI 'User' type if they differ
-      // e.g. DB has 'full_name', UI expects 'name'
-      const formattedUsers = data.map((u: any) => {
-        const achievements = dedupeAchievements(u.achievements);
-        const badges = dedupeBadges(u.badges);
-        const syncRate = calculateSyncRate(achievements, badges);
-
-        return {
-        id: u.id,
-        name: u.full_name,
-        studentId: u.student_id,
-        role: u.role,
-        section: u.section,
-        avatar: u.avatar_url || '🧑‍🎓',
-          syncRate,
-        lastLogin: u.created_at, // or a real last_login column if you added it
-        status: 'active' as const,
-        achievements,
-        badges
-      };
-    });
-
-      // Use mock students as fallback if no real users found
-      if (formattedUsers.length > 0) {
-        setUsers(formattedUsers);
-      } else {
-        setUsers(mockStudents);
-      }
+      // Use mock students for admin database
+      setUsers(mockStudents);
     } catch (error) {
       console.error('Error fetching users:', error);
       // Use mock students as fallback on error
