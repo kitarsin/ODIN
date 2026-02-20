@@ -77,7 +77,8 @@ export function Profile() {
             </div>
           </div>
 
-          {/* Overall Progress */}
+          {/* Overall Progress - Only for students */}
+          {user.role === 'student' && (
           <div className="border rounded-lg p-6 bg-card border-border transition-colors">
             <h3 className="text-lg font-semibold mb-6">Overall Progress</h3>
             
@@ -128,8 +129,10 @@ export function Profile() {
               </div>
             </div>
           </div>
+          )}
 
-          {/* Achievements */}
+          {/* Achievements - Only for students */}
+          {user.role === 'student' && (
           <div className="border rounded-lg p-6 bg-card border-border transition-colors">
             <h3 className="text-lg font-semibold mb-6">Achievements</h3>
             
@@ -184,8 +187,10 @@ export function Profile() {
               </div>
             )}
           </div>
+          )}
 
-          {/* Statistics */}
+          {/* Statistics - Only for students */}
+          {user.role === 'student' && (
           <div className="border rounded-lg p-6 bg-card border-border transition-colors">
             <h3 className="text-lg font-semibold mb-6">Statistics</h3>
             
@@ -219,6 +224,7 @@ export function Profile() {
               </div>
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>
