@@ -41,9 +41,13 @@ export function CommandCenter({
   students?: Student[];
   analyticsData?: AnalyticsPoint[];
 } = {}) {
-  const totalStudents = students.length;
-  const onlineStudents = students.filter(s => s.status === 'online').length;
-  const stuckStudents = students.filter(s => s.status === 'stuck').length;
+  // Use mock data as fallback if empty arrays are passed
+  const displayStudents = (students && students.length > 0) ? students : mockStudents;
+  const displayAnalytics = (analyticsData && analyticsData.length > 0) ? analyticsData : mockAnalyticsData;
+  
+  const totalStudents = displayStudents.length;
+  const onlineStudents = displayStudents.filter(s => s.status === 'online').length;
+  const stuckStudents = displayStudents.filter(s => s.status === 'stuck').length;
   const onlinePercent = totalStudents > 0 ? (onlineStudents / totalStudents) * 100 : 0;
   const stuckPercent = totalStudents > 0 ? (stuckStudents / totalStudents) * 100 : 0;
 
@@ -132,12 +136,12 @@ export function CommandCenter({
 
             {/* Student Cards Grid */}
             <div className="grid grid-cols-2 gap-4">
-              {students.length === 0 ? (
+              {displayStudents.length === 0 ? (
                 <div className="col-span-2 rounded-lg border border-dashed border-border/60 bg-secondary/10 p-6 text-center text-sm text-muted-foreground">
                   No active agents yet.
                 </div>
               ) : (
-                students.map((student) => (
+                displayStudents.map((student) => (
                   <div
                     key={student.id}
                     className={`
@@ -213,7 +217,7 @@ export function CommandCenter({
                 ))}
               </div>
 
-              {analyticsData.length === 0 ? (
+              {displayAnalytics.length === 0 ? (
                 <div className="relative z-10 flex h-full items-center justify-center text-sm text-muted-foreground">
                   No analytics data yet.
                 </div>
@@ -237,14 +241,14 @@ export function CommandCenter({
                     stroke="url(#lineGradient)"
                     strokeWidth="3"
                     filter="url(#glow)"
-                    points={analyticsData.map((d, i) => {
-                      const maxIndex = Math.max(analyticsData.length - 1, 1);
+                    points={displayAnalytics.map((d, i) => {
+                      const maxIndex = Math.max(displayAnalytics.length - 1, 1);
                       return `${(i / maxIndex) * 400},${200 - (d.errors / 40) * 200}`;
                     }).join(' ')}
                   />
                   {/* Data points */}
-                  {analyticsData.map((d, i) => {
-                    const maxIndex = Math.max(analyticsData.length - 1, 1);
+                  {displayAnalytics.map((d, i) => {
+                    const maxIndex = Math.max(displayAnalytics.length - 1, 1);
                     return (
                       <circle
                         key={i}
@@ -262,8 +266,8 @@ export function CommandCenter({
 
             {/* X-axis labels */}
             <div className="flex justify-between text-xs text-muted-foreground code-font mb-6">
-              <span>{analyticsData[0]?.time ?? '--:--'}</span>
-              <span>{analyticsData[analyticsData.length - 1]?.time ?? '--:--'}</span>
+              <span>{displayAnalytics[0]?.time ?? '--:--'}</span>
+              <span>{displayAnalytics[displayAnalytics.length - 1]?.time ?? '--:--'}</span>
             </div>
 
             {/* Stats */}
@@ -316,14 +320,14 @@ export function CommandCenter({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30">
-                {students.length === 0 ? (
+                {displayStudents.length === 0 ? (
                   <tr className="bg-secondary/10">
                     <td colSpan={5} className="px-6 py-8 text-center text-sm text-muted-foreground">
                       No agents to display.
                     </td>
                   </tr>
                 ) : (
-                  students.map((student, index) => (
+                  displayStudents.map((student, index) => (
                     <tr
                       key={student.id}
                       className={`
