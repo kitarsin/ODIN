@@ -95,15 +95,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
     // Listen for changes (login/logout)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
-      if (session) {
-        setLoading(true);
-        fetchProfile(session.user);
-      } else {
-        setUser(null);
-        setLoading(false);
-      }
-    });
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string, session: any) => {
+        // Only refetch on actual login/logout, not token refreshes
+        if (event === 'SIGNED_IN' && !user) {
+          setLoading(true);
+          fetchProfile(session.user);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setLoading(false);
+        }
+        // Ignore TOKEN_REFRESHED and other events — they don't need a full reload
+      });
 
     return () => subscription?.unsubscribe();
   }, []);

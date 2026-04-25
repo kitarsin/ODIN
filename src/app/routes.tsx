@@ -9,6 +9,7 @@ import { AdminDatabase } from './pages/AdminDatabase';
 import { Analytics } from './pages/Analytics';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import AccountSettings from './pages/AccountSettings';
+import { OdinTestBench } from './pages/OdinTestBench';
 
 export const router = createBrowserRouter([
   {
@@ -76,6 +77,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute requireAdmin>
         <Analytics />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/test-bench',
+    element: (
+      <ProtectedRoute>
+      <OdinTestBench />
       </ProtectedRoute>
     )
   },
