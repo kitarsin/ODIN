@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { calculateSyncRate } from '../utils/achievementCatalog';
 
@@ -71,12 +71,21 @@ const dedupeBadges = (badges: string[]) => {
   return result;
 };
 
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes of tab inactivity before session check
+const LAST_HIDDEN_KEY = 'odin_tab_hidden_at';
+
 const AuthContext = createContext<any>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Ref keeps the auth state change handler from capturing a stale user value
+  const userRef = useRef<User | null>(null);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   useEffect(() => {
     // Check active session on load
@@ -95,19 +104,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
     // Listen for changes (login/logout)
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string, session: any) => {
-        // Only refetch on actual login/logout, not token refreshes
-        if (event === 'SIGNED_IN' && !user) {
-          setLoading(true);
-          fetchProfile(session.user);
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setLoading(false);
-        }
-        // Ignore TOKEN_REFRESHED and other events — they don't need a full reload
-      });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string, session: any) => {
+      // Use ref so this handler always sees the latest user value, not a stale closure
+      if (event === 'SIGNED_IN' && !userRef.current) {
+        setLoading(true);
+        fetchProfile(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setLoading(false);
+      }
+      // Ignore TOKEN_REFRESHED and other events — they don't need a full reload
+    });
 
     return () => subscription?.unsubscribe();
+  }, []);
+
+  // Persist session across tab switches; only invalidate after ample inactivity
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        localStorage.setItem(LAST_HIDDEN_KEY, Date.now().toString());
+      } else if (document.visibilityState === 'visible') {
+        const stored = localStorage.getItem(LAST_HIDDEN_KEY);
+        if (stored && (Date.now() - parseInt(stored)) > SESSION_TIMEOUT_MS) {
+          // Ample time has passed — verify the Supabase session is still alive
+          supabase.auth.getSession().then(({ data: { session } }: any) => {
+            if (!session) {
+              setUser(null);
+              setLoading(false);
+            }
+            // Session still valid: keep the existing user state untouched
+          });
+          localStorage.removeItem(LAST_HIDDEN_KEY);
+        }
+        // Tab returned quickly — do nothing, keep the current session as-is
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   // 2. THE FIX: Map Database Fields (snake_case) to UI Fields (camelCase)
