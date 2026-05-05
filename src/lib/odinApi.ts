@@ -104,14 +104,20 @@ export interface CompileResult {
   isCorrect: boolean;
   diagnosticCategory: string;
   diagnosticMessage: string;
+  /** Actual stdout produced by the student's code */
+  actualOutput: string | null;
   compilerDiagnostics: { id: string; severity: string; message: string; line: number; column: number }[];
 }
 
-export async function compilePretestCode(sourceCode: string, skillType: string): Promise<CompileResult> {
+export async function compilePretestCode(
+  sourceCode: string,
+  skillType: string,
+  problemId: string,
+): Promise<CompileResult> {
   const res = await fetch(`${API_URL}/api/pretest/compile`, {
     method: 'POST',
     headers: await getAuthHeaders(),
-    body: JSON.stringify({ sourceCode, skillType }),
+    body: JSON.stringify({ sourceCode, skillType, problemId }),
   });
   if (!res.ok) throw new Error(`Compile failed: ${res.status}`);
   return res.json();

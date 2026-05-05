@@ -166,13 +166,65 @@ export function Pretest() {
   // ── Keystroke / paste handlers ────────────────────────────────────────────
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    const now  = performance.now();
-    const t    = now - questionShownAt.current;
+    const ta  = e.currentTarget;
+
+    // ── Auto-indentation ────────────────────────────────────────────────────
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const start = ta.selectionStart;
+      const end   = ta.selectionEnd;
+
+      if (e.shiftKey) {
+        // Shift+Tab: remove up to 4 leading spaces from the current line
+        const lineStart = code.lastIndexOf('\n', start - 1) + 1;
+        const removed   = code.slice(lineStart).match(/^( {1,4})/)?.[1] ?? '';
+        if (removed) {
+          const next = code.slice(0, lineStart) + code.slice(lineStart + removed.length);
+          setCode(next);
+          const newPos = Math.max(lineStart, start - removed.length);
+          requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = newPos; });
+        }
+      } else {
+        // Tab: insert 4 spaces at cursor (replacing any selection)
+        const next = code.slice(0, start) + '    ' + code.slice(end);
+        setCode(next);
+        requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = start + 4; });
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const start       = ta.selectionStart;
+      const currentLine = code.slice(0, start).split('\n').pop() ?? '';
+      const indent      = currentLine.match(/^(\s*)/)?.[1] ?? '';
+      // Extra indent level when the line ends with an opening brace
+      const extra       = currentLine.trimEnd().endsWith('{') ? '    ' : '';
+      const insertion   = '\n' + indent + extra;
+      const next        = code.slice(0, start) + insertion + code.slice(ta.selectionEnd);
+      setCode(next);
+      const newPos = start + insertion.length;
+      requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = newPos; });
+    } else if (e.key === '}') {
+      // De-indent closing brace if the line is only whitespace before the cursor
+      const start     = ta.selectionStart;
+      const lineStart = code.lastIndexOf('\n', start - 1) + 1;
+      const before    = code.slice(lineStart, start);
+      if (/^ {4,}$/.test(before)) {
+        e.preventDefault();
+        const next   = code.slice(0, lineStart) + before.slice(4) + '}' + code.slice(ta.selectionEnd);
+        setCode(next);
+        const newPos = start - 4 + 1;
+        requestAnimationFrame(() => { ta.selectionStart = ta.selectionEnd = newPos; });
+      }
+    }
+
+    // ── Keystroke tracking (always runs, even for handled keys) ────────────
+
+    const now      = performance.now();
+    const t        = now - questionShownAt.current;
     const flightMs = lastKeyUp.current > 0 ? now - lastKeyUp.current : undefined;
 
     keyDownTimes.current.set(e.code, now);
 
-    // Resume from idle
     if (idleStartT.current !== null) {
       pushEvent({ t, type: 'idle_end', idle: t - idleStartT.current });
       idleStartT.current = null;
@@ -217,7 +269,7 @@ export function Pretest() {
     const t = elapsed();
     pushEvent({ t, type: 'run_click' });
     try {
-      const result = await compilePretestCode(code, problem.skillType);
+      const result = await compilePretestCode(code, problem.skillType, problem.id);
       setCompileResult(result);
       lastIsCorrect.current = result.isCorrect;
       pushEvent({ t: elapsed(), type: 'run_result', pass: result.isCorrect, diag: result.diagnosticCategory });
@@ -486,9 +538,19 @@ export function Pretest() {
                   ))}
                 </div>
               )}
+              {/* Actual output (always shown when available) */}
+              {compileResult.actualOutput !== null && compileResult.actualOutput !== undefined && (
+                <div className={`px-4 py-3 border-t text-xs ${passed ? isGameMode ? 'border-[#00ff41]/20' : 'border-green-500/20' : isGameMode ? 'border-red-500/20' : 'border-destructive/20'}`}>
+                  <span className={`font-medium ${muted}`} style={pixel}>Output: </span>
+                  <code className={`${text}`} style={mono}>
+                    {compileResult.actualOutput.trim() || <span className={muted}>(no output)</span>}
+                  </code>
+                </div>
+              )}
+
               {!passed && !hasErrors && (
                 <p className={`px-4 py-3 text-xs ${muted}`} style={pixel}>
-                  {compileResult.diagnosticCategory !== 'None' ? `Category: ${compileResult.diagnosticCategory}` : 'Logic error — check your approach.'}
+                  {compileResult.diagnosticMessage || 'Logic error — check your approach.'}
                 </p>
               )}
             </div>
