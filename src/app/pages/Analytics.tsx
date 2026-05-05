@@ -19,6 +19,22 @@ type Student = {
   };
 };
 
+type RawEvent = {
+  t: number;
+  type: string;
+  key?: string;
+  dwell?: number;
+  flight?: number;
+  chars?: number;
+  idle?: number;
+  pass?: boolean;
+  diag?: string;
+};
+
+type TimelineSegment =
+  | { kind: 'event'; t: number; type: string; meta?: string }
+  | { kind: 'burst'; startT: number; endT: number; keys: number; backspaces: number; deletes: number };
+
 type PretestQuestionRow = {
   questionId: string;
   response: string;
@@ -30,6 +46,58 @@ type PretestQuestionRow = {
   pasteCharCount: number;
   typedCharCount: number;
   isCorrect: boolean;
+  rawEvents: RawEvent[];
+};
+
+// ── Timeline helpers ────────────────────────────────────────────────────────
+
+/** Format milliseconds as MM:SS.mmm */
+function fmtTs(ms: number): string {
+  const m   = Math.floor(ms / 60_000);
+  const s   = Math.floor((ms % 60_000) / 1_000);
+  const ms3 = Math.floor(ms % 1_000);
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms3).padStart(3, '0')}`;
+}
+
+/** Collapse consecutive keydown/keyup events into typing bursts for readability */
+function buildTimeline(events: RawEvent[]): TimelineSegment[] {
+  const segments: TimelineSegment[] = [];
+  let burst: { startT: number; endT: number; keys: number; backspaces: number; deletes: number } | null = null;
+
+  const flushBurst = () => {
+    if (burst) { segments.push({ kind: 'burst', ...burst }); burst = null; }
+  };
+
+  for (const e of events) {
+    if (e.type === 'keydown') {
+      if (!burst) burst = { startT: e.t, endT: e.t, keys: 0, backspaces: 0, deletes: 0 };
+      burst.endT = e.t;
+      burst.keys += 1;
+      if (e.key === 'Backspace') burst.backspaces += 1;
+      if (e.key === 'Delete')    burst.deletes    += 1;
+    } else if (e.type === 'keyup') {
+      if (burst) burst.endT = e.t;
+    } else {
+      flushBurst();
+      let meta: string | undefined;
+      if (e.type === 'paste')      meta = `${e.chars ?? 0} chars pasted`;
+      if (e.type === 'idle_end')   meta = `idle for ${((e.idle ?? 0) / 1000).toFixed(1)}s`;
+      if (e.type === 'run_result') meta = e.pass ? 'PASS' : `FAIL — ${e.diag ?? ''}`;
+      segments.push({ kind: 'event', t: e.t, type: e.type, meta });
+    }
+  }
+  flushBurst();
+  return segments;
+}
+
+const EVENT_LABEL: Record<string, string> = {
+  question_shown: 'Question shown',
+  idle_start:     'Stopped typing (idle)',
+  idle_end:       'Resumed typing',
+  paste:          'Paste',
+  run_click:      'Run Code clicked',
+  run_result:     'Run result',
+  advance:        'Moved to next problem',
 };
 
 type PretestStudentResult = {
@@ -204,7 +272,7 @@ export function Analytics() {
             .order('full_name'),
           supabase
             .from('pretest_responses')
-            .select('user_id, question_id, response, avg_flight_time_ms, avg_dwell_time_ms, time_to_first_key_ms, total_time_ms, paste_count, paste_char_count, typed_char_count, is_correct')
+            .select('user_id, question_id, response, avg_flight_time_ms, avg_dwell_time_ms, time_to_first_key_ms, total_time_ms, paste_count, paste_char_count, typed_char_count, is_correct, raw_events')
             .order('sequence_number'),
         ]);
 
@@ -242,6 +310,7 @@ export function Analytics() {
               pasteCharCount: r.paste_char_count ?? 0,
               typedCharCount: r.typed_char_count ?? 0,
               isCorrect: r.is_correct ?? false,
+              rawEvents: Array.isArray(r.raw_events) ? r.raw_events : [],
             })),
           };
         });
@@ -719,6 +788,56 @@ export function Analytics() {
                                     {totalChars > 0 && <span>paste ratio: {(pasteRatio * 100).toFixed(0)}%</span>}
                                   </div>
                                 )}
+
+                                {/* Detailed event timeline */}
+                                {r.rawEvents.length > 0 && (() => {
+                                  const segments = buildTimeline(r.rawEvents);
+                                  return (
+                                    <div className="mt-4">
+                                      <p className="text-xs font-semibold text-muted-foreground mb-2" style={{ fontFamily: 'var(--font-mono)' }}>
+                                        Session Timeline
+                                      </p>
+                                      <div className="bg-muted/60 rounded border border-border overflow-y-auto" style={{ maxHeight: '260px' }}>
+                                        {segments.map((seg, si) => {
+                                          if (seg.kind === 'burst') {
+                                            const dur = ((seg.endT - seg.startT) / 1000).toFixed(1);
+                                            const edits = seg.backspaces + seg.deletes;
+                                            return (
+                                              <div key={si} className="flex gap-3 px-3 py-1.5 border-b border-border/50 last:border-0 items-baseline hover:bg-muted/80 transition-colors">
+                                                <span className="text-xs text-muted-foreground shrink-0 w-20" style={{ fontFamily: 'var(--font-mono)' }}>
+                                                  {fmtTs(seg.startT)}
+                                                </span>
+                                                <span className="text-xs font-medium text-foreground">Typing burst</span>
+                                                <span className="text-xs text-muted-foreground ml-auto" style={{ fontFamily: 'var(--font-mono)' }}>
+                                                  {seg.keys - edits} chars · {edits > 0 ? `${seg.backspaces}× ⌫  ${seg.deletes > 0 ? `${seg.deletes}× Del · ` : ''}` : ''}{dur}s
+                                                </span>
+                                              </div>
+                                            );
+                                          }
+                                          // Structural event
+                                          const label = EVENT_LABEL[seg.type] ?? seg.type;
+                                          const isWarning = seg.type === 'paste' || (seg.type === 'run_result' && !seg.meta?.startsWith('PASS'));
+                                          const isSuccess = seg.type === 'run_result' && seg.meta?.startsWith('PASS');
+                                          return (
+                                            <div key={si} className={`flex gap-3 px-3 py-1.5 border-b border-border/50 last:border-0 items-baseline hover:bg-muted/80 transition-colors ${isWarning ? 'bg-amber-500/5' : isSuccess ? 'bg-green-500/5' : ''}`}>
+                                              <span className="text-xs text-muted-foreground shrink-0 w-20" style={{ fontFamily: 'var(--font-mono)' }}>
+                                                {fmtTs(seg.t)}
+                                              </span>
+                                              <span className={`text-xs font-medium ${isWarning ? 'text-amber-500' : isSuccess ? 'text-green-600' : 'text-foreground'}`}>
+                                                {label}
+                                              </span>
+                                              {seg.meta && (
+                                                <span className={`text-xs ml-auto ${isWarning ? 'text-amber-400' : isSuccess ? 'text-green-500' : 'text-muted-foreground'}`} style={{ fontFamily: 'var(--font-mono)' }}>
+                                                  {seg.meta}
+                                                </span>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
                               </div>
                             );
                           })}

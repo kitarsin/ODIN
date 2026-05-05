@@ -32,6 +32,8 @@ export type PretestResponse = {
   pasteCharCount: number;
   typedCharCount: number;
   isCorrect: boolean;
+  /** Full timestamped event log for this problem */
+  events: object[];
 };
 
 type Achievement = {
@@ -338,6 +340,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       paste_char_count: r.pasteCharCount,
       typed_char_count: r.typedCharCount,
       is_correct: r.isCorrect,
+      raw_events: r.events,
     }));
 
     const { error: insertError } = await supabase.from('pretest_responses').insert(rows);

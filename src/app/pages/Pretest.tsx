@@ -6,7 +6,33 @@ import { useTheme } from '../context/ThemeContext';
 import { compilePretestCode, CompileResult } from '../../lib/odinApi';
 import { Button } from '../components/ui/button';
 
-// ── Problem bank ────────────────────────────────────────────────────────────
+// ── Event log types ──────────────────────────────────────────────────────────
+
+export type EventType =
+  | 'question_shown'
+  | 'keydown'
+  | 'keyup'
+  | 'paste'
+  | 'idle_start'
+  | 'idle_end'
+  | 'run_click'
+  | 'run_result'
+  | 'advance';
+
+export type EventEntry = {
+  /** Milliseconds since question was shown */
+  t: number;
+  type: EventType;
+  key?: string;    // keydown / keyup
+  dwell?: number;  // keyup — ms the key was held
+  flight?: number; // keydown — ms since previous keyup
+  chars?: number;  // paste — character count of pasted text
+  idle?: number;   // idle_end — ms the user was idle
+  pass?: boolean;  // run_result
+  diag?: string;   // run_result — diagnosticCategory
+};
+
+// ── Problem bank ─────────────────────────────────────────────────────────────
 
 const PROBLEMS = [
   {
@@ -46,8 +72,7 @@ const PROBLEMS = [
     title: 'Double Each Value',
     description:
       'Multiply every element of the array by 2 and print each result on its own line.',
-    starterCode:
-      'int[] data = {1, 2, 3, 4, 5};\n// write your loop here\n',
+    starterCode: 'int[] data = {1, 2, 3, 4, 5};\n// write your loop here\n',
   },
   {
     id: 'p5',
@@ -60,11 +85,11 @@ const PROBLEMS = [
   },
 ];
 
-// ── Types ────────────────────────────────────────────────────────────────────
+const IDLE_THRESHOLD_MS = 2_000;
 
 type Phase = 'intro' | 'question' | 'submitting' | 'thankyou';
 
-// ── Component ────────────────────────────────────────────────────────────────
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export function Pretest() {
   const { user, completePretest } = useAuth();
@@ -79,98 +104,123 @@ export function Pretest() {
   const [compileError, setCompileError] = useState('');
   const [submitError, setSubmitError] = useState('');
 
-  // ── Collected responses ────────────────────────────────────────────────────
-  const responses = useRef<PretestResponse[]>([]);
+  const responses    = useRef<PretestResponse[]>([]);
 
-  // ── Per-question keystroke state (all in refs to avoid re-renders) ─────────
-  const flightTimes = useRef<number[]>([]);
-  const dwellTimes = useRef<number[]>([]);
-  const keyDownTimes = useRef<Map<string, number>>(new Map());
-  const lastKeyUp = useRef<number>(0);
-  const firstKeyAt = useRef<number | null>(null);   // performance.now() of first key
-  const questionShownAt = useRef<number>(0);         // performance.now() when question appeared
-  const pasteCount = useRef<number>(0);
-  const pasteCharCount = useRef<number>(0);
-  const typedCharCount = useRef<number>(0);
-  // Track the last known compile correctness for the current question
-  const lastIsCorrect = useRef<boolean>(false);
+  // ── Per-question tracking (all refs — no re-renders) ─────────────────────
+  const eventLog          = useRef<EventEntry[]>([]);
+  const flightTimes       = useRef<number[]>([]);
+  const dwellTimes        = useRef<number[]>([]);
+  const keyDownTimes      = useRef<Map<string, number>>(new Map());
+  const lastKeyUp         = useRef<number>(0);
+  const firstKeyAt        = useRef<number | null>(null);
+  const questionShownAt   = useRef<number>(0);
+  const pasteCount        = useRef<number>(0);
+  const pasteCharCount    = useRef<number>(0);
+  const typedCharCount    = useRef<number>(0);
+  const lastIsCorrect     = useRef<boolean>(false);
+  const idleTimer         = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const idleStartT        = useRef<number | null>(null);  // t (ms from question) when idle began
 
-  // Already finished — skip pretest
   if (user?.pretestCompleted) return <Navigate to="/dashboard" replace />;
 
   const problem = PROBLEMS[questionIndex];
-  const isLast = questionIndex === PROBLEMS.length - 1;
+  const isLast  = questionIndex === PROBLEMS.length - 1;
 
-  // ── Keystroke handlers (inline — fixes null-ref bug with the hook) ──────────
+  // ── Helpers ───────────────────────────────────────────────────────────────
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    const now = performance.now();
-    keyDownTimes.current.set(e.code, now);
-    if (firstKeyAt.current === null) firstKeyAt.current = now;
-    if (lastKeyUp.current > 0) flightTimes.current.push(now - lastKeyUp.current);
-  };
+  const elapsed = () => performance.now() - questionShownAt.current;
 
-  const onKeyUp = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    const now = performance.now();
-    const down = keyDownTimes.current.get(e.code);
-    if (down !== undefined) dwellTimes.current.push(now - down);
-    lastKeyUp.current = now;
-    keyDownTimes.current.delete(e.code);
-    typedCharCount.current += 1;
-  };
-
-  const onPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    pasteCount.current += 1;
-    pasteCharCount.current += e.clipboardData.getData('text').length;
-  };
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
+  const pushEvent = (entry: EventEntry) => { eventLog.current.push(entry); };
 
   const avg = (arr: number[]) =>
     arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 
+  const clearIdle = () => {
+    if (idleTimer.current) { clearTimeout(idleTimer.current); idleTimer.current = null; }
+  };
+
+  const scheduleIdle = () => {
+    clearIdle();
+    idleTimer.current = setTimeout(() => {
+      const t = elapsed();
+      idleStartT.current = t;
+      pushEvent({ t, type: 'idle_start' });
+    }, IDLE_THRESHOLD_MS);
+  };
+
   const resetTracking = () => {
-    flightTimes.current = [];
-    dwellTimes.current = [];
+    clearIdle();
+    eventLog.current       = [];
+    flightTimes.current    = [];
+    dwellTimes.current     = [];
     keyDownTimes.current.clear();
-    lastKeyUp.current = 0;
-    firstKeyAt.current = null;
-    pasteCount.current = 0;
+    lastKeyUp.current      = 0;
+    firstKeyAt.current     = null;
+    pasteCount.current     = 0;
     pasteCharCount.current = 0;
     typedCharCount.current = 0;
-    lastIsCorrect.current = false;
+    lastIsCorrect.current  = false;
+    idleStartT.current     = null;
   };
 
-  const captureResponse = (): PretestResponse => {
-    const latency =
-      firstKeyAt.current !== null
-        ? firstKeyAt.current - questionShownAt.current
-        : 0;
-    return {
-      questionId: problem.id,
-      sequenceNumber: questionIndex,
-      response: code,
-      timeToFirstKeyMs: Math.max(0, latency),
-      totalTimeMs: performance.now() - questionShownAt.current,
-      avgFlightTimeMs: avg(flightTimes.current),
-      avgDwellTimeMs: avg(dwellTimes.current),
-      pasteCount: pasteCount.current,
-      pasteCharCount: pasteCharCount.current,
-      typedCharCount: typedCharCount.current,
-      isCorrect: lastIsCorrect.current,
-    };
+  // ── Keystroke / paste handlers ────────────────────────────────────────────
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const now  = performance.now();
+    const t    = now - questionShownAt.current;
+    const flightMs = lastKeyUp.current > 0 ? now - lastKeyUp.current : undefined;
+
+    keyDownTimes.current.set(e.code, now);
+
+    // Resume from idle
+    if (idleStartT.current !== null) {
+      pushEvent({ t, type: 'idle_end', idle: t - idleStartT.current });
+      idleStartT.current = null;
+    }
+
+    if (firstKeyAt.current === null) firstKeyAt.current = now;
+    if (flightMs !== undefined) flightTimes.current.push(flightMs);
+
+    pushEvent({ t, type: 'keydown', key: e.key, ...(flightMs !== undefined ? { flight: flightMs } : {}) });
+    scheduleIdle();
   };
 
-  // ── Run code ───────────────────────────────────────────────────────────────
+  const onKeyUp = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const now    = performance.now();
+    const t      = now - questionShownAt.current;
+    const down   = keyDownTimes.current.get(e.code);
+    const dwell  = down !== undefined ? now - down : undefined;
+
+    if (dwell !== undefined) dwellTimes.current.push(dwell);
+    lastKeyUp.current = now;
+    keyDownTimes.current.delete(e.code);
+    typedCharCount.current += 1;
+
+    pushEvent({ t, type: 'keyup', key: e.key, ...(dwell !== undefined ? { dwell } : {}) });
+  };
+
+  const onPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const t      = elapsed();
+    const chars  = e.clipboardData.getData('text').length;
+    pasteCount.current     += 1;
+    pasteCharCount.current += chars;
+    pushEvent({ t, type: 'paste', chars });
+    scheduleIdle();
+  };
+
+  // ── Run code ──────────────────────────────────────────────────────────────
 
   const handleRun = async () => {
     setCompiling(true);
     setCompileError('');
     setCompileResult(null);
+    const t = elapsed();
+    pushEvent({ t, type: 'run_click' });
     try {
       const result = await compilePretestCode(code, problem.skillType);
       setCompileResult(result);
       lastIsCorrect.current = result.isCorrect;
+      pushEvent({ t: elapsed(), type: 'run_result', pass: result.isCorrect, diag: result.diagnosticCategory });
     } catch (err: any) {
       setCompileError(err?.message || 'Could not reach the compile server.');
     } finally {
@@ -178,7 +228,28 @@ export function Pretest() {
     }
   };
 
-  // ── Advance / submit ───────────────────────────────────────────────────────
+  // ── Capture & advance ─────────────────────────────────────────────────────
+
+  const captureResponse = (): PretestResponse => {
+    clearIdle();
+    const t       = elapsed();
+    const latency = firstKeyAt.current !== null ? firstKeyAt.current - questionShownAt.current : 0;
+    pushEvent({ t, type: 'advance' });
+    return {
+      questionId:       problem.id,
+      sequenceNumber:   questionIndex,
+      response:         code,
+      timeToFirstKeyMs: Math.max(0, latency),
+      totalTimeMs:      t,
+      avgFlightTimeMs:  avg(flightTimes.current),
+      avgDwellTimeMs:   avg(dwellTimes.current),
+      pasteCount:       pasteCount.current,
+      pasteCharCount:   pasteCharCount.current,
+      typedCharCount:   typedCharCount.current,
+      isCorrect:        lastIsCorrect.current,
+      events:           [...eventLog.current],
+    };
+  };
 
   const handleNext = async () => {
     responses.current.push(captureResponse());
@@ -192,46 +263,47 @@ export function Pretest() {
       } catch (err: any) {
         setSubmitError(err?.message || 'Submission failed. Please try again.');
         setPhase('question');
-        // pop so we don't double-save this question
         responses.current.pop();
       }
     } else {
       resetTracking();
-      setCode(PROBLEMS[questionIndex + 1].starterCode);
+      const next = PROBLEMS[questionIndex + 1];
+      setCode(next.starterCode);
       setCompileResult(null);
       setCompileError('');
       setQuestionIndex(i => i + 1);
       questionShownAt.current = performance.now();
+      pushEvent({ t: 0, type: 'question_shown' });
     }
   };
 
-  // ── Shared style vars ──────────────────────────────────────────────────────
+  // ── Styles ────────────────────────────────────────────────────────────────
 
-  const bg = isGameMode ? 'bg-[#1a1a2e]' : 'bg-background';
+  const bg      = isGameMode ? 'bg-[#1a1a2e]' : 'bg-background';
   const cardCls = isGameMode
     ? 'bg-[#16213e] border-[#00ff41] border-4 shadow-[0_0_30px_rgba(0,255,65,0.3)]'
     : 'bg-card border-2 border-border rounded-lg';
-  const text = isGameMode ? 'text-[#00ff41]' : 'text-foreground';
-  const muted = isGameMode ? 'text-[#4ecdc4]' : 'text-muted-foreground';
-  const codeBg = isGameMode
+  const text    = isGameMode ? 'text-[#00ff41]' : 'text-foreground';
+  const muted   = isGameMode ? 'text-[#4ecdc4]' : 'text-muted-foreground';
+  const codeBg  = isGameMode
     ? 'bg-[#0d1117] border border-[#00ff41]/30 text-[#00ff41] caret-[#00ff41]'
     : 'bg-muted border border-border text-foreground caret-foreground';
-  const monoFont = { fontFamily: 'var(--font-mono)' };
-  const pixelStyle = isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {};
+  const mono    = { fontFamily: 'var(--font-mono)' };
+  const pixel   = isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {};
 
-  // ── Intro ──────────────────────────────────────────────────────────────────
+  // ── Intro ─────────────────────────────────────────────────────────────────
 
   if (phase === 'intro') {
     return (
       <div className={`min-h-screen flex items-center justify-center p-4 ${bg}`}>
         <div className={`w-full max-w-lg border p-8 shadow-2xl ${cardCls}`}>
-          <h1 className={`text-xl font-semibold mb-3 ${text}`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '16px' } : monoFont}>
+          <h1 className={`text-xl font-semibold mb-3 ${text}`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '16px' } : mono}>
             {isGameMode ? '> SYSTEM_CALIBRATION' : 'System Calibration'}
           </h1>
-          <p className={`text-sm mb-2 ${muted}`} style={pixelStyle}>
+          <p className={`text-sm mb-2 ${muted}`} style={pixel}>
             Before accessing ODIN, complete a short coding assessment to calibrate the system.
           </p>
-          <ul className={`text-sm space-y-1 mb-6 list-disc list-inside ${muted}`} style={pixelStyle}>
+          <ul className={`text-sm space-y-1 mb-6 list-disc list-inside ${muted}`} style={pixel}>
             <li>{PROBLEMS.length} C# array problems</li>
             <li>Write real code — a "Run Code" button checks your solution</li>
             <li>You can move on without a passing solution</li>
@@ -241,9 +313,11 @@ export function Pretest() {
             className={`w-full font-semibold ${isGameMode ? 'bg-[#00ff41] hover:bg-[#00cc33] text-[#1a1a2e] border-2 border-[#00ff41] shadow-[0_0_15px_rgba(0,255,65,0.5)]' : 'bg-primary hover:bg-primary/90 text-primary-foreground'}`}
             style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '12px' } : {}}
             onClick={() => {
-              setCode(PROBLEMS[0].starterCode);
+              const starter = PROBLEMS[0].starterCode;
+              setCode(starter);
               setPhase('question');
               questionShownAt.current = performance.now();
+              pushEvent({ t: 0, type: 'question_shown' });
             }}
           >
             {isGameMode ? '> BEGIN_' : 'Begin Assessment'}
@@ -253,17 +327,17 @@ export function Pretest() {
     );
   }
 
-  // ── Thank you ──────────────────────────────────────────────────────────────
+  // ── Thank you ─────────────────────────────────────────────────────────────
 
   if (phase === 'thankyou') {
     return (
       <div className={`min-h-screen flex items-center justify-center p-4 ${bg}`}>
         <div className={`w-full max-w-md border p-10 shadow-2xl text-center ${cardCls}`}>
           <CheckCircle className={`w-14 h-14 mx-auto mb-5 ${isGameMode ? 'text-[#00ff41]' : 'text-primary'}`} />
-          <h1 className={`text-xl font-semibold mb-3 ${text}`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '14px' } : monoFont}>
+          <h1 className={`text-xl font-semibold mb-3 ${text}`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '14px' } : mono}>
             {isGameMode ? '> CALIBRATION_COMPLETE' : 'Thank you for participating!'}
           </h1>
-          <p className={`text-sm mb-8 ${muted}`} style={pixelStyle}>
+          <p className={`text-sm mb-8 ${muted}`} style={pixel}>
             Your responses have been recorded. You may now access the platform.
           </p>
           <Button
@@ -278,60 +352,53 @@ export function Pretest() {
     );
   }
 
-  // ── Question ───────────────────────────────────────────────────────────────
+  // ── Question ──────────────────────────────────────────────────────────────
 
+  const passed    = compileResult?.isCorrect === true;
   const hasErrors = compileResult && compileResult.compilerDiagnostics.length > 0;
-  const passed = compileResult?.isCorrect === true;
 
   return (
     <div className={`min-h-screen flex flex-col p-4 md:p-6 ${bg}`}>
       <div className={`w-full max-w-4xl mx-auto border shadow-2xl flex flex-col ${cardCls}`} style={{ minHeight: '80vh' }}>
 
-        {/* ── Header bar ── */}
+        {/* Header bar */}
         <div className={`flex items-center justify-between px-6 py-3 border-b ${isGameMode ? 'border-[#00ff41]/30' : 'border-border'}`}>
-          <span className={`text-xs font-medium ${muted}`} style={pixelStyle}>
+          <span className={`text-xs font-medium ${muted}`} style={pixel}>
             {isGameMode ? `PROBLEM ${questionIndex + 1}/${PROBLEMS.length}` : `Problem ${questionIndex + 1} of ${PROBLEMS.length}`}
           </span>
           <div className="flex gap-1.5">
             {PROBLEMS.map((_, i) => (
-              <div
-                key={i}
-                className={`h-1.5 w-8 rounded-full transition-all ${
-                  i < questionIndex
-                    ? isGameMode ? 'bg-[#00ff41]' : 'bg-primary'
-                    : i === questionIndex
-                    ? isGameMode ? 'bg-[#4ecdc4]' : 'bg-primary/50'
-                    : isGameMode ? 'bg-[#0f3460]' : 'bg-muted'
-                }`}
-              />
+              <div key={i} className={`h-1.5 w-8 rounded-full transition-all ${
+                i < questionIndex  ? (isGameMode ? 'bg-[#00ff41]'    : 'bg-primary')
+                : i === questionIndex ? (isGameMode ? 'bg-[#4ecdc4]' : 'bg-primary/50')
+                :                       (isGameMode ? 'bg-[#0f3460]' : 'bg-muted')
+              }`} />
             ))}
           </div>
-          <span className={`text-xs ${muted}`} style={pixelStyle}>
-            {isGameMode ? problem.skillType.toUpperCase() : problem.skillType}
-          </span>
+          <span className={`text-xs ${muted}`} style={pixel}>{problem.skillType}</span>
         </div>
 
-        {/* ── Body ── */}
+        {/* Body */}
         <div className="flex flex-col flex-1 p-6 gap-5">
 
-          {/* Problem title + description */}
           <div>
-            <h2 className={`text-base font-semibold mb-1 ${text}`} style={monoFont}>
+            <h2 className={`text-base font-semibold mb-1 ${text}`} style={mono}>
               {isGameMode ? `> ${problem.title.toUpperCase().replace(/ /g, '_')}` : problem.title}
             </h2>
-            <p className={`text-sm ${muted}`} style={pixelStyle}>
-              {problem.description}
-            </p>
+            <p className={`text-sm ${muted}`} style={pixel}>{problem.description}</p>
           </div>
 
-          {/* Code editor */}
+          {/* Editor */}
           <div className="flex flex-col flex-1">
-            <div className={`flex items-center justify-between px-3 py-1.5 rounded-t text-xs font-medium ${isGameMode ? 'bg-[#00ff41]/10 text-[#00ff41] border border-[#00ff41]/30 border-b-0' : 'bg-muted text-muted-foreground border border-border border-b-0 rounded-t'}`} style={monoFont}>
+            <div className={`flex items-center justify-between px-3 py-1.5 rounded-t text-xs font-medium ${
+              isGameMode
+                ? 'bg-[#00ff41]/10 text-[#00ff41] border border-[#00ff41]/30 border-b-0'
+                : 'bg-muted text-muted-foreground border border-border border-b-0'
+            }`} style={mono}>
               <span>{isGameMode ? 'EDITOR.cs' : 'Solution.cs'}</span>
               {pasteCount.current > 0 && (
-                <span className="flex items-center gap-1 text-amber-400">
-                  <ClipboardCopy className="w-3 h-3" />
-                  paste detected
+                <span className="flex items-center gap-1 text-amber-400 text-xs">
+                  <ClipboardCopy className="w-3 h-3" />paste detected
                 </span>
               )}
             </div>
@@ -345,11 +412,11 @@ export function Pretest() {
               spellCheck={false}
               rows={12}
               className={`w-full rounded-b p-4 text-sm resize-none focus:outline-none leading-relaxed ${codeBg}`}
-              style={{ ...monoFont, tabSize: 4 }}
+              style={{ ...mono, tabSize: 4 }}
             />
           </div>
 
-          {/* Action row */}
+          {/* Actions */}
           <div className="flex items-center gap-3">
             <Button
               onClick={handleRun}
@@ -365,7 +432,11 @@ export function Pretest() {
             <Button
               onClick={handleNext}
               disabled={phase === 'submitting'}
-              className={`ml-auto flex items-center gap-2 font-semibold ${isGameMode ? 'bg-[#00ff41] hover:bg-[#00cc33] text-[#1a1a2e] border-2 border-[#00ff41] shadow-[0_0_10px_rgba(0,255,65,0.4)] disabled:opacity-40' : 'bg-primary hover:bg-primary/90 text-primary-foreground'}`}
+              className={`ml-auto flex items-center gap-2 font-semibold ${
+                isGameMode
+                  ? 'bg-[#00ff41] hover:bg-[#00cc33] text-[#1a1a2e] border-2 border-[#00ff41] shadow-[0_0_10px_rgba(0,255,65,0.4)] disabled:opacity-40'
+                  : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+              }`}
               style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '11px' } : {}}
             >
               {phase === 'submitting'
@@ -377,59 +448,47 @@ export function Pretest() {
             </Button>
           </div>
 
-          {/* Submit error */}
           {submitError && (
-            <div className={`text-sm rounded p-3 border ${isGameMode ? 'bg-red-500/10 border-red-500 text-red-400' : 'bg-destructive/10 border-destructive/50 text-destructive'}`} style={pixelStyle}>
+            <div className={`text-sm rounded p-3 border ${isGameMode ? 'bg-red-500/10 border-red-500 text-red-400' : 'bg-destructive/10 border-destructive/50 text-destructive'}`} style={pixel}>
               {submitError}
             </div>
           )}
 
-          {/* Compile error (API unreachable) */}
           {compileError && (
-            <div className={`text-sm rounded p-3 border ${isGameMode ? 'bg-red-500/10 border-red-500 text-red-400' : 'bg-destructive/10 border-destructive/50 text-destructive'}`} style={pixelStyle}>
+            <div className={`text-sm rounded p-3 border ${isGameMode ? 'bg-red-500/10 border-red-500 text-red-400' : 'bg-destructive/10 border-destructive/50 text-destructive'}`} style={pixel}>
               {compileError}
             </div>
           )}
 
-          {/* Compile result panel */}
+          {/* Compile result */}
           {compileResult && (
             <div className={`rounded border text-sm ${
               passed
                 ? isGameMode ? 'bg-[#00ff41]/5 border-[#00ff41]/50' : 'bg-green-500/10 border-green-500/50'
-                : isGameMode ? 'bg-red-500/10 border-red-500/40' : 'bg-destructive/10 border-destructive/40'
+                : isGameMode ? 'bg-red-500/10 border-red-500/40'    : 'bg-destructive/10 border-destructive/40'
             }`}>
-              {/* Status bar */}
               <div className={`flex items-center gap-2 px-4 py-2 border-b font-medium ${
                 passed
                   ? isGameMode ? 'border-[#00ff41]/30 text-[#00ff41]' : 'border-green-500/30 text-green-600'
-                  : isGameMode ? 'border-red-500/30 text-red-400' : 'border-destructive/30 text-destructive'
-              }`} style={pixelStyle}>
+                  : isGameMode ? 'border-red-500/30 text-red-400'      : 'border-destructive/30 text-destructive'
+              }`} style={pixel}>
                 {passed
                   ? <><CheckCircle className="w-4 h-4" />{isGameMode ? 'PASS — NO_ERRORS_DETECTED' : 'Passed — no errors detected'}</>
-                  : <><AlertCircle className="w-4 h-4" />{compileResult.diagnosticMessage || 'Errors found'}</>
-                }
+                  : <><AlertCircle className="w-4 h-4" />{compileResult.diagnosticMessage || 'Errors found'}</>}
               </div>
-
-              {/* Diagnostics list */}
               {hasErrors && (
                 <div className="px-4 py-3 space-y-2">
                   {compileResult.compilerDiagnostics.map((d, i) => (
-                    <div key={i} className={`flex items-start gap-2 ${isGameMode ? 'text-red-400' : 'text-destructive'}`} style={monoFont}>
-                      <span className="shrink-0 text-xs opacity-60">
-                        {d.severity === 'Error' ? '✗' : '⚠'} L{d.line}:{d.column}
-                      </span>
-                      <span className="text-xs break-words">{d.message}</span>
+                    <div key={i} className={`flex items-start gap-2 text-xs ${isGameMode ? 'text-red-400' : 'text-destructive'}`} style={mono}>
+                      <span className="shrink-0 opacity-60">{d.severity === 'Error' ? '✗' : '⚠'} L{d.line}:{d.column}</span>
+                      <span className="break-words">{d.message}</span>
                     </div>
                   ))}
                 </div>
               )}
-
-              {/* No specific diagnostics but not correct */}
               {!passed && !hasErrors && (
-                <p className={`px-4 py-3 text-xs ${muted}`} style={pixelStyle}>
-                  {compileResult.diagnosticCategory !== 'None'
-                    ? `Category: ${compileResult.diagnosticCategory}`
-                    : 'Logic error detected — check your approach.'}
+                <p className={`px-4 py-3 text-xs ${muted}`} style={pixel}>
+                  {compileResult.diagnosticCategory !== 'None' ? `Category: ${compileResult.diagnosticCategory}` : 'Logic error — check your approach.'}
                 </p>
               )}
             </div>
