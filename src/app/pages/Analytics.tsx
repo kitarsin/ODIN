@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigation } from '../components/Navigation';
-import { AlertTriangle, Activity, TrendingDown } from 'lucide-react';
+import { AlertTriangle, Activity, TrendingDown, ClipboardList, ChevronDown, ChevronRight } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { calculateSyncRate } from '../utils/achievementCatalog';
 
@@ -17,6 +17,30 @@ type Student = {
     loops: number;
     grids: number;
   };
+};
+
+type PretestStudentResult = {
+  userId: string;
+  fullName: string;
+  studentId: string;
+  section: string;
+  completed: boolean;
+  avgFlightTimeMs: number;
+  avgDwellTimeMs: number;
+  avgTimeToFirstKeyMs: number;
+  avgTotalTimeMs: number;
+  responses: { questionId: string; response: string; totalTimeMs: number }[];
+};
+
+const QUESTION_LABELS: Record<string, string> = {
+  q1: 'Q1 — Output of arr[1] with {10,20,30}',
+  q2: 'Q2 — Declare int array of size 5',
+  q3: 'Q3 — Access arr[5] on length-5 array',
+  q4: 'Q4 — For loop to print "nums"',
+  q5: 'Q5 — Output of new int[3] at [0]',
+  q6: 'Q6 — Get length of array "data"',
+  q7: 'Q7 — Bug in arr[5]=10 on size-5',
+  q8: 'Q8 — Last element expression of "items"',
 };
 
 const mockAnalyticsStudents: Student[] = [
@@ -86,6 +110,10 @@ export function Analytics() {
   const [students, setStudents] = useState<Student[]>(mockAnalyticsStudents);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [pretestResults, setPretestResults] = useState<PretestStudentResult[]>([]);
+  const [pretestLoading, setPretestLoading] = useState(true);
+  const [pretestError, setPretestError] = useState<string | null>(null);
+  const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
 
   const isAvatarUrl = (value: string) => value.startsWith('http') || value.startsWith('data:');
 
@@ -152,7 +180,63 @@ export function Analytics() {
       }
     };
 
+    const fetchPretestResults = async () => {
+      try {
+        setPretestLoading(true);
+        setPretestError(null);
+
+        const [profilesRes, responsesRes] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('id, full_name, student_id, section, pretest_completed')
+            .eq('role', 'student')
+            .order('full_name'),
+          supabase
+            .from('pretest_responses')
+            .select('user_id, question_id, response, avg_flight_time_ms, avg_dwell_time_ms, time_to_first_key_ms, total_time_ms')
+            .order('sequence_number'),
+        ]);
+
+        if (profilesRes.error) throw profilesRes.error;
+
+        const responsesByUser: Record<string, typeof responsesRes.data> = {};
+        for (const row of responsesRes.data ?? []) {
+          if (!responsesByUser[row.user_id]) responsesByUser[row.user_id] = [];
+          responsesByUser[row.user_id]!.push(row);
+        }
+
+        const avg = (arr: number[]) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+        const results: PretestStudentResult[] = (profilesRes.data ?? []).map(p => {
+          const rows = responsesByUser[p.id] ?? [];
+          return {
+            userId: p.id,
+            fullName: p.full_name || 'Unknown',
+            studentId: p.student_id || '—',
+            section: p.section || '—',
+            completed: p.pretest_completed ?? false,
+            avgFlightTimeMs: avg(rows.map(r => r.avg_flight_time_ms ?? 0)),
+            avgDwellTimeMs: avg(rows.map(r => r.avg_dwell_time_ms ?? 0)),
+            avgTimeToFirstKeyMs: avg(rows.map(r => r.time_to_first_key_ms ?? 0)),
+            avgTotalTimeMs: avg(rows.map(r => r.total_time_ms ?? 0)),
+            responses: rows.map(r => ({
+              questionId: r.question_id,
+              response: r.response ?? '',
+              totalTimeMs: r.total_time_ms ?? 0,
+            })),
+          };
+        });
+
+        setPretestResults(results);
+      } catch (err: any) {
+        setPretestError(err?.message || 'Failed to load pretest results');
+      } finally {
+        setPretestLoading(false);
+      }
+    };
+
     fetchStudents();
+    fetchPretestResults();
   }, []);
   
   // Calculate at-risk students (sync rate < 60)
@@ -436,6 +520,102 @@ export function Analytics() {
                 ))}
               </div>
             </div>
+          </div>
+          {/* Pretest Results */}
+          <div className="lg:col-span-2 border rounded-lg p-6 bg-card border-border transition-colors">
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <ClipboardList className="w-5 h-5 text-primary" />
+                Pretest Results
+              </h2>
+              <span className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
+                {pretestResults.filter(r => r.completed).length}/{pretestResults.length} completed
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground mb-5">
+              Baseline assessment responses and keystroke dynamics per student
+            </p>
+
+            {pretestLoading && (
+              <p className="text-sm text-muted-foreground py-8 text-center">Loading pretest data...</p>
+            )}
+
+            {!pretestLoading && pretestError && (
+              <p className="text-sm text-destructive py-8 text-center">{pretestError}</p>
+            )}
+
+            {!pretestLoading && !pretestError && (
+              <div className="border rounded-lg overflow-hidden border-border">
+                {/* Table header */}
+                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-0 text-xs font-medium text-muted-foreground bg-muted/60 px-4 py-2 border-b border-border" style={{ fontFamily: 'var(--font-mono)' }}>
+                  <span>Student</span>
+                  <span>Section</span>
+                  <span>Status</span>
+                  <span>Avg Flight</span>
+                  <span>Avg Dwell</span>
+                  <span>Avg Latency</span>
+                  <span>Avg Time/Q</span>
+                </div>
+
+                {pretestResults.length === 0 && (
+                  <p className="text-sm text-muted-foreground py-8 text-center">No students found</p>
+                )}
+
+                {pretestResults.map(result => (
+                  <div key={result.userId} className="border-b last:border-b-0 border-border">
+                    {/* Row */}
+                    <div
+                      className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-0 px-4 py-3 text-sm hover:bg-muted/30 transition-colors cursor-pointer items-center"
+                      onClick={() => result.completed && setExpandedStudent(expandedStudent === result.userId ? null : result.userId)}
+                    >
+                      <div className="flex items-center gap-2">
+                        {result.completed
+                          ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                          : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0 opacity-30" />
+                        }
+                        <div>
+                          <p className="font-medium">{result.fullName}</p>
+                          <p className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>{result.studentId}</p>
+                        </div>
+                      </div>
+                      <span className="text-muted-foreground text-xs">{result.section}</span>
+                      <span className={`text-xs font-medium ${result.completed ? 'text-primary' : 'text-amber-500'}`}>
+                        {result.completed ? 'Completed' : 'Pending'}
+                      </span>
+                      <span className="text-xs" style={{ fontFamily: 'var(--font-mono)' }}>
+                        {result.completed ? `${result.avgFlightTimeMs.toFixed(0)} ms` : '—'}
+                      </span>
+                      <span className="text-xs" style={{ fontFamily: 'var(--font-mono)' }}>
+                        {result.completed ? `${result.avgDwellTimeMs.toFixed(0)} ms` : '—'}
+                      </span>
+                      <span className="text-xs" style={{ fontFamily: 'var(--font-mono)' }}>
+                        {result.completed ? `${result.avgTimeToFirstKeyMs.toFixed(0)} ms` : '—'}
+                      </span>
+                      <span className="text-xs" style={{ fontFamily: 'var(--font-mono)' }}>
+                        {result.completed ? `${(result.avgTotalTimeMs / 1000).toFixed(1)} s` : '—'}
+                      </span>
+                    </div>
+
+                    {/* Expanded responses */}
+                    {expandedStudent === result.userId && result.responses.length > 0 && (
+                      <div className="bg-muted/20 border-t border-border px-6 py-4 space-y-3">
+                        {result.responses.map(r => (
+                          <div key={r.questionId} className="text-sm">
+                            <p className="text-xs font-medium text-muted-foreground mb-0.5" style={{ fontFamily: 'var(--font-mono)' }}>
+                              {QUESTION_LABELS[r.questionId] ?? r.questionId}
+                              <span className="ml-2 opacity-60">({(r.totalTimeMs / 1000).toFixed(1)}s)</span>
+                            </p>
+                            <p className="bg-muted rounded px-3 py-1.5 text-sm" style={{ fontFamily: 'var(--font-mono)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                              {r.response || <span className="italic text-muted-foreground">no answer</span>}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
