@@ -103,6 +103,7 @@ export function Pretest() {
   const [compiling, setCompiling] = useState(false);
   const [compileError, setCompileError] = useState('');
   const [submitError, setSubmitError] = useState('');
+  const [pasteDetected, setPasteDetected] = useState(false);
 
   const responses    = useRef<PretestResponse[]>([]);
 
@@ -257,6 +258,7 @@ export function Pretest() {
     pasteCount.current     += 1;
     pasteCharCount.current += chars;
     pushEvent({ t, type: 'paste', chars });
+    setPasteDetected(true);
     scheduleIdle();
   };
 
@@ -323,6 +325,7 @@ export function Pretest() {
       setCode(next.starterCode);
       setCompileResult(null);
       setCompileError('');
+      setPasteDetected(false);
       setQuestionIndex(i => i + 1);
       questionShownAt.current = performance.now();
       pushEvent({ t: 0, type: 'question_shown' });
@@ -448,7 +451,7 @@ export function Pretest() {
                 : 'bg-muted text-muted-foreground border border-border border-b-0'
             }`} style={mono}>
               <span>{isGameMode ? 'EDITOR.cs' : 'Solution.cs'}</span>
-              {pasteCount.current > 0 && (
+              {pasteDetected && (
                 <span className="flex items-center gap-1 text-amber-400 text-xs">
                   <ClipboardCopy className="w-3 h-3" />paste detected
                 </span>
