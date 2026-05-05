@@ -99,3 +99,20 @@ export async function getPlayerProfile(userId: string) {
   if (!res.ok) throw new Error(`Failed to load profile: ${res.status}`);
   return res.json();
 }
+
+export interface CompileResult {
+  isCorrect: boolean;
+  diagnosticCategory: string;
+  diagnosticMessage: string;
+  compilerDiagnostics: { id: string; severity: string; message: string; line: number; column: number }[];
+}
+
+export async function compilePretestCode(sourceCode: string, skillType: string): Promise<CompileResult> {
+  const res = await fetch(`${API_URL}/api/pretest/compile`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ sourceCode, skillType }),
+  });
+  if (!res.ok) throw new Error(`Compile failed: ${res.status}`);
+  return res.json();
+}

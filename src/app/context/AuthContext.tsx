@@ -28,6 +28,10 @@ export type PretestResponse = {
   totalTimeMs: number;
   avgFlightTimeMs: number;
   avgDwellTimeMs: number;
+  pasteCount: number;
+  pasteCharCount: number;
+  typedCharCount: number;
+  isCorrect: boolean;
 };
 
 type Achievement = {
@@ -330,6 +334,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       total_time_ms: r.totalTimeMs,
       avg_flight_time_ms: r.avgFlightTimeMs,
       avg_dwell_time_ms: r.avgDwellTimeMs,
+      paste_count: r.pasteCount,
+      paste_char_count: r.pasteCharCount,
+      typed_char_count: r.typedCharCount,
+      is_correct: r.isCorrect,
     }));
 
     const { error: insertError } = await supabase.from('pretest_responses').insert(rows);
