@@ -5,9 +5,10 @@ import { useAuth } from '../context/AuthContext';
 interface ProtectedRouteProps {
   children: ReactNode;
   requireAdmin?: boolean;
+  skipPretestGate?: boolean;
 }
 
-export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, requireAdmin = false, skipPretestGate = false }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
 
   // While loading, show loading screen
@@ -22,6 +23,11 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   // If not authenticated, redirect to login
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Gate all protected routes until pretest is completed
+  if (!skipPretestGate && !user.pretestCompleted) {
+    return <Navigate to="/pretest" replace />;
   }
 
   // If admin required but user is not admin, redirect to dashboard

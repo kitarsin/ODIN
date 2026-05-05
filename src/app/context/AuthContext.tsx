@@ -13,10 +13,21 @@ type User = {
   avatar: string;
   syncRate: number;    // UI expects 'syncRate', DB has 'sync_rate'
   status: string;
+  pretestCompleted: boolean;
   // Add these defaults so your dashboard doesn't crash if they are missing
-  progress: { arrays: number; loops: number; grids: number }; 
+  progress: { arrays: number; loops: number; grids: number };
   badges: string[];
   achievements: Achievement[];
+};
+
+export type PretestResponse = {
+  questionId: string;
+  sequenceNumber: number;
+  response: string;
+  timeToFirstKeyMs: number;
+  totalTimeMs: number;
+  avgFlightTimeMs: number;
+  avgDwellTimeMs: number;
 };
 
 type Achievement = {
@@ -167,6 +178,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           avatar: '🧑‍🎓',
           syncRate: 0,
           status: 'active',
+          pretestCompleted: false,
           progress: { arrays: 0, loops: 0, grids: 0 },
           badges: [],
           achievements: []
@@ -202,6 +214,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           avatar: data.avatar_url || '🧑‍🎓',
           syncRate,
           status: 'active',
+          pretestCompleted: data.pretest_completed ?? false,
           progress: { arrays: 0, loops: 0, grids: 0 },
           badges: finalBadges,
           achievements: achievementsData
@@ -305,6 +318,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await supabase.auth.signOut();
   };
 
+  const completePretest = async (responses: PretestResponse[]) => {
+    if (!user) throw new Error('No user logged in');
+
+    const rows = responses.map(r => ({
+      user_id: user.id,
+      question_id: r.questionId,
+      sequence_number: r.sequenceNumber,
+      response: r.response,
+      time_to_first_key_ms: r.timeToFirstKeyMs,
+      total_time_ms: r.totalTimeMs,
+      avg_flight_time_ms: r.avgFlightTimeMs,
+      avg_dwell_time_ms: r.avgDwellTimeMs,
+    }));
+
+    const { error: insertError } = await supabase.from('pretest_responses').insert(rows);
+    if (insertError) throw insertError;
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ pretest_completed: true })
+      .eq('id', user.id);
+    if (updateError) throw updateError;
+
+    setUser({ ...user, pretestCompleted: true });
+  };
+
   // Add a new achievement to the user's profile
   const addAchievement = async (achievement: Omit<Achievement, 'id'>) => {
     if (!user) {
@@ -376,7 +415,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Always render children - let router handle the UI based on auth state
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, updatePassword, updateProfileAvatar, addAchievement }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, updatePassword, updateProfileAvatar, addAchievement, completePretest }}>
       {children}
     </AuthContext.Provider>
   );
