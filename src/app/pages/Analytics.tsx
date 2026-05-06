@@ -122,71 +122,8 @@ const PROBLEM_LABELS: Record<string, string> = {
   p5: 'P5 — Count Values Above Five',
 };
 
-const mockAnalyticsStudents: Student[] = [
-  {
-    id: 'mock-student-1',
-    name: 'Alex Chen',
-    studentId: 'S001',
-    section: 'Section A',
-    avatar: '👨‍💻',
-    syncRate: 85,
-    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    progress: { arrays: 90, loops: 85, grids: 75 },
-  },
-  {
-    id: 'mock-student-2',
-    name: 'Sarah Kim',
-    studentId: 'S002',
-    section: 'Section B',
-    avatar: '👩‍💼',
-    syncRate: 45,
-    createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-    progress: { arrays: 50, loops: 35, grids: 30 },
-  },
-  {
-    id: 'mock-student-3',
-    name: 'Marcus Johnson',
-    studentId: 'S003',
-    section: 'Section A',
-    avatar: '👨‍🎓',
-    syncRate: 58,
-    createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-    progress: { arrays: 70, loops: 55, grids: 45 },
-  },
-  {
-    id: 'mock-student-4',
-    name: 'Emma Rodriguez',
-    studentId: 'S004',
-    section: 'Section C',
-    avatar: '👩‍🦰',
-    syncRate: 91,
-    createdAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
-    progress: { arrays: 95, loops: 92, grids: 88 },
-  },
-  {
-    id: 'mock-student-5',
-    name: 'David Park',
-    studentId: 'S005',
-    section: 'Section B',
-    avatar: '👨‍🏫',
-    syncRate: 64,
-    createdAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),
-    progress: { arrays: 75, loops: 60, grids: 55 },
-  },
-  {
-    id: 'mock-student-6',
-    name: 'Lisa Thompson',
-    studentId: 'S006',
-    section: 'Section C',
-    avatar: '👩‍💻',
-    syncRate: 79,
-    createdAt: new Date(Date.now() - 22 * 24 * 60 * 60 * 1000).toISOString(),
-    progress: { arrays: 85, loops: 80, grids: 72 },
-  },
-];
-
 export function Analytics() {
-  const [students, setStudents] = useState<Student[]>(mockAnalyticsStudents);
+  const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pretestResults, setPretestResults] = useState<PretestStudentResult[]>([]);
@@ -246,14 +183,35 @@ export function Analytics() {
       try {
         setLoadError(null);
         setLoading(true);
-        // Use mock students for analytics
-        setStudents(mockAnalyticsStudents);
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('role', 'student')
+          .order('full_name');
+
+        if (error) throw error;
+
+        const mapped: Student[] = (data || []).map((row: any) => {
+          const achievements = dedupeAchievements(row.achievements);
+          const badges = dedupeBadges(row.badges);
+          const syncRate = calculateSyncRate(achievements as any[], badges);
+          return {
+            id: row.id,
+            name: row.full_name || 'User',
+            studentId: row.student_id || '',
+            section: row.section || '',
+            avatar: row.avatar_url || '\ud83e\uddd1\u200d\ud83c\udf93',
+            syncRate,
+            createdAt: row.created_at || new Date().toISOString(),
+            progress: { arrays: 0, loops: 0, grids: 0 },
+          };
+        });
+        setStudents(mapped);
         setLoadError(null);
       } catch (error) {
         console.error('Error fetching students:', error);
-        // Use mock data as fallback on error
-        setStudents(mockAnalyticsStudents);
-        setLoadError(null);
+        setStudents([]);
+        setLoadError('Failed to load student data.');
       } finally {
         setLoading(false);
       }
