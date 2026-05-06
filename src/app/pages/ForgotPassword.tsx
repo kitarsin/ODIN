@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import logo64 from '../../img/brand/odin-logo-transparent-64.png';
 import logo128 from '../../img/brand/odin-logo-transparent-128.png';
 import logo256 from '../../img/brand/odin-logo-transparent-256.png';
@@ -10,57 +9,31 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 
-export function Login() {
+export function ForgotPassword() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const { login, user, loading: authLoading } = useAuth();
+  const { resetPasswordForEmail } = useAuth();
   const { isGameMode } = useTheme();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const queryEmail = useMemo(() => new URLSearchParams(location.search).get('email') || '', [location.search]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setMessage('');
     setLoading(true);
 
     try {
-      await login(email, password);
-      // Login successful - auth state will handle redirect
+      await resetPasswordForEmail(email);
+      setMessage('Check your email for the password reset link.');
     } catch (err: any) {
-      const message = (err?.message || '').toLowerCase();
-      if (message.includes('invalid login credentials')) {
-        setError('Email or password is incorrect.');
-      } else if (message.includes('email not confirmed')) {
-        setError('Please confirm your email before signing in.');
-      } else {
-        setError(err?.message || 'Unable to sign in. Please try again.');
-      }
-      setLoading(false);
-      return;
+      setError(err?.message || 'Failed to send reset email. Please try again.');
     }
     setLoading(false);
   };
 
-  useEffect(() => {
-    if (queryEmail && !email) {
-      setEmail(queryEmail);
-    }
-  }, [queryEmail, email]);
-
-  useEffect(() => {
-    // Redirect only when: user is authenticated AND loading is complete AND error is not set
-    if (user && !authLoading && !loading && !error) {
-      // Use replace to prevent back button going to login
-      navigate('/dashboard', { replace: true });
-    }
-  }, [user, authLoading, loading, error, navigate]);
-
-  const isSubmitting = loading || authLoading;
-  const canSubmit = email.trim().length > 0 && password.trim().length > 0;
+  const isSubmitting = loading;
+  const canSubmit = email.trim().length > 0;
 
   const getBgClass = () => {
     if (isGameMode) {
@@ -132,15 +105,15 @@ export function Login() {
               className={`text-2xl font-semibold mb-1 transition-all ${getTextColor()}`}
               style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '20px' } : { fontFamily: 'var(--font-mono)' }}
             >
-              {isGameMode ? '> ODIN SYSTEM' : 'ODIN Portal Access'}
+              {isGameMode ? '> RESET_PASSWORD' : 'Password Reset'}
             </h1>
             <p className={`text-sm ${getSecondaryText()}`}
                style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '8px' } : {}}>
-              {isGameMode ? 'PRESS START' : 'Initialize your session'}
+              {isGameMode ? 'ENTER_CREDENTIALS' : 'Enter your email to receive a reset link'}
             </p>
           </div>
 
-          {/* Login Form */}
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="email" className={getTextColor()}>
@@ -154,9 +127,7 @@ export function Login() {
                 onChange={(event) => {
                   setEmail(event.target.value);
                   if (error) setError('');
-                }}
-                onInput={(event) => {
-                  setEmail((event.target as HTMLInputElement).value);
+                  if (message) setMessage('');
                 }}
                 placeholder={isGameMode ? 'ENTER_EMAIL' : 'Enter your email'}
                 autoComplete="email"
@@ -172,54 +143,6 @@ export function Login() {
               />
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className={getTextColor()}
-                       style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}>
-                  {isGameMode ? 'PASSWORD' : 'Password'}
-                </Label>
-                <Link to="/forgot-password" className={`text-xs ${
-                  isGameMode ? 'text-[#ffe66d] hover:text-[#ffd700]' : 
-                  'text-primary hover:text-primary/80'
-                }`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '8px' } : {}}>
-                  {isGameMode ? 'FORGOT_PASSWORD?' : 'Forgot password?'}
-                </Link>
-              </div>
-              <div className="relative">
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(event) => {
-                    setPassword(event.target.value);
-                    if (error) setError('');
-                  }}
-                  onInput={(event) => {
-                    setPassword((event.target as HTMLInputElement).value);
-                  }}
-                  placeholder={isGameMode ? '********' : 'Enter your password'}
-                  autoComplete="current-password"
-                  className={`pr-10 transition-all ${
-                    isGameMode
-                      ? 'bg-[#1a1a2e] border-[#00ff41] text-[#00ff41] border-2 placeholder:text-[#0f3460] focus:shadow-[0_0_10px_rgba(0,255,65,0.5)]'
-                      : `${getInputBg()} border ${getInputBorder()} ${getInputText()} placeholder:text-muted-foreground`
-                  }`}
-                  style={{ fontFamily: 'var(--font-mono)' }}
-                  disabled={isSubmitting}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((value) => !value)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
             {error && (
               <div className={`border rounded p-3 text-sm transition-all ${
                 isGameMode
@@ -233,6 +156,19 @@ export function Login() {
               </div>
             )}
 
+            {message && (
+              <div className={`border rounded p-3 text-sm transition-all ${
+                isGameMode
+                  ? 'bg-[#00ff41]/10 border-[#00ff41] text-[#00ff41] border-2'
+                  : 'bg-green-500/10 border-green-500/50 text-green-600'
+              }`}
+                   style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
+                   role="alert"
+                   aria-live="polite">
+                {isGameMode ? '> SUCCESS: ' + message : message}
+              </div>
+            )}
+
             <Button
               type="submit"
               disabled={isSubmitting || !canSubmit}
@@ -243,20 +179,19 @@ export function Login() {
               }`}
               style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '12px' } : {}}
             >
-              {isSubmitting ? (isGameMode ? 'LOADING...' : 'Initializing...') : (isGameMode ? '> START_' : 'Initialize Session')}
+              {isSubmitting ? (isGameMode ? 'SENDING...' : 'Sending Link...') : (isGameMode ? '> SEND_LINK_' : 'Send Reset Link')}
             </Button>
           </form>
 
-          {/* Register Link */}
+          {/* Links */}
           <div className="mt-6 text-center">
             <p className={`text-sm ${getSecondaryText()}`}
                style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '8px' } : {}}>
-              {isGameMode ? 'NEW USER?' : 'Need access?'}{' '}
-              <Link to={`/register${email ? `?email=${encodeURIComponent(email)}` : ''}`} className={`font-medium ${
+              <Link to="/login" className={`font-medium ${
                 isGameMode ? 'text-[#ffe66d] hover:text-[#ffd700]' : 
                 'text-primary hover:text-primary/80'
               }`}>
-                {isGameMode ? 'REGISTER' : 'Register New Account'}
+                {isGameMode ? '< BACK_TO_LOGIN' : 'Return to Login'}
               </Link>
             </p>
           </div>

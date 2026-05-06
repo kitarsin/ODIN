@@ -239,6 +239,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (error) throw error;
   };
 
+  // Send password reset email
+  const resetPasswordForEmail = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/update-password`,
+    });
+    if (error) throw error;
+  };
+
   // Update profile avatar for current user
   const updateProfileAvatar = async (avatarUrl: string) => {
     if (!user) throw new Error('No user logged in');
@@ -426,7 +434,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Always render children - let router handle the UI based on auth state
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, updatePassword, updateProfileAvatar, addAchievement, completePretest }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, updatePassword, resetPasswordForEmail, updateProfileAvatar, addAchievement, completePretest }}>
       {children}
     </AuthContext.Provider>
   );
