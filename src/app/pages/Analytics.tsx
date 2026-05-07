@@ -82,6 +82,8 @@ function buildTimeline(events: RawEvent[]): TimelineSegment[] {
       let meta: string | undefined;
       if (e.type === 'paste')      meta = `${e.chars ?? 0} chars pasted`;
       if (e.type === 'idle_end')   meta = `idle for ${((e.idle ?? 0) / 1000).toFixed(1)}s`;
+      if (e.type === 'tab_hidden') meta = 'switched away';
+      if (e.type === 'tab_visible') meta = 'returned to tab';
       if (e.type === 'run_result') meta = e.pass ? 'PASS' : `FAIL — ${e.diag ?? ''}`;
       segments.push({ kind: 'event', t: e.t, type: e.type, meta });
     }
@@ -95,6 +97,8 @@ const EVENT_LABEL: Record<string, string> = {
   idle_start:     'Stopped typing (idle)',
   idle_end:       'Resumed typing',
   paste:          'Paste',
+  tab_hidden:     'TAB HIDDEN ⚠',
+  tab_visible:    'Tab visible',
   run_click:      'Run Code clicked',
   run_result:     'Run result',
   advance:        'Moved to next problem',
@@ -774,7 +778,7 @@ export function Analytics() {
                                           }
                                           // Structural event
                                           const label = EVENT_LABEL[seg.type] ?? seg.type;
-                                          const isWarning = seg.type === 'paste' || (seg.type === 'run_result' && !seg.meta?.startsWith('PASS'));
+                                          const isWarning = seg.type === 'paste' || seg.type === 'tab_hidden' || (seg.type === 'run_result' && !seg.meta?.startsWith('PASS'));
                                           const isSuccess = seg.type === 'run_result' && seg.meta?.startsWith('PASS');
                                           return (
                                             <div key={si} className={`flex gap-3 px-3 py-1.5 border-b border-border/50 last:border-0 items-baseline hover:bg-muted/80 transition-colors ${isWarning ? 'bg-amber-500/5' : isSuccess ? 'bg-green-500/5' : ''}`}>

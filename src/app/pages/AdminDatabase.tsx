@@ -786,18 +786,18 @@ export function AdminDatabase() {
                         </Button>
                         {user.role === 'student' && (
                           <>
-                            <Button
-                              onClick={() => handleResetSyncRate(user)}
-                              variant="ghost"
-                              size="sm"
-                              className="text-primary hover:text-primary hover:bg-primary/10 transition-colors"
-                            >
-                              Reset Sync
-                            </Button>
-                            <Button
-                              onClick={() => handleExportPretest(user)}
-                              variant="ghost"
-                              size="sm"
+                        <Button
+                          onClick={() => handleResetSyncRate(user)}
+                          variant="ghost"
+                          size="sm"
+                          className="text-primary hover:text-primary hover:bg-primary/10 transition-colors"
+                        >
+                          Reset Sync
+                        </Button>
+                        <Button
+                          onClick={() => handleExportPretest(user)}
+                          variant="ghost"
+                          size="sm"
                               disabled={exportingUserId === user.id}
                               className="text-secondary hover:text-secondary hover:bg-secondary/10 transition-colors"
                               title="Export pretest JSON"
