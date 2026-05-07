@@ -124,17 +124,6 @@ export function Pretest() {
 
   const responses = useRef<PretestResponse[]>(savedState?.responses || []);
 
-  useEffect(() => {
-    if (phase !== 'thankyou') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        phase,
-        questionIndex,
-        code,
-        responses: responses.current
-      }));
-    }
-  }, [phase, questionIndex, code, STORAGE_KEY]);
-
   // ── Per-question tracking (all refs — no re-renders) ─────────────────────
   const eventLog = useRef<EventEntry[]>([]);
   const flightTimes = useRef<number[]>([]);
@@ -150,7 +139,23 @@ export function Pretest() {
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const idleStartT = useRef<number | null>(null);  // t (ms from question) when idle began
 
-  if (user?.pretestCompleted) return <Navigate to="/dashboard" replace />;
+  // ── Check pretest already completed (redirect if so, but only on initial load)
+  useEffect(() => {
+    if (user?.pretestCompleted && phase === 'intro') {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user?.pretestCompleted, phase, navigate]);
+
+  useEffect(() => {
+    if (phase !== 'thankyou') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        phase,
+        questionIndex,
+        code,
+        responses: responses.current
+      }));
+    }
+  }, [phase, questionIndex, code, STORAGE_KEY]);
 
   const problem = PROBLEMS[questionIndex];
   const isLast = questionIndex === PROBLEMS.length - 1;
