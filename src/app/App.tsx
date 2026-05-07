@@ -1,6 +1,7 @@
 import { RouterProvider } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { FeatureLockdownProvider } from './context/FeatureLockdownContext';
 import { router } from './routes';
 import { Suspense } from 'react';
 
@@ -21,9 +22,11 @@ export default function App() {
     <Suspense fallback={<LoadingScreen />}>
       <ThemeProvider>
         <AuthProvider>
-          <Suspense fallback={<LoadingScreen />}>
-            <RouterProvider router={router} />
-          </Suspense>
+          <FeatureLockdownProvider>
+            <Suspense fallback={<LoadingScreen />}>
+              <RouterProvider router={router} />
+            </Suspense>
+          </FeatureLockdownProvider>
         </AuthProvider>
       </ThemeProvider>
     </Suspense>

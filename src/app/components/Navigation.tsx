@@ -1,19 +1,51 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Gamepad2, Book, User, Database, LogOut, Settings } from 'lucide-react';
+import { Home, Gamepad2, Book, User, Database, LogOut, Settings, ShieldAlert, Lock } from 'lucide-react';
 import logo64 from '../../img/brand/odin-logo-transparent-64.png';
 import logo128 from '../../img/brand/odin-logo-transparent-128.png';
 import logo256 from '../../img/brand/odin-logo-transparent-256.png';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useFeatureLockdown } from '../context/FeatureLockdownContext';
 import { Button } from './ui/button';
 
 export function Navigation() {
   const { user, logout } = useAuth();
   const { isGameMode } = useTheme();
+  const { isFeatureLocked } = useFeatureLockdown();
   const location = useLocation();
   const navigate = useNavigate();
 
   const isActive = (path: string) => location.pathname === path;
+
+  // Helper to render a nav link that respects lockdown for students
+  const NavLink = ({ to, featureKey, icon, label, gameLabel }: { to: string; featureKey?: string; icon: React.ReactNode; label: string; gameLabel: string }) => {
+    const locked = featureKey ? isFeatureLocked(featureKey).locked : false;
+    const active = isActive(to);
+
+    return (
+      <Link
+        to={locked ? '#' : to}
+        onClick={locked ? (e: React.MouseEvent) => e.preventDefault() : undefined}
+        title={locked ? 'This feature is currently locked' : undefined}
+        className={`relative flex items-center gap-2 px-3 py-2 rounded transition-colors ${
+          locked
+            ? 'opacity-40 cursor-not-allowed'
+            : active
+            ? isGameMode
+              ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
+              : 'text-primary bg-primary/10'
+            : isGameMode
+            ? 'text-[#4ecdc4] hover:text-[#00ff41]'
+            : 'text-muted-foreground hover:text-foreground'
+        }`}
+        style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
+      >
+        {icon}
+        {isGameMode ? gameLabel : label}
+        {locked && <Lock className="w-3 h-3 absolute -top-1 -right-1 text-[#FF5252]" />}
+      </Link>
+    );
+  };
 
   return (
     <nav className={`border-b transition-all ${
@@ -111,89 +143,30 @@ export function Navigation() {
                   <Book className="w-4 h-4" />
                   {isGameMode ? 'STATS' : 'Analytics'}
                 </Link>
+                <Link
+                  to="/admin/lockdown"
+                  className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${
+                    isActive('/admin/lockdown')
+                      ? isGameMode 
+                        ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
+                        : 'text-primary bg-primary/10'
+                      : isGameMode
+                      ? 'text-[#4ecdc4] hover:text-[#00ff41]'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
+                >
+                  <ShieldAlert className="w-4 h-4" />
+                  {isGameMode ? 'LOCK' : 'Lockdown'}
+                </Link>
               </>
             ) : (
               <>
-                <Link
-                  to="/dashboard"
-                  className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${
-                    isActive('/dashboard')
-                      ? isGameMode 
-                        ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
-                        : 'text-primary bg-primary/10'
-                      : isGameMode
-                      ? 'text-[#4ecdc4] hover:text-[#00ff41]'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
-                >
-                  <Home className="w-4 h-4" />
-                  {isGameMode ? 'HQ' : 'Dashboard'}
-                </Link>
-                <Link
-                  to="/play"
-                  className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${
-                    isActive('/play')
-                      ? isGameMode 
-                        ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
-                        : 'text-primary bg-primary/10'
-                      : isGameMode
-                      ? 'text-[#4ecdc4] hover:text-[#00ff41]'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
-                >
-                  <Gamepad2 className="w-4 h-4" />
-                  {isGameMode ? 'PLAY' : 'Game'}
-                </Link>
-                <Link
-                  to="/wiki"
-                  className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${
-                    isActive('/wiki')
-                      ? isGameMode 
-                        ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
-                        : 'text-primary bg-primary/10'
-                      : isGameMode
-                      ? 'text-[#4ecdc4] hover:text-[#00ff41]'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
-                >
-                  <Book className="w-4 h-4" />
-                  {isGameMode ? 'WIKI' : 'Wiki'}
-                </Link>
-                <Link
-                  to="/profile"
-                  className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${
-                    isActive('/profile')
-                      ? isGameMode 
-                        ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
-                        : 'text-primary bg-primary/10'
-                      : isGameMode
-                      ? 'text-[#4ecdc4] hover:text-[#00ff41]'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
-                >
-                  <User className="w-4 h-4" />
-                  {isGameMode ? 'PROF' : 'Profile'}
-                </Link>
-                <Link
-                  to="/account-settings"
-                  className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${
-                    isActive('/account-settings')
-                      ? isGameMode 
-                        ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
-                        : 'text-primary bg-primary/10'
-                      : isGameMode
-                      ? 'text-[#4ecdc4] hover:text-[#00ff41]'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
-                >
-                  <Settings className="w-4 h-4" />
-                  {isGameMode ? 'ACC' : 'Settings'}
-                </Link>
+                <NavLink to="/dashboard" featureKey="dashboard" icon={<Home className="w-4 h-4" />} label="Dashboard" gameLabel="HQ" />
+                <NavLink to="/play" featureKey="game" icon={<Gamepad2 className="w-4 h-4" />} label="Game" gameLabel="PLAY" />
+                <NavLink to="/wiki" featureKey="wiki" icon={<Book className="w-4 h-4" />} label="Wiki" gameLabel="WIKI" />
+                <NavLink to="/profile" featureKey="profile" icon={<User className="w-4 h-4" />} label="Profile" gameLabel="PROF" />
+                <NavLink to="/account-settings" featureKey="account-settings" icon={<Settings className="w-4 h-4" />} label="Settings" gameLabel="ACC" />
               </>
             )}
 

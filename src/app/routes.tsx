@@ -9,6 +9,7 @@ import { Wiki } from './pages/Wiki';
 import { Profile } from './pages/Profile';
 import { AdminDatabase } from './pages/AdminDatabase';
 import { Analytics } from './pages/Analytics';
+import { FeatureLockdown } from './pages/FeatureLockdown';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import AccountSettings from './pages/AccountSettings';
 import { OdinTestBench } from './pages/OdinTestBench';
@@ -38,7 +39,7 @@ export const router = createBrowserRouter([
   {
     path: '/dashboard',
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute featureKey="dashboard">
         <StudentDashboard />
       </ProtectedRoute>
     )
@@ -46,7 +47,7 @@ export const router = createBrowserRouter([
   {
     path: '/play',
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute featureKey="game">
         <GameContainer />
       </ProtectedRoute>
     )
@@ -54,7 +55,7 @@ export const router = createBrowserRouter([
   {
     path: '/wiki',
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute featureKey="wiki">
         <Wiki />
       </ProtectedRoute>
     )
@@ -62,7 +63,7 @@ export const router = createBrowserRouter([
   {
     path: '/profile',
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute featureKey="profile">
         <Profile />
       </ProtectedRoute>
     )
@@ -70,7 +71,7 @@ export const router = createBrowserRouter([
   {
     path: '/account-settings',
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute featureKey="account-settings">
         <AccountSettings />
       </ProtectedRoute>
     )
@@ -92,9 +93,17 @@ export const router = createBrowserRouter([
     )
   },
   {
+    path: '/admin/lockdown',
+    element: (
+      <ProtectedRoute requireAdmin>
+        <FeatureLockdown />
+      </ProtectedRoute>
+    )
+  },
+  {
     path: '/test-bench',
     element: (
-      <ProtectedRoute>
+      <ProtectedRoute featureKey="test-bench">
       <OdinTestBench />
       </ProtectedRoute>
     )
