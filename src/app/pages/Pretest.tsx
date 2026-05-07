@@ -101,16 +101,37 @@ export function Pretest() {
   const { isGameMode } = useTheme();
   const navigate = useNavigate();
 
-  const [phase, setPhase] = useState<Phase>('intro');
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [code, setCode] = useState('');
+  const STORAGE_KEY = `odin_pretest_${user?.id || 'guest'}`;
+  const getSavedState = () => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return null;
+  };
+  const savedState = getSavedState();
+
+  const [phase, setPhase] = useState<Phase>(savedState?.phase || 'intro');
+  const [questionIndex, setQuestionIndex] = useState(savedState?.questionIndex || 0);
+  const [code, setCode] = useState(savedState?.code || '');
   const [compileResult, setCompileResult] = useState<CompileResult | null>(null);
   const [compiling, setCompiling] = useState(false);
   const [compileError, setCompileError] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [pasteDetected, setPasteDetected] = useState(false);
 
-  const responses = useRef<PretestResponse[]>([]);
+  const responses = useRef<PretestResponse[]>(savedState?.responses || []);
+
+  useEffect(() => {
+    if (phase !== 'thankyou') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        phase,
+        questionIndex,
+        code,
+        responses: responses.current
+      }));
+    }
+  }, [phase, questionIndex, code, STORAGE_KEY]);
 
   // ── Per-question tracking (all refs — no re-renders) ─────────────────────
   const eventLog = useRef<EventEntry[]>([]);
@@ -331,6 +352,7 @@ export function Pretest() {
       setSubmitError('');
       try {
         await completePretest(responses.current);
+        localStorage.removeItem(STORAGE_KEY);
         setPhase('thankyou');
       } catch (err: any) {
         setSubmitError(err?.message || 'Submission failed. Please try again.');
