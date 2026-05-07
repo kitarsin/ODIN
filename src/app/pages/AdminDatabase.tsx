@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Navigation } from '../components/Navigation';
-import { Search, UserPlus, Pencil, Trash2, Database } from 'lucide-react';
+import { Search, UserPlus, Pencil, Trash2, Database, Download } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Checkbox } from '../components/ui/checkbox';
 import { UserModal } from '../components/UserModal';
-import { supabase } from '../../lib/supabaseClient'; // Import client
+import { supabase } from '../../lib/supabaseClient';
 import { calculateSyncRate } from '../utils/achievementCatalog';
+import JSZip from 'jszip';
 
 interface User {
   id: string;
@@ -42,6 +43,8 @@ export function AdminDatabase() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [maintenanceStatus, setMaintenanceStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
+  const [exportingUserId, setExportingUserId] = useState<string | null>(null);
+  const [exportingAll, setExportingAll] = useState(false);
 
   const sections = ['all', ...Array.from(new Set(users.map(u => u.section)))];
 
@@ -361,6 +364,91 @@ export function AdminDatabase() {
     );
   };
 
+  // ─── Pretest Export Helpers ──────────────────────────────────────────────────
+  const fetchEmailMap = async (): Promise<Record<string, string>> => {
+    const { data, error } = await supabase.rpc('get_user_emails');
+    if (error || !data) {
+      console.warn('Could not fetch emails via RPC, falling back to student IDs:', error);
+      return {};
+    }
+    const map: Record<string, string> = {};
+    for (const row of data as { id: string; email: string }[]) {
+      map[row.id] = row.email;
+    }
+    return map;
+  };
+
+  const downloadJson = (data: unknown, filename: string) => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportPretest = async (student: User) => {
+    setExportingUserId(student.id);
+    try {
+      const emailMap = await fetchEmailMap();
+      const { data, error } = await supabase
+        .from('pretest_responses')
+        .select('*')
+        .eq('user_id', student.id)
+        .order('sequence_number');
+      if (error) throw error;
+      const email = emailMap[student.id] || student.studentId || student.id;
+      const safeEmail = email.replace(/[^a-zA-Z0-9@._-]/g, '_');
+      downloadJson(data || [], `${safeEmail}_pretest.json`);
+    } catch (err) {
+      console.error('Export failed:', err);
+      alert('Failed to export pretest data. Check console for details.');
+    } finally {
+      setExportingUserId(null);
+    }
+  };
+
+  const handleExportAllPretests = async () => {
+    setExportingAll(true);
+    try {
+      const emailMap = await fetchEmailMap();
+      const studentList = users.filter((u) => u.role === 'student');
+      const zip = new JSZip();
+      for (const student of studentList) {
+        const { data, error } = await supabase
+          .from('pretest_responses')
+          .select('*')
+          .eq('user_id', student.id)
+          .order('sequence_number');
+        if (error) {
+          console.warn(`Skipping ${student.name}:`, error);
+          continue;
+        }
+        if (!data || data.length === 0) continue;
+        const email = emailMap[student.id] || student.studentId || student.id;
+        const safeEmail = email.replace(/[^a-zA-Z0-9@._-]/g, '_');
+        zip.file(`${safeEmail}_pretest.json`, JSON.stringify(data, null, 2));
+      }
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `all_pretest_export_${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Bulk export failed:', err);
+      alert('Failed to export all pretest data. Check console for details.');
+    } finally {
+      setExportingAll(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
       <Navigation />
@@ -573,6 +661,16 @@ export function AdminDatabase() {
               <UserPlus className="w-4 h-4 mr-2" />
               Add New User
             </Button>
+
+            {/* Export All Pretests */}
+            <Button
+              onClick={handleExportAllPretests}
+              disabled={exportingAll}
+              className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {exportingAll ? 'Exporting…' : 'Export All Pretests'}
+            </Button>
           </div>
         </div>
 
@@ -670,14 +768,26 @@ export function AdminDatabase() {
                           <Pencil className="w-4 h-4" />
                         </Button>
                         {user.role === 'student' && (
-                          <Button
-                            onClick={() => handleResetSyncRate(user)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-primary hover:text-primary hover:bg-primary/10 transition-colors"
-                          >
-                            Reset Sync
-                          </Button>
+                          <>
+                            <Button
+                              onClick={() => handleResetSyncRate(user)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-primary hover:text-primary hover:bg-primary/10 transition-colors"
+                            >
+                              Reset Sync
+                            </Button>
+                            <Button
+                              onClick={() => handleExportPretest(user)}
+                              variant="ghost"
+                              size="sm"
+                              disabled={exportingUserId === user.id}
+                              className="text-secondary hover:text-secondary hover:bg-secondary/10 transition-colors"
+                              title="Export pretest JSON"
+                            >
+                              <Download className="w-4 h-4" />
+                            </Button>
+                          </>
                         )}
                         <Button
                           onClick={() => handleDelete(user.id)}
