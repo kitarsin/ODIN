@@ -368,7 +368,7 @@ export function Pretest() {
       setCompileResult(null);
       setCompileError('');
       setPasteDetected(false);
-      setQuestionIndex(i => i + 1);
+      setQuestionIndex((i: number) => i + 1);
       questionShownAt.current = performance.now();
       pushEvent({ t: 0, type: 'question_shown' });
     }

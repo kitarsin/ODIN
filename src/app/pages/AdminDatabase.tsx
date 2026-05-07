@@ -296,7 +296,8 @@ export function AdminDatabase() {
         lastLogin: new Date().toISOString(),
         status: 'active',
         achievements: [],
-        badges: []
+        badges: [],
+        pretestCompleted: false
       };
       setUsers([...users, newUser]);
     }
