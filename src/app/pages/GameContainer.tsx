@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { BasicExplorerGame } from '../components/BasicExplorerGame';
 import { CodeEditorPanel } from '../components/CodeEditorPanel';
 import { AchievementModal, AchievementData } from '../components/AchievementModal';
+import { WikiSidebar } from '../components/WikiSidebar';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { diagnoseCode, diagnoseCSharpSyntax } from '../utils/diagnosticSystem';
@@ -121,28 +122,34 @@ export function GameContainer() {
         />
       )}
 
-      {/* Game Header */}
-      <div className="flex flex-1 items-center justify-center px-6 py-6">
-        <div className="flex h-full max-h-[85vh] items-center justify-center gap-6">
-          <div className="aspect-square h-full max-h-full w-auto">
-            <BasicExplorerGame
-              battleActive={battleMode}
-              onTerminalInteract={handleTerminalInteract}
-              onExitBattle={handleExitBattle}
-            />
-          </div>
-          {terminalOpen && (
-            <div className="flex h-full w-[292px] flex-shrink-0 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]">
-              <CodeEditorPanel
-              code={code}
-              onCodeChange={setCode}
-              onRun={handleRun}
-              onCastCode={handleCastCode}
-              saveStatus={saveStatus}
-              terminalOutput={terminalOutput}
-            />
+      {/* Game Content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Wiki Sidebar — left edge */}
+        <WikiSidebar />
+
+        {/* Game + Code Editor */}
+        <div className="flex flex-1 items-center justify-center px-6 py-6">
+          <div className="flex h-full max-h-[85vh] items-center justify-center gap-6">
+            <div className="aspect-square h-full max-h-full w-auto">
+              <BasicExplorerGame
+                battleActive={battleMode}
+                onTerminalInteract={handleTerminalInteract}
+                onExitBattle={handleExitBattle}
+              />
             </div>
-          )}
+            {terminalOpen && (
+              <div className="flex h-full w-[292px] flex-shrink-0 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]">
+                <CodeEditorPanel
+                code={code}
+                onCodeChange={setCode}
+                onRun={handleRun}
+                onCastCode={handleCastCode}
+                saveStatus={saveStatus}
+                terminalOutput={terminalOutput}
+              />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
