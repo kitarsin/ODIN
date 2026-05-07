@@ -38,7 +38,7 @@ const PROBLEMS = [
   {
     id: 'p1',
     skillType: 'ArrayInitialization',
-    title: 'Declare and Print',
+    title: 'Declare and Access',
     description:
       'Declare an integer array named scores with five values: 85, 92, 78, 95, 88. ' +
       'Then print the element at index 2.',
@@ -48,40 +48,45 @@ const PROBLEMS = [
   },
   {
     id: 'p2',
-    skillType: 'ArrayAccess',
-    title: 'Fix the Out-of-Bounds Error',
+    skillType: 'ArrayIteration',
+    title: 'Sum of Even Numbers',
     description:
-      'The code below crashes at runtime because the index is wrong. ' +
-      'Fix it so it correctly prints the last element of the array.',
+      'Loop through the array, add up only the even numbers, and print the final sum. ' +
+      'Remember that you can check for even numbers using the modulo operator (%).',
     starterCode:
-      'int[] arr = {10, 20, 30, 40, 50};\nConsole.WriteLine(arr[5]); // fix this line\n',
+      'int[] nums = { 3, 8, 2, 9, 4, 7, 6 };\nint sum = 0;\n// write your loop here\n\nConsole.WriteLine(sum);\n',
   },
   {
     id: 'p3',
-    skillType: 'ArrayIteration',
-    title: 'Sum the Elements',
+    skillType: 'ArrayOperations',
+    title: 'Swap First and Last',
     description:
-      'Complete the code so it loops through the array, adds every element to sum, ' +
-      'and prints the total.',
+      'Write code to swap the very first and very last elements of the array, regardless of the array\'s length. ' +
+      'Then, print the first element and the last element on separate lines.',
     starterCode:
-      'int[] nums = {3, 7, 2, 9, 4};\nint sum = 0;\n// write your loop here\n\nConsole.WriteLine(sum);\n',
+      'int[] arr = { 10, 20, 30, 40, 50 };\n// swap the first and last elements, then print them\n',
   },
   {
     id: 'p4',
-    skillType: 'ArrayOperations',
-    title: 'Double Each Value',
+    skillType: 'ArrayIteration',
+    title: 'Second Largest Element',
     description:
-      'Multiply every element of the array by 2 and print each result on its own line.',
-    starterCode: 'int[] data = {1, 2, 3, 4, 5};\n// write your loop here\n',
+      'Write code that finds and prints the second largest unique value in the array. ' +
+      'Do not sort the array. For example, in {5, 1, 8, 3, 8, 2} the largest is 8 ' +
+      'and the second largest is 5.',
+    starterCode:
+      'int[] nums = { 14, 3, 27, 9, 27, 18, 5 };\n// Find and print the second largest unique value\n// Expected output: 18\n',
   },
   {
     id: 'p5',
     skillType: 'ArrayOperations',
-    title: 'Count Values Above Five',
+    title: 'Longest Increasing Run',
     description:
-      'Count how many elements in the array are greater than 5 and print the count.',
+      'Find the length of the longest consecutive run of strictly increasing values ' +
+      'in the array. For example, in {1, 3, 5, 2, 4, 6, 8, 1} the longest increasing run ' +
+      'is {2, 4, 6, 8} which has length 4. Print that length.',
     starterCode:
-      'int[] values = {4, 7, 2, 9, 1, 8, 3};\nint count = 0;\n// write your loop here\n\nConsole.WriteLine(count);\n',
+      'int[] seq = { 3, 1, 4, 5, 9, 2, 6, 5, 3, 7, 8 };\n// Find and print the length of the longest increasing run\n// Expected output: 4 (the run 1, 4, 5, 9)\n',
   },
 ];
 
