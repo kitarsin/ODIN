@@ -82,8 +82,8 @@ function buildTimeline(events: RawEvent[]): TimelineSegment[] {
       let meta: string | undefined;
       if (e.type === 'paste')      meta = `${e.chars ?? 0} chars pasted`;
       if (e.type === 'idle_end')   meta = `idle for ${((e.idle ?? 0) / 1000).toFixed(1)}s`;
-      if (e.type === 'tab_hidden') meta = 'switched away';
-      if (e.type === 'tab_visible') meta = 'returned to tab';
+      if (e.type === 'focus_lost') meta = 'window lost focus';
+      if (e.type === 'focus_gained') meta = 'window regained focus';
       if (e.type === 'run_result') meta = e.pass ? 'PASS' : `FAIL — ${e.diag ?? ''}`;
       segments.push({ kind: 'event', t: e.t, type: e.type, meta });
     }
@@ -97,8 +97,8 @@ const EVENT_LABEL: Record<string, string> = {
   idle_start:     'Stopped typing (idle)',
   idle_end:       'Resumed typing',
   paste:          'Paste',
-  tab_hidden:     'TAB HIDDEN ⚠',
-  tab_visible:    'Tab visible',
+  focus_lost:     'FOCUS LOST ⚠',
+  focus_gained:   'Focus regained',
   run_click:      'Run Code clicked',
   run_result:     'Run result',
   advance:        'Moved to next problem',
@@ -702,7 +702,7 @@ export function Analytics() {
                       {/* Expanded: per-problem breakdown */}
                       {isExpanded && result.responses.length > 0 && (
                         <div className="bg-muted/20 border-t border-border divide-y divide-border/60">
-                          {result.responses.map((r, i) => {
+                          {result.responses.map((r) => {
                             const totalChars = r.typedCharCount + r.pasteCharCount;
                             const pasteRatio = totalChars > 0 ? r.pasteCharCount / totalChars : 0;
                             const likelyCopied = r.pasteCount > 0 && pasteRatio > 0.5;
@@ -778,7 +778,7 @@ export function Analytics() {
                                           }
                                           // Structural event
                                           const label = EVENT_LABEL[seg.type] ?? seg.type;
-                                          const isWarning = seg.type === 'paste' || seg.type === 'tab_hidden' || (seg.type === 'run_result' && !seg.meta?.startsWith('PASS'));
+                                          const isWarning = seg.type === 'paste' || seg.type === 'focus_lost' || (seg.type === 'run_result' && !seg.meta?.startsWith('PASS'));
                                           const isSuccess = seg.type === 'run_result' && seg.meta?.startsWith('PASS');
                                           return (
                                             <div key={si} className={`flex gap-3 px-3 py-1.5 border-b border-border/50 last:border-0 items-baseline hover:bg-muted/80 transition-colors ${isWarning ? 'bg-amber-500/5' : isSuccess ? 'bg-green-500/5' : ''}`}>

@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Play, ChevronRight, AlertCircle, CheckCircle, ClipboardCopy } from 'lucide-react';
 import { useAuth, PretestResponse } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -18,8 +18,8 @@ export type EventType =
   | 'run_click'
   | 'run_result'
   | 'advance'
-  | 'tab_hidden'
-  | 'tab_visible';
+  | 'focus_lost'
+  | 'focus_gained';
 
 export type EventEntry = {
   /** Milliseconds since question was shown */
@@ -197,17 +197,20 @@ export function Pretest() {
     idleStartT.current = null;
   };
 
-  // ── Tab Visibility Tracking ───────────────────────────────────────────────
+  // ── Window Focus Tracking (captures alt+tab, desktop switch, etc.) ────────
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        pushEvent({ t: elapsed(), type: 'tab_hidden' });
-      } else {
-        pushEvent({ t: elapsed(), type: 'tab_visible' });
-      }
+    const handleBlur = () => {
+      pushEvent({ t: elapsed(), type: 'focus_lost' });
     };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    const handleFocus = () => {
+      pushEvent({ t: elapsed(), type: 'focus_gained' });
+    };
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   // ── Keystroke / paste handlers ────────────────────────────────────────────

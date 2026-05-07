@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navigation } from '../components/Navigation';
 import { useFeatureLockdown, LOCKABLE_FEATURES, type FeatureKey, type LockdownRule, type NewLockdownRule } from '../context/FeatureLockdownContext';
 import { supabase } from '../../lib/supabaseClient';
-import { ShieldAlert, Plus, Trash2, Power, PowerOff, Search, X, Home, Gamepad2, Book, User, Settings, FlaskConical } from 'lucide-react';
+import { ShieldAlert, Plus, Trash2, Power, PowerOff, Search, Home, Gamepad2, Book, User, Settings, FlaskConical } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 
