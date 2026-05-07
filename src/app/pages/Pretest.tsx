@@ -169,6 +169,19 @@ export function Pretest() {
     idleStartT.current = null;
   };
 
+  // ── Tab Visibility Tracking ───────────────────────────────────────────────
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        pushEvent({ t: elapsed(), type: 'tab_hidden' });
+      } else {
+        pushEvent({ t: elapsed(), type: 'tab_visible' });
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
   // ── Keystroke / paste handlers ────────────────────────────────────────────
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
