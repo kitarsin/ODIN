@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Play, ChevronRight, AlertCircle, CheckCircle, ClipboardCopy } from 'lucide-react';
 import { useAuth, PretestResponse } from '../context/AuthContext';
@@ -17,7 +17,9 @@ export type EventType =
   | 'idle_end'
   | 'run_click'
   | 'run_result'
-  | 'advance';
+  | 'advance'
+  | 'tab_hidden'
+  | 'tab_visible';
 
 export type EventEntry = {
   /** Milliseconds since question was shown */
