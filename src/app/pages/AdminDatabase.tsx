@@ -21,6 +21,7 @@ interface User {
   status: 'active' | 'inactive';
   achievements: Achievement[];
   badges: string[];
+  pretestCompleted: boolean;
 }
 
 type Achievement = {
@@ -139,6 +140,7 @@ export function AdminDatabase() {
           status: 'active' as const,
           achievements: achievements as Achievement[],
           badges,
+          pretestCompleted: row.pretest_completed || false,
         };
       });
       setUsers(mapped);
@@ -702,6 +704,9 @@ export function AdminDatabase() {
                     Status
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Pretest
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Last Login
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -752,6 +757,17 @@ export function AdminDatabase() {
                         }`}
                       >
                         {user.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.pretestCompleted
+                            ? 'bg-emerald-500/20 text-emerald-500'
+                            : 'bg-amber-500/20 text-amber-500'
+                        }`}
+                      >
+                        {user.pretestCompleted ? 'Done' : 'Pending'}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
