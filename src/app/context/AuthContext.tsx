@@ -187,7 +187,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               avatar_url: '🧑‍🎓',
               sync_rate: 0,
               achievements: [],
-              badges: [],
               pretest_completed: false
             }
           ]);
@@ -324,7 +323,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             role: 'student',
             avatar_url: '🧑‍🎓',
             achievements: [],
-            badges: [],
             pretest_completed: false
           }
         ]);
