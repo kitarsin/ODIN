@@ -303,13 +303,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             sync_rate: 0,
             role: 'student',
             avatar_url: '🧑‍🎓',
-            achievements: []
+            achievements: [],
+            badges: [],
+            pretest_completed: false
           }
         ]);
       
       if (profileError) {
         console.error('Profile creation error:', profileError);
-        throw new Error('Failed to create user profile. Please try again.');
+        throw new Error(`Failed to create user profile: ${profileError.message || 'Unknown error'}`);
       }
 
       // 3. Sign in the newly created user
