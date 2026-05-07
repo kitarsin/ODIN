@@ -583,7 +583,7 @@ export function Pretest() {
                 <div className={`px-4 py-3 border-t text-xs ${passed ? isGameMode ? 'border-[#00ff41]/20' : 'border-green-500/20' : isGameMode ? 'border-red-500/20' : 'border-destructive/20'}`}>
                   <span className={`font-medium ${muted}`} style={pixel}>Output: </span>
                   <code className={`${text}`} style={mono}>
-                    {compileResult.actualOutput.trim() || <span className={muted}>(no output)</span>}
+                    {compileResult.actualOutput?.trim() || <span className={muted}>(no output)</span>}
                   </code>
                 </div>
               )}
