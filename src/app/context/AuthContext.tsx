@@ -173,13 +173,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) {
         console.error("Error fetching profile:", error);
-        // If profile doesn't exist yet, create default user object
+        
+        // Auto-repair: If user exists in Auth but not in Profiles, create their profile now
+        // This fixes foreign key constraint errors when submitting pretests
+        if (error.code === 'PGRST116' || error.message?.includes('0 rows')) {
+          await supabase.from('profiles').insert([
+            {
+              id: authUser.id,
+              full_name: 'User',
+              student_id: `unknown-${authUser.id.substring(0,6)}`,
+              section: 'Unknown',
+              role: 'student',
+              avatar_url: '🧑‍🎓',
+              sync_rate: 0,
+              achievements: [],
+              badges: [],
+              pretest_completed: false
+            }
+          ]);
+        }
+
+        // Create default local user object
         setUser({
           id: authUser.id,
           email: authUser.email,
           name: 'User',
-          studentId: '',
-          section: '',
+          studentId: `unknown-${authUser.id.substring(0,6)}`,
+          section: 'Unknown',
           role: 'student',
           avatar: '🧑‍🎓',
           syncRate: 0,
