@@ -34,9 +34,9 @@ interface GameSession {
 
 // Group skill topics into the three broad categories shown on the dashboard
 const MASTERY_GROUPS = [
-  { label: 'Library Maze', subtitle: '1D Arrays', skills: ['ArrayInitialization', 'ArrayAccess'] },
-  { label: 'Fast Food Maze', subtitle: 'Loops & Iteration', skills: ['ArrayIteration', 'ArrayOperations'] },
-  { label: 'Billiards Hall', subtitle: '2D Arrays', skills: ['MultidimensionalArrays', 'JaggedArrays'] },
+  { label: '1D Arrays', skills: ['ArrayInitialization', 'ArrayAccess'] },
+  { label: 'Loops & Iteration', skills: ['ArrayIteration', 'ArrayOperations'] },
+  { label: '2D Arrays', skills: ['MultidimensionalArrays', 'JaggedArrays'] },
 ];
 
 function groupMastery(masteryStates: MasteryState[], skills: string[]) {
@@ -249,7 +249,6 @@ export function StudentDashboard() {
                       )}
                     </div>
                     <Progress value={loading ? 0 : pct} className="h-3" />
-                    <p className="text-xs mt-1 text-muted-foreground">{group.subtitle}</p>
                   </div>
                 );
               })}
