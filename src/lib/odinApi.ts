@@ -92,6 +92,21 @@ export async function getPuzzlesByLevel(level: number) {
   return res.json();
 }
 
+// Fetches all puzzles across levels 0-3 and returns a Map<id, title> for display
+export async function buildPuzzleTitleMap(): Promise<Map<string, string>> {
+  const headers = await getAuthHeaders();
+  const results = await Promise.all(
+    [0, 1, 2, 3].map(level =>
+      fetch(`${API_URL}/api/puzzle/level/${level}`, { headers })
+        .then(r => r.ok ? r.json() : [])
+        .catch(() => [])
+    )
+  );
+  const map = new Map<string, string>();
+  results.flat().forEach((p: { id: string; title: string }) => map.set(p.id, p.title));
+  return map;
+}
+
 export async function getPlayerProfile(userId: string) {
   const res = await fetch(`${API_URL}/api/player/${userId}`, {
     headers: await getAuthHeaders(),

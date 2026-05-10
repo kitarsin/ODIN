@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Navigation } from '../components/Navigation';
 import { Gamepad2, Users, Brain, AlertTriangle, ChevronDown, ChevronRight, Clock, CheckCircle, XCircle, Search } from 'lucide-react';
-import { getClassOverview, getStudentList, getPlayerSessions, getSessionSubmissions } from '../../lib/odinApi';
+import { getClassOverview, getStudentList, getPlayerSessions, getSessionSubmissions, buildPuzzleTitleMap } from '../../lib/odinApi';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -107,6 +107,7 @@ function elapsedSince(base: string, target: string) {
 export function AdminGameLogs() {
   const [overview, setOverview] = useState<ClassOverview | null>(null);
   const [students, setStudents] = useState<StudentEntry[]>([]);
+  const [puzzleTitles, setPuzzleTitles] = useState<Map<string, string>>(new Map());
   const [overviewLoading, setOverviewLoading] = useState(true);
 
   const [search, setSearch] = useState('');
@@ -120,13 +121,14 @@ export function AdminGameLogs() {
 
   const [expandedSubmissionId, setExpandedSubmissionId] = useState<string | null>(null);
 
-  // Load class overview + student list on mount
+  // Load class overview + student list + puzzle titles on mount
   useEffect(() => {
     setOverviewLoading(true);
-    Promise.all([getClassOverview(), getStudentList()])
-      .then(([ov, st]) => {
+    Promise.all([getClassOverview(), getStudentList(), buildPuzzleTitleMap()])
+      .then(([ov, st, titleMap]) => {
         setOverview(ov);
         setStudents(st);
+        setPuzzleTitles(titleMap);
       })
       .finally(() => setOverviewLoading(false));
   }, []);
@@ -359,7 +361,7 @@ export function AdminGameLogs() {
                                           LVL {session.dungeonLevel}
                                         </span>
                                         <span className="text-muted-foreground truncate flex-1" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
-                                          {session.puzzleId}
+                                          {puzzleTitles.get(session.puzzleId) ?? session.puzzleId}
                                         </span>
                                         <span className="text-xs text-muted-foreground shrink-0">
                                           {new Date(session.startedAt).toLocaleDateString()} {new Date(session.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
