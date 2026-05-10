@@ -100,6 +100,78 @@ export async function getPlayerProfile(userId: string) {
   return res.json();
 }
 
+export async function patchSessionEnd(sessionId: string): Promise<void> {
+  const headers = await getAuthHeaders();
+  await fetch(`${API_URL}/api/session/${sessionId}/end`, {
+    method: 'PATCH',
+    headers,
+  });
+}
+
+export async function getPlayerSessions(userId: string, limit = 20) {
+  const res = await fetch(`${API_URL}/api/session/player/${userId}?limit=${limit}`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error(`Failed to load sessions: ${res.status}`);
+  return res.json();
+}
+
+export async function getPlayerHistory(userId: string, limit = 50) {
+  const res = await fetch(`${API_URL}/api/player/${userId}/history?limit=${limit}`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error(`Failed to load history: ${res.status}`);
+  return res.json();
+}
+
+export async function getSessionSubmissions(sessionId: string) {
+  const res = await fetch(`${API_URL}/api/submission/session/${sessionId}`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error(`Failed to load submissions: ${res.status}`);
+  return res.json();
+}
+
+export async function getClassOverview() {
+  const res = await fetch(`${API_URL}/api/instructor/overview`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error(`Failed to load overview: ${res.status}`);
+  return res.json();
+}
+
+export async function getStudentList() {
+  const res = await fetch(`${API_URL}/api/instructor/students`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error(`Failed to load students: ${res.status}`);
+  return res.json();
+}
+
+export async function getMasteryHeatmap() {
+  const res = await fetch(`${API_URL}/api/instructor/mastery-heatmap`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error(`Failed to load heatmap: ${res.status}`);
+  return res.json();
+}
+
+export async function getCognitiveBottlenecks() {
+  const res = await fetch(`${API_URL}/api/instructor/bottlenecks`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error(`Failed to load bottlenecks: ${res.status}`);
+  return res.json();
+}
+
+export async function getRecentInterventions(limit = 50) {
+  const res = await fetch(`${API_URL}/api/instructor/interventions?limit=${limit}`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error(`Failed to load interventions: ${res.status}`);
+  return res.json();
+}
+
 export interface CompileResult {
   isCorrect: boolean;
   diagnosticCategory: string;

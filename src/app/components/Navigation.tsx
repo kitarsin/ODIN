@@ -144,10 +144,26 @@ export function Navigation() {
                   {isGameMode ? 'STATS' : 'Analytics'}
                 </Link>
                 <Link
+                  to="/admin/gamelogs"
+                  className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${
+                    isActive('/admin/gamelogs')
+                      ? isGameMode
+                        ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
+                        : 'text-primary bg-primary/10'
+                      : isGameMode
+                      ? 'text-[#4ecdc4] hover:text-[#00ff41]'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {}}
+                >
+                  <Gamepad2 className="w-4 h-4" />
+                  {isGameMode ? 'LOGS' : 'Game Logs'}
+                </Link>
+                <Link
                   to="/admin/lockdown"
                   className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${
                     isActive('/admin/lockdown')
-                      ? isGameMode 
+                      ? isGameMode
                         ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
                         : 'text-primary bg-primary/10'
                       : isGameMode
