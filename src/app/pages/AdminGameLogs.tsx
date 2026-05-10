@@ -537,7 +537,7 @@ export function AdminGameLogs() {
               <li>All BKT skill mastery → wiped</li>
               <li>In-game progress (enemies, dialogues) → cleared</li>
               <li>Achievements and sync rate → reset</li>
-              <li>Session and submission history → kept (logs preserved)</li>
+              <li>All sessions, submissions, and interaction logs → deleted</li>
             </ul>
             <div className="flex gap-3 justify-end">
               <button

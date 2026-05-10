@@ -12,7 +12,7 @@ export function GameContainer() {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   // Starts true so the blocker is active from mount, regardless of whether
   // the session ID has arrived yet from Godot (fixes race condition).
-  const [gameActive, setGameActive] = useState(true);
+  const [gameActive] = useState(true);
 
   // Receive session ID from Godot iframe via postMessage
   useEffect(() => {
@@ -44,8 +44,11 @@ export function GameContainer() {
   }, [blocker.state]);
 
   const handleConfirmLeave = useCallback(async () => {
-    // Tell Godot to flush the player's current position to the server
-    // before we end the session, so the spawn point is always up to date.
+    // Guard: only proceed when the blocker is actually holding a navigation.
+    // Without this, rapid clicks call proceed() after the blocker has already
+    // transitioned to "unblocked", causing the React Router state error.
+    if (blocker.state !== 'blocked') return;
+
     iframeRef.current?.contentWindow?.postMessage({ type: 'odin_save_request' }, '*');
     await new Promise(r => setTimeout(r, 500));
 
@@ -53,9 +56,11 @@ export function GameContainer() {
       await patchSessionEnd(activeSessionId.current).catch(() => {});
       activeSessionId.current = null;
     }
-    setGameActive(false);
     setShowLeaveModal(false);
-    blocker.proceed?.();
+    // proceed() while the blocker is still in "blocked" state — don't call
+    // setGameActive(false) first or React Router flips to "unblocked" before
+    // proceed() runs, which triggers the invalid state transition error.
+    blocker.proceed();
   }, [blocker]);
 
   const handleCancelLeave = useCallback(() => {
