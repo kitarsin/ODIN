@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { User, Mail, Calendar, Award, Zap, Brain, Target, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Progress } from '../components/ui/progress';
 import { getRankInfo } from '../utils/rank';
-import { getPlayerProfile, getPlayerSessions } from '../../lib/odinApi';
+import { getPlayerProfile, getPlayerSessions, buildPuzzleTitleMap } from '../../lib/odinApi';
 
 interface MasteryState {
   topic: string;
@@ -63,6 +63,7 @@ export function Profile() {
 
   const [odinProfile, setOdinProfile] = useState<OdinProfile | null>(null);
   const [sessions, setSessions] = useState<GameSession[]>([]);
+  const [puzzleTitles, setPuzzleTitles] = useState<Map<string, string>>(new Map());
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileError, setProfileError] = useState<string | null>(null);
 
@@ -72,10 +73,12 @@ export function Profile() {
     Promise.all([
       getPlayerProfile(user.id),
       getPlayerSessions(user.id, 5),
+      buildPuzzleTitleMap(),
     ])
-      .then(([profile, recentSessions]) => {
+      .then(([profile, recentSessions, titleMap]) => {
         setOdinProfile(profile);
         setSessions(recentSessions);
+        setPuzzleTitles(titleMap);
       })
       .catch(() => setProfileError('Could not load game data'))
       .finally(() => setProfileLoading(false));
@@ -304,7 +307,7 @@ export function Profile() {
                         LVL {session.dungeonLevel}
                       </span>
                       <span className="flex-1 text-muted-foreground truncate" style={{ fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
-                        {session.puzzleId}
+                        {puzzleTitles.get(session.puzzleId) ?? session.puzzleId}
                       </span>
                       <div className="flex items-center gap-1 text-muted-foreground">
                         <Clock className="w-3.5 h-3.5" />
