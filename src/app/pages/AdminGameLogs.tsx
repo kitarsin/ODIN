@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Navigation } from '../components/Navigation';
-import { Gamepad2, Users, Brain, AlertTriangle, ChevronDown, ChevronRight, Clock, CheckCircle, XCircle, Search } from 'lucide-react';
-import { getClassOverview, getStudentList, getPlayerSessions, getSessionSubmissions, buildPuzzleTitleMap } from '../../lib/odinApi';
+import { Gamepad2, Users, Brain, AlertTriangle, ChevronDown, ChevronRight, Clock, CheckCircle, XCircle, Search, RotateCcw } from 'lucide-react';
+import { getClassOverview, getStudentList, getPlayerSessions, getSessionSubmissions, buildPuzzleTitleMap, resetPlayerProgress } from '../../lib/odinApi';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -120,6 +120,31 @@ export function AdminGameLogs() {
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
 
   const [expandedSubmissionId, setExpandedSubmissionId] = useState<string | null>(null);
+
+  const [resetTargetStudent, setResetTargetStudent] = useState<StudentEntry | null>(null);
+  const [resetting, setResetting] = useState(false);
+
+  const handleResetConfirm = useCallback(async () => {
+    if (!resetTargetStudent) return;
+    setResetting(true);
+    try {
+      await resetPlayerProgress(resetTargetStudent.id);
+      // Deselect and refresh student list
+      if (selectedStudentId === resetTargetStudent.id) {
+        setSelectedStudentId(null);
+        setStudentSessions([]);
+        setSelectedSessionId(null);
+        setSessionSubmissions([]);
+      }
+      const updated = await getStudentList();
+      setStudents(updated);
+    } catch {
+      // Reset failed — silently close; the data is unchanged
+    } finally {
+      setResetting(false);
+      setResetTargetStudent(null);
+    }
+  }, [resetTargetStudent, selectedStudentId]);
 
   // Load class overview + student list + puzzle titles on mount
   useEffect(() => {
@@ -267,20 +292,21 @@ export function AdminGameLogs() {
                   <th className="text-center p-3">Mastery</th>
                   <th className="text-center p-3">Helplessness</th>
                   <th className="text-center p-3">Status</th>
+                  <th className="p-3" />
                 </tr>
               </thead>
               <tbody>
                 {overviewLoading ? (
                   [...Array(5)].map((_, i) => (
                     <tr key={i} className="border-b border-border">
-                      <td colSpan={7} className="p-3">
+                      <td colSpan={8} className="p-3">
                         <div className="h-5 bg-muted animate-pulse rounded" />
                       </td>
                     </tr>
                   ))
                 ) : filteredStudents.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-6 text-center text-muted-foreground text-sm">
+                    <td colSpan={8} className="p-6 text-center text-muted-foreground text-sm">
                       No students found.
                     </td>
                   </tr>
@@ -326,12 +352,21 @@ export function AdminGameLogs() {
                             {student.status}
                           </span>
                         </td>
+                        <td className="p-3 text-center">
+                          <button
+                            onClick={e => { e.stopPropagation(); setResetTargetStudent(student); }}
+                            title="Reset game progress"
+                            className="p-1.5 rounded text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
                       </tr>
 
                       {/* ── Tier 3: Session List (inline expansion) ── */}
                       {selectedStudentId === student.id && (
                         <tr key={`${student.id}-sessions`} className="bg-muted/20">
-                          <td colSpan={7} className="p-0">
+                          <td colSpan={8} className="p-0">
                             <div className="px-6 py-4 border-b border-border">
                               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                                 Sessions — {student.displayName}
@@ -484,6 +519,46 @@ export function AdminGameLogs() {
           </div>
         </div>
       </div>
+
+      {/* Reset confirmation modal */}
+      {resetTargetStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-card border border-border rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold mb-2 text-red-500">Reset Game Progress?</h3>
+            <p className="text-sm text-muted-foreground mb-1">
+              This will permanently reset all game data for:
+            </p>
+            <p className="text-sm font-semibold mb-1">{resetTargetStudent.displayName}</p>
+            <p className="text-xs text-muted-foreground mb-4" style={{ fontFamily: 'var(--font-mono)' }}>
+              {resetTargetStudent.studentId}
+            </p>
+            <ul className="text-xs text-muted-foreground mb-6 space-y-1 list-disc list-inside">
+              <li>Level, XP, and helplessness score → zeroed</li>
+              <li>All BKT skill mastery → wiped</li>
+              <li>In-game progress (enemies, dialogues) → cleared</li>
+              <li>Achievements and sync rate → reset</li>
+              <li>Session and submission history → kept (logs preserved)</li>
+            </ul>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setResetTargetStudent(null)}
+                disabled={resetting}
+                className="px-4 py-2 text-sm rounded border border-border hover:bg-muted transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleResetConfirm}
+                disabled={resetting}
+                className="px-4 py-2 text-sm rounded bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {resetting && <RotateCcw className="w-3.5 h-3.5 animate-spin" />}
+                {resetting ? 'Resetting…' : 'Reset Progress'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

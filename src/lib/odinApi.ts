@@ -147,6 +147,14 @@ export async function getSessionSubmissions(sessionId: string) {
   return res.json();
 }
 
+export async function resetPlayerProgress(userId: string): Promise<void> {
+  const res = await fetch(`${API_URL}/api/player/${userId}/reset`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error(`Reset failed: ${res.status}`);
+}
+
 export async function getClassOverview() {
   const res = await fetch(`${API_URL}/api/instructor/overview`, {
     headers: await getAuthHeaders(),
