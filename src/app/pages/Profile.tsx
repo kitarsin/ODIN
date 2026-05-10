@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { User, Mail, Calendar, Award, Zap, Brain, Target, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Progress } from '../components/ui/progress';
 import { getRankInfo } from '../utils/rank';
+import { calculateSyncRateFromMastery } from '../utils/achievementCatalog';
 import { getPlayerProfile, getPlayerSessions, buildPuzzleTitleMap } from '../../lib/odinApi';
 
 interface MasteryState {
@@ -58,7 +59,6 @@ function formatDuration(startedAt: string, endedAt: string | null) {
 
 export function Profile() {
   const { user } = useAuth();
-  const rankInfo = getRankInfo(user?.syncRate ?? 0);
   const isAvatarUrl = (value: string) => value.startsWith('http') || value.startsWith('data:');
 
   const [odinProfile, setOdinProfile] = useState<OdinProfile | null>(null);
@@ -85,6 +85,13 @@ export function Profile() {
   }, [user?.id]);
 
   if (!user) return null;
+
+  // Derive sync rate from real BKT mastery; fall back to achievement-based rate until data loads
+  const computedSyncRate = odinProfile?.masteryStates?.length
+    ? calculateSyncRateFromMastery(odinProfile.masteryStates)
+    : user.syncRate;
+  const rankInfo = getRankInfo(computedSyncRate);
+  const hasGameData = !profileLoading && odinProfile !== null;
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
@@ -146,13 +153,20 @@ export function Profile() {
             <div className="border rounded-lg p-6 bg-card border-border transition-colors">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-lg font-semibold">Overall Sync Rate</h3>
-                <span className="text-2xl font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
-                  {user.syncRate}%
-                </span>
+                {profileLoading ? (
+                  <div className="h-7 w-14 bg-muted animate-pulse rounded" />
+                ) : (
+                  <span className="text-2xl font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
+                    {computedSyncRate}%
+                  </span>
+                )}
               </div>
               <div className="h-4 rounded-full overflow-hidden bg-muted">
-                <div className="h-full bg-gradient-to-r from-primary to-primary/80" style={{ width: `${user.syncRate}%` }} />
+                <div className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500" style={{ width: `${profileLoading ? user.syncRate : computedSyncRate}%` }} />
               </div>
+              <p className="text-xs mt-2 text-muted-foreground">
+                {odinProfile?.masteryStates?.length ? 'Based on BKT skill mastery' : 'Based on achievements unlocked'}
+              </p>
             </div>
           )}
 
@@ -175,7 +189,7 @@ export function Profile() {
                     <div className="h-7 w-16 bg-muted animate-pulse rounded mx-auto mb-1" />
                   ) : (
                     <p className="text-2xl font-semibold text-yellow-500" style={{ fontFamily: 'var(--font-mono)' }}>
-                      {odinProfile?.experiencePoints ?? 0}
+                      {hasGameData ? odinProfile!.experiencePoints : '—'}
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground">XP</p>
@@ -187,7 +201,7 @@ export function Profile() {
                     <div className="h-7 w-16 bg-muted animate-pulse rounded mx-auto mb-1" />
                   ) : (
                     <p className="text-2xl font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
-                      {odinProfile?.currentLevel ?? 1}
+                      {hasGameData ? odinProfile!.currentLevel : '—'}
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground">Dungeon Level</p>
@@ -199,20 +213,22 @@ export function Profile() {
                     <div className="h-7 w-16 bg-muted animate-pulse rounded mx-auto mb-1" />
                   ) : (
                     <p className="text-2xl font-semibold text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>
-                      {odinProfile?.totalSubmissions ?? 0}
+                      {hasGameData ? odinProfile!.totalSubmissions : '—'}
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground">Submissions</p>
                 </div>
 
                 <div className="border rounded-lg p-4 text-center bg-muted/40 border-border">
-                  <AlertTriangle className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
+                  <AlertTriangle className={`w-5 h-5 mx-auto mb-1 ${hasGameData ? helplessnessColor(odinProfile!.helplessnessScore) : 'text-muted-foreground'}`} />
                   {profileLoading ? (
                     <div className="h-7 w-16 bg-muted animate-pulse rounded mx-auto mb-1" />
-                  ) : (
-                    <p className={`text-2xl font-semibold ${helplessnessColor(odinProfile?.helplessnessScore ?? 0)}`} style={{ fontFamily: 'var(--font-mono)' }}>
-                      {(odinProfile?.helplessnessScore ?? 0).toFixed(1)}
+                  ) : hasGameData ? (
+                    <p className={`text-2xl font-semibold ${helplessnessColor(odinProfile!.helplessnessScore)}`} style={{ fontFamily: 'var(--font-mono)' }}>
+                      {odinProfile!.helplessnessScore.toFixed(1)}
                     </p>
+                  ) : (
+                    <p className="text-2xl font-semibold text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>—</p>
                   )}
                   <p className="text-xs text-muted-foreground">Helplessness</p>
                 </div>

@@ -4,6 +4,7 @@ import { Navigation } from '../components/Navigation';
 import { Progress } from '../components/ui/progress';
 import { Trophy, Key, Activity, Zap, Target, Brain, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import { getRankInfo } from '../utils/rank';
+import { calculateSyncRateFromMastery } from '../utils/achievementCatalog';
 import { getPlayerProfile, getPlayerSessions, buildPuzzleTitleMap } from '../../lib/odinApi';
 
 interface MasteryState {
@@ -66,7 +67,6 @@ const LEVEL_LABELS: Record<number, string> = {
 
 export function StudentDashboard() {
   const { user } = useAuth();
-  const rankInfo = getRankInfo(user?.syncRate ?? 0);
   const isAvatarUrl = (value: string) => value.startsWith('http') || value.startsWith('data:');
 
   const [odinProfile, setOdinProfile] = useState<OdinProfile | null>(null);
@@ -91,6 +91,13 @@ export function StudentDashboard() {
   }, [user?.id]);
 
   if (!user) return <div>Loading...</div>;
+
+  // Derive sync rate from real BKT mastery; fall back to achievement-based rate while loading
+  const computedSyncRate = odinProfile?.masteryStates?.length
+    ? calculateSyncRateFromMastery(odinProfile.masteryStates)
+    : user.syncRate;
+  const rankInfo = getRankInfo(computedSyncRate);
+  const hasGameData = !loading && odinProfile !== null;
 
   const masteryStates = odinProfile?.masteryStates ?? [];
 
@@ -140,17 +147,23 @@ export function StudentDashboard() {
               <div className="w-full rounded-lg p-4 border bg-muted/40 border-border transition-colors mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-muted-foreground">Sync Rate</span>
-                  <span className="text-sm font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
-                    {user.syncRate}%
-                  </span>
+                  {loading ? (
+                    <div className="h-4 w-10 bg-muted animate-pulse rounded" />
+                  ) : (
+                    <span className="text-sm font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
+                      {computedSyncRate}%
+                    </span>
+                  )}
                 </div>
                 <div className="h-3 rounded-full overflow-hidden bg-muted">
                   <div
                     className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500"
-                    style={{ width: `${user.syncRate}%` }}
+                    style={{ width: `${loading ? user.syncRate : computedSyncRate}%` }}
                   />
                 </div>
-                <p className="text-xs mt-2 text-muted-foreground">Overall mastery indicator</p>
+                <p className="text-xs mt-2 text-muted-foreground">
+                  {hasGameData && odinProfile!.masteryStates?.length ? 'Based on BKT skill mastery' : 'Based on achievements unlocked'}
+                </p>
               </div>
 
               {/* Live game stats */}
@@ -189,13 +202,15 @@ export function StudentDashboard() {
                   <p className="text-[10px] text-muted-foreground">Submissions</p>
                 </div>
                 <div className="border rounded-lg p-3 text-center bg-muted/40 border-border">
-                  <AlertTriangle className={`w-4 h-4 mx-auto mb-1 ${helplessnessColor(odinProfile?.helplessnessScore ?? 0)}`} />
+                  <AlertTriangle className={`w-4 h-4 mx-auto mb-1 ${hasGameData ? helplessnessColor(odinProfile!.helplessnessScore) : 'text-muted-foreground'}`} />
                   {loading ? (
                     <div className="h-5 w-12 bg-muted animate-pulse rounded mx-auto" />
-                  ) : (
-                    <p className={`text-lg font-semibold ${helplessnessColor(odinProfile?.helplessnessScore ?? 0)}`} style={{ fontFamily: 'var(--font-mono)' }}>
-                      {(odinProfile?.helplessnessScore ?? 0).toFixed(0)}
+                  ) : hasGameData ? (
+                    <p className={`text-lg font-semibold ${helplessnessColor(odinProfile!.helplessnessScore)}`} style={{ fontFamily: 'var(--font-mono)' }}>
+                      {odinProfile!.helplessnessScore.toFixed(0)}
                     </p>
+                  ) : (
+                    <p className="text-lg font-semibold text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>—</p>
                   )}
                   <p className="text-[10px] text-muted-foreground">Helplessness</p>
                 </div>
