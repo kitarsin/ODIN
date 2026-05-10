@@ -3,22 +3,44 @@ import { useBlocker } from 'react-router-dom';
 import { Navigation } from '../components/Navigation';
 import { GodotGameEmbed } from '../components/GodotGameEmbed';
 import { patchSessionEnd } from '../../lib/odinApi';
+import { useAuth } from '../context/AuthContext';
+import { AchievementModal } from '../components/AchievementModal';
+import { getAchievementDetail } from '../utils/achievementCatalog';
 
 const API_URL = import.meta.env.VITE_ODIN_API_URL ?? 'http://localhost:5000';
 
 export function GameContainer() {
+  const { addAchievement } = useAuth();
   const activeSessionId = useRef<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [achievementQueue, setAchievementQueue] = useState<string[]>([]);
+  const [shownAchievement, setShownAchievement] = useState<string | null>(null);
   // Starts true so the blocker is active from mount, regardless of whether
   // the session ID has arrived yet from Godot (fixes race condition).
   const [gameActive] = useState(true);
 
-  // Receive session ID from Godot iframe via postMessage
+  // Drain achievement queue one-at-a-time; save each to the profile immediately
+  useEffect(() => {
+    if (shownAchievement !== null || achievementQueue.length === 0) return;
+    const [next, ...rest] = achievementQueue;
+    setAchievementQueue(rest);
+    setShownAchievement(next);
+    const detail = getAchievementDetail(next);
+    void addAchievement({ name: detail.name, emoji: detail.emoji, description: detail.description, unlockedAt: new Date().toISOString(), type: 'success' });
+  }, [achievementQueue, shownAchievement]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleAchievementClose = useCallback(() => setShownAchievement(null), []);
+
+  // Receive messages from Godot iframe
   useEffect(() => {
     function onMessage(e: MessageEvent) {
       if (e.data?.type === 'odin_session_started') {
         activeSessionId.current = e.data.sessionId;
+      }
+      if (e.data?.type === 'odin_achievements_unlocked') {
+        const names: string[] = Array.isArray(e.data.achievements) ? e.data.achievements : [];
+        if (names.length > 0) setAchievementQueue(q => [...q, ...names]);
       }
     }
     window.addEventListener('message', onMessage);
@@ -74,6 +96,17 @@ export function GameContainer() {
       <div className="flex flex-1 overflow-hidden">
         <GodotGameEmbed ref={iframeRef} />
       </div>
+
+      {shownAchievement && (() => {
+        const d = getAchievementDetail(shownAchievement);
+        return (
+          <AchievementModal
+            isOpen
+            onClose={handleAchievementClose}
+            data={{ status: 'success', badgeName: d.name, badgeEmoji: d.emoji, title: 'Achievement Unlocked!', description: d.description, successMessage: 'Added to your profile.' }}
+          />
+        );
+      })()}
 
       {showLeaveModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">

@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Navigation } from '../components/Navigation';
 import { useAuth } from '../context/AuthContext';
 import { useKeystrokeTracker } from '../../hooks/useKeystrokeTracker';
 import { submitCode, createSession, getPuzzlesByLevel, type SubmissionResponse } from '../../lib/odinApi';
+import { AchievementModal } from '../components/AchievementModal';
+import { getAchievementDetail } from '../utils/achievementCatalog';
 import { Button } from '../components/ui/button';
 import {
   Play,
@@ -92,7 +94,7 @@ function getInterventionColor(type: string): string {
 }
 
 export function OdinTestBench() {
-  const { user } = useAuth();
+  const { user, addAchievement } = useAuth();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { getSnapshot, reset: resetKeystrokes } = useKeystrokeTracker(textareaRef);
 
@@ -104,6 +106,20 @@ export function OdinTestBench() {
   const [loading, setLoading] = useState(false);
   const [submissionCount, setSubmissionCount] = useState(0);
   const [showSkillDropdown, setShowSkillDropdown] = useState(false);
+  const [achievementQueue, setAchievementQueue] = useState<string[]>([]);
+  const [shownAchievement, setShownAchievement] = useState<string | null>(null);
+
+  // Drain the achievement queue one-at-a-time; save each immediately
+  useEffect(() => {
+    if (shownAchievement !== null || achievementQueue.length === 0) return;
+    const [next, ...rest] = achievementQueue;
+    setAchievementQueue(rest);
+    setShownAchievement(next);
+    const detail = getAchievementDetail(next);
+    void addAchievement({ name: detail.name, emoji: detail.emoji, description: detail.description, unlockedAt: new Date().toISOString(), type: 'success' });
+  }, [achievementQueue, shownAchievement]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleAchievementClose = useCallback(() => setShownAchievement(null), []);
 
   // Create a session on mount
   useEffect(() => {
@@ -135,6 +151,9 @@ export function OdinTestBench() {
       );
       setResult(response);
       setSubmissionCount((c) => c + 1);
+      if (response.newAchievements?.length) {
+        setAchievementQueue(q => [...q, ...response.newAchievements!]);
+      }
       resetKeystrokes();
     } catch (err: any) {
       setError(err.message || 'Submission failed');
@@ -440,6 +459,17 @@ export function OdinTestBench() {
           </div>
         </div>
       </div>
+
+      {shownAchievement && (() => {
+        const d = getAchievementDetail(shownAchievement);
+        return (
+          <AchievementModal
+            isOpen
+            onClose={handleAchievementClose}
+            data={{ status: 'success', badgeName: d.name, badgeEmoji: d.emoji, title: 'Achievement Unlocked!', description: d.description, successMessage: 'Added to your profile.' }}
+          />
+        );
+      })()}
     </div>
   );
 }

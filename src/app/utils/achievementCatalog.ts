@@ -1,3 +1,21 @@
+export interface AchievementDetail {
+  name: string;
+  emoji: string;
+  description: string;
+}
+
+export const ACHIEVEMENT_DETAILS: Record<string, AchievementDetail> = {
+  'First Victory':  { name: 'First Victory',  emoji: '⚔️', description: 'Solved your first puzzle correctly.' },
+  'Array Master':   { name: 'Array Master',   emoji: '📦', description: 'Mastered all 1D array skills.' },
+  'Loop Expert':    { name: 'Loop Expert',    emoji: '🔄', description: 'Mastered all loop & iteration skills.' },
+  '2D Grid Expert': { name: '2D Grid Expert', emoji: '🧙', description: 'Mastered all 2D array skills.' },
+  'Bug Slayer':     { name: 'Bug Slayer',     emoji: '🐛', description: 'Achieved mastery across every skill category.' },
+};
+
+export function getAchievementDetail(name: string): AchievementDetail {
+  return ACHIEVEMENT_DETAILS[name] ?? { name, emoji: '🏆', description: 'Achievement unlocked.' };
+}
+
 // Derives overall sync rate from BKT mastery states returned by the ODIN API.
 // Returns 0 if there are no mastery records yet (player hasn't played).
 export function calculateSyncRateFromMastery(masteryStates: { masteryPercentage: number }[]): number {

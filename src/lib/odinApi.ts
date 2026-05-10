@@ -41,6 +41,7 @@ export interface SubmissionResponse {
   };
   levelUnlocked: boolean;
   xpAwarded: number;
+  newAchievements?: string[];
 }
 
 // ── API Calls ──
