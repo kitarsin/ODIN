@@ -8,7 +8,11 @@ const API_URL = import.meta.env.VITE_ODIN_API_URL ?? 'http://localhost:5000';
 
 export function GameContainer() {
   const activeSessionId = useRef<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  // Starts true so the blocker is active from mount, regardless of whether
+  // the session ID has arrived yet from Godot (fixes race condition).
+  const [gameActive, setGameActive] = useState(true);
 
   // Receive session ID from Godot iframe via postMessage
   useEffect(() => {
@@ -32,18 +36,24 @@ export function GameContainer() {
     return () => window.removeEventListener('beforeunload', onBeforeUnload);
   }, []);
 
-  // Block in-app navigation while a session is active
-  const blocker = useBlocker(() => activeSessionId.current !== null);
+  // Block in-app navigation while the game page is active
+  const blocker = useBlocker(() => gameActive);
 
   useEffect(() => {
     if (blocker.state === 'blocked') setShowLeaveModal(true);
   }, [blocker.state]);
 
   const handleConfirmLeave = useCallback(async () => {
+    // Tell Godot to flush the player's current position to the server
+    // before we end the session, so the spawn point is always up to date.
+    iframeRef.current?.contentWindow?.postMessage({ type: 'odin_save_request' }, '*');
+    await new Promise(r => setTimeout(r, 500));
+
     if (activeSessionId.current) {
       await patchSessionEnd(activeSessionId.current).catch(() => {});
       activeSessionId.current = null;
     }
+    setGameActive(false);
     setShowLeaveModal(false);
     blocker.proceed?.();
   }, [blocker]);
@@ -57,7 +67,7 @@ export function GameContainer() {
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
       <Navigation />
       <div className="flex flex-1 overflow-hidden">
-        <GodotGameEmbed />
+        <GodotGameEmbed ref={iframeRef} />
       </div>
 
       {showLeaveModal && (

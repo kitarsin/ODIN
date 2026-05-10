@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../../lib/supabaseClient';
 
 const GAME_PATH = '/godot/index.html';
 
-export function GodotGameEmbed() {
+export const GodotGameEmbed = forwardRef<HTMLIFrameElement>(function GodotGameEmbed(_, ref) {
   const { user } = useAuth();
   const [ready, setReady] = useState(false);
 
@@ -31,10 +31,11 @@ export function GodotGameEmbed() {
 
   return (
     <iframe
+      ref={ref}
       src={GAME_PATH}
       className="h-full w-full border-none"
       allow="autoplay; gamepad"
       title="ODIN Game"
     />
   );
-}
+});
