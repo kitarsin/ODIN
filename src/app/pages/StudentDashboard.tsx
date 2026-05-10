@@ -34,9 +34,9 @@ interface GameSession {
 
 // Group skill topics into the three broad categories shown on the dashboard
 const MASTERY_GROUPS = [
-  { label: 'Arrays', subtitle: 'Data structure fundamentals', skills: ['ArrayInitialization', 'ArrayAccess'] },
-  { label: 'Loops', subtitle: 'Iteration patterns', skills: ['ArrayIteration', 'ArrayOperations'] },
-  { label: '2D Grids', subtitle: 'Multi-dimensional arrays', skills: ['MultidimensionalArrays', 'JaggedArrays'] },
+  { label: 'Library Maze', subtitle: '1D Arrays', skills: ['ArrayInitialization', 'ArrayAccess'] },
+  { label: 'Fast Food Maze', subtitle: 'Loops & Iteration', skills: ['ArrayIteration', 'ArrayOperations'] },
+  { label: 'Billiards Hall', subtitle: '2D Arrays', skills: ['MultidimensionalArrays', 'JaggedArrays'] },
 ];
 
 function groupMastery(masteryStates: MasteryState[], skills: string[]) {

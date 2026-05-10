@@ -34,9 +34,9 @@ interface GameSession {
 }
 
 const SKILL_GROUPS = [
-  { label: 'Level 1 — Arrays', skills: ['ArrayInitialization', 'ArrayAccess'] },
-  { label: 'Level 2 — Iteration', skills: ['ArrayIteration', 'ArrayOperations'] },
-  { label: 'Level 3 — Multidimensional', skills: ['MultidimensionalArrays', 'JaggedArrays'] },
+  { label: 'Library Maze', sublabel: '1D Arrays', skills: ['ArrayInitialization', 'ArrayAccess'] },
+  { label: 'Fast Food Maze', sublabel: 'Loops & Iteration', skills: ['ArrayIteration', 'ArrayOperations'] },
+  { label: 'Billiards Hall', sublabel: '2D Arrays', skills: ['MultidimensionalArrays', 'JaggedArrays'] },
 ];
 
 function skillLabel(topic: string) {
@@ -264,6 +264,7 @@ export function Profile() {
                       <div key={group.label}>
                         <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-3">
                           {group.label}
+                          <span className="ml-2 font-normal normal-case tracking-normal text-muted-foreground/60">— {group.sublabel}</span>
                         </p>
                         <div className="space-y-3">
                           {group.skills.map((skill, i) => {
