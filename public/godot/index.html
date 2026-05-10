@@ -1,33 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<script>
-			try {
-				var c = window.parent.__ODIN_GAME_CONFIG || {};
-				window.ODIN_API_URL   = c.apiUrl || 'http://localhost:5000';
-				window.ODIN_USER_ID   = c.userId || '';
-				window.ODIN_JWT_TOKEN = c.token  || '';
-			} catch (e) {
-				window.ODIN_API_URL   = 'http://localhost:5000';
-				window.ODIN_USER_ID   = '';
-				window.ODIN_JWT_TOKEN = '';
-			}
-			// Strip body from GET/HEAD requests — Godot's web export sends {} on all requests
-			(function() {
-				var _fetch = window.fetch;
-				window.fetch = function(input, init) {
-					if (init && init.body !== undefined) {
-						var method = (init.method || 'GET').toUpperCase();
-						if (method === 'GET' || method === 'HEAD') {
-							var patched = Object.assign({}, init);
-							delete patched.body;
-							return _fetch(input, patched);
-						}
-					}
-					return _fetch(input, init);
-				};
-			})();
-		</script>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
 		<title>ODIN_gdscript</title>
@@ -138,7 +111,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":4007140,"index.wasm":35749181},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":4031992,"index.wasm":35749181},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
