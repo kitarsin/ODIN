@@ -3,6 +3,7 @@ import { Navigation } from '../components/Navigation';
 import { AlertTriangle, Activity, TrendingDown, ClipboardList, ChevronDown, ChevronRight, CheckCircle, Clock, Keyboard, ClipboardCopy, XCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { calculateSyncRate } from '../utils/achievementCatalog';
+import { getRecentInterventions, getMasteryHeatmap, getStudentList } from '../../lib/odinApi';
 
 type Student = {
   id: string;
@@ -136,6 +137,9 @@ export function Analytics() {
   const [pretestLoading, setPretestLoading] = useState(true);
   const [pretestError, setPretestError] = useState<string | null>(null);
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
+  const [interventionLogs, setInterventionLogs] = useState<any[]>([]);
+  const [masteryHeatmap, setMasteryHeatmap] = useState<any[]>([]);
+  const [apiStudents, setApiStudents] = useState<any[]>([]);
 
   const isAvatarUrl = (value: string) => value.startsWith('http') || value.startsWith('data:');
 
@@ -287,14 +291,33 @@ export function Analytics() {
       }
     };
 
+    const fetchApiData = async () => {
+      const [ints, heatmap, slist] = await Promise.allSettled([
+        getRecentInterventions(100),
+        getMasteryHeatmap(),
+        getStudentList(),
+      ]);
+      if (ints.status === 'fulfilled') setInterventionLogs(Array.isArray(ints.value) ? ints.value : []);
+      if (heatmap.status === 'fulfilled') setMasteryHeatmap(Array.isArray(heatmap.value) ? heatmap.value : []);
+      if (slist.status === 'fulfilled') setApiStudents(Array.isArray(slist.value) ? slist.value : []);
+    };
+
     fetchStudents();
     fetchPretestResults();
+    fetchApiData();
   }, []);
   
-  // Calculate at-risk students (sync rate < 60)
-  const atRiskStudents = students.filter(s => s.syncRate < 60);
+  // Build lookup of API students by studentId so we can merge with Supabase profile data
+  const apiStudentByStudentId = new Map(apiStudents.map((s: any) => [s.studentId, s]));
 
-  // Generate class heatmap data
+  // At-risk: prefer API helplessness score; fall back to syncRate
+  const atRiskStudents = students.filter(s => {
+    const api = apiStudentByStudentId.get(s.studentId);
+    if (api) return api.status === 'AT_RISK' || api.status === 'CRITICAL';
+    return s.syncRate < 60;
+  });
+
+  // Heatmap: use per-section Supabase data as fallback if API mastery data isn't loaded yet
   const sections = Array.from(new Set(students.map(s => s.section)));
   const heatmapData = sections.map(section => {
     const sectionStudents = students.filter(s => s.section === section);
@@ -304,63 +327,29 @@ export function Analytics() {
     return { section, avgMastery, count: sectionStudents.length };
   });
 
-  const behaviorLogs = students.flatMap((student) => {
-    const logs: any[] = [];
-    
-    // Add registration log
-    logs.push({
-      id: `${student.id}-registered`,
-      student: student.name,
-      event: 'Registered account',
-      timestamp: student.createdAt || new Date().toISOString(),
-      severity: 'low'
-    });
-    
-    // Assign behaviors based on sync rate
-    if (student.syncRate >= 85) {
-      logs.push({
-        id: `${student.id}-behavior-active`,
-        student: student.name,
-        event: 'Active Thinking',
-        timestamp: new Date(new Date(student.createdAt || new Date()).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        severity: 'low'
-      });
-    } else if (student.syncRate >= 70) {
-      logs.push({
-        id: `${student.id}-behavior-productive`,
-        student: student.name,
-        event: 'Productive Failure',
-        timestamp: new Date(new Date(student.createdAt || new Date()).getTime() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-        severity: 'low'
-      });
-    } else if (student.syncRate >= 60) {
-      logs.push({
-        id: `${student.id}-behavior-tinkering`,
-        student: student.name,
-        event: 'Tinkering',
-        timestamp: new Date(new Date(student.createdAt || new Date()).getTime() + 4 * 24 * 60 * 60 * 1000).toISOString(),
-        severity: 'low'
-      });
-    } else if (student.syncRate >= 50) {
-      logs.unshift({
-        id: `${student.id}-behavior-gaming`,
-        student: student.name,
-        event: 'Gaming the System',
-        timestamp: new Date(new Date(student.createdAt || new Date()).getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-        severity: 'medium'
-      });
-    } else {
-      logs.unshift({
-        id: `${student.id}-behavior-spinning`,
-        student: student.name,
-        event: 'Wheel Spinning',
-        timestamp: new Date(new Date(student.createdAt || new Date()).getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-        severity: 'high'
-      });
-    }
-    
-    return logs;
-  });
+  const SKILL_LABEL: Record<string, string> = {
+    ArrayInitialization: 'Array Init',
+    ArrayAccess: 'Array Access',
+    ArrayIteration: 'Array Iteration',
+    ArrayOperations: 'Array Operations',
+    MultidimensionalArrays: '2D Arrays',
+    JaggedArrays: 'Jagged Arrays',
+  };
+
+  const behaviorSeverity = (state: string) => {
+    if (state === 'WheelSpinning') return 'high';
+    if (state === 'GamingTheSystem') return 'medium';
+    return 'low';
+  };
+
+  // Real behavior logs from the API; empty until API data loads
+  const behaviorLogs = interventionLogs.map((log: any, idx: number) => ({
+    id: `${log.timestamp ?? idx}-${log.studentId ?? idx}`,
+    student: log.displayName ?? log.studentId ?? 'Unknown',
+    event: `${log.behaviorState} — ${log.interventionTriggered}`,
+    timestamp: log.timestamp,
+    severity: behaviorSeverity(log.behaviorState),
+  }));
 
   const getColorForMastery = (mastery: number) => {
     if (mastery >= 75) return 'bg-primary';
@@ -411,47 +400,56 @@ export function Analytics() {
                 </div>
               )}
 
-              {!loading && !loadError && atRiskStudents.map(student => (
-                <div
-                  key={student.id}
-                  className="border rounded-lg p-4 bg-muted/40 border-border hover:border-destructive/50 transition-colors"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl bg-muted overflow-hidden">
-                        {isAvatarUrl(student.avatar) ? (
-                          <img
-                            src={student.avatar}
-                            alt={`${student.name} avatar`}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span>{student.avatar}</span>
-                        )}
+              {!loading && !loadError && atRiskStudents.map(student => {
+                const api = apiStudentByStudentId.get(student.studentId);
+                return (
+                  <div
+                    key={student.id}
+                    className="border rounded-lg p-4 bg-muted/40 border-border hover:border-destructive/50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl bg-muted overflow-hidden">
+                          {isAvatarUrl(student.avatar) ? (
+                            <img
+                              src={student.avatar}
+                              alt={`${student.name} avatar`}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span>{student.avatar}</span>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{student.name}</p>
+                          <p className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
+                            {student.studentId} • {student.section}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{student.name}</p>
-                        <p className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
-                          {student.studentId} • {student.section}
+                      <div className="text-right">
+                        <p className="text-lg font-semibold text-destructive" style={{ fontFamily: 'var(--font-mono)' }}>
+                          {api ? api.helplessnessScore.toFixed(0) : student.syncRate}
+                          {api ? '' : '%'}
                         </p>
+                        <p className="text-xs text-muted-foreground">{api ? 'Helplessness' : 'Sync Rate'}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-semibold text-destructive" style={{ fontFamily: 'var(--font-mono)' }}>
-                        {student.syncRate}%
-                      </p>
-                      <p className="text-xs text-muted-foreground">Sync Rate</p>
-                    </div>
-                  </div>
 
-                  <div className="mt-3 pt-3 border-t border-border">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <TrendingDown className="w-3 h-3 text-destructive" />
-                      <span>Struggling with: 2D Grids ({student.progress.grids}%)</span>
+                    <div className="mt-3 pt-3 border-t border-border">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <TrendingDown className="w-3 h-3 text-destructive" />
+                        <span>
+                          {api
+                            ? `Mastery: ${api.overallMastery.toFixed(0)}% · ${api.totalSubmissions} submission${api.totalSubmissions !== 1 ? 's' : ''} · Status: ${api.status}`
+                            : 'Sync rate below threshold — has not yet played'
+                          }
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               {!loading && !loadError && atRiskStudents.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
@@ -463,11 +461,52 @@ export function Analytics() {
 
           {/* Class Heatmap */}
           <div className="border rounded-lg p-6 bg-card border-border transition-colors">
-            <h2 className="text-lg font-semibold mb-4">Class Heatmap</h2>
-            <p className="text-sm mb-6 text-muted-foreground">Average mastery distribution by section</p>
+            <h2 className="text-lg font-semibold mb-4">
+              {masteryHeatmap.length > 0 ? 'Class Mastery by Skill' : 'Class Heatmap'}
+            </h2>
+            <p className="text-sm mb-6 text-muted-foreground">
+              {masteryHeatmap.length > 0
+                ? 'Average BKT mastery probability per skill across all students'
+                : 'Average mastery distribution by section'}
+            </p>
 
             <div className="space-y-4">
-              {!loading && !loadError && heatmapData.map(section => (
+              {masteryHeatmap.length > 0 && masteryHeatmap.map((item: any) => (
+                <div key={item.skill}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
+                      {SKILL_LABEL[item.skill] ?? item.skill}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {item.studentsMastered}/{item.studentsAttempted} mastered
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-10 gap-1 mb-2">
+                    {Array.from({ length: 10 }).map((_, idx) => {
+                      const threshold = (idx + 1) * 10;
+                      const opacity = item.averageMastery >= threshold ? 1 : 0.2;
+                      return (
+                        <div
+                          key={idx}
+                          className={`aspect-square rounded ${getColorForMastery(item.averageMastery)}`}
+                          style={{ opacity }}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">0%</span>
+                    <span className="text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
+                      Avg: {item.averageMastery.toFixed(0)}%
+                    </span>
+                    <span className="text-muted-foreground">100%</span>
+                  </div>
+                </div>
+              ))}
+
+              {masteryHeatmap.length === 0 && !loading && !loadError && heatmapData.map(section => (
                 <div key={section.section}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
@@ -477,7 +516,7 @@ export function Analytics() {
                       {section.count} student{section.count !== 1 ? 's' : ''}
                     </span>
                   </div>
-                  
+
                   <div className="grid grid-cols-10 gap-1 mb-2">
                     {Array.from({ length: 10 }).map((_, idx) => {
                       const threshold = (idx + 1) * 10;
@@ -502,7 +541,7 @@ export function Analytics() {
                 </div>
               ))}
 
-              {!loading && !loadError && heatmapData.length === 0 && (
+              {masteryHeatmap.length === 0 && !loading && !loadError && heatmapData.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
                   <p>No section data available</p>
                 </div>
@@ -536,6 +575,11 @@ export function Analytics() {
 
             <div className="border rounded-lg overflow-hidden bg-muted/40 border-border transition-colors">
               <div className="max-h-96 overflow-y-auto">
+                {behaviorLogs.length === 0 && (
+                  <div className="p-8 text-center text-sm text-muted-foreground">
+                    No behavior logs yet — logs appear here once students start submitting code in the game.
+                  </div>
+                )}
                 {behaviorLogs
                   .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
                   .map((log, idx) => (
@@ -555,11 +599,11 @@ export function Analytics() {
                           </span>
                         </div>
                         <p className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
-                          {log.timestamp}
+                          {new Date(log.timestamp).toLocaleString()}
                         </p>
                       </div>
                       <div className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                        log.severity === 'high' 
+                        log.severity === 'high'
                           ? 'bg-destructive/20 text-destructive'
                           : log.severity === 'medium'
                           ? 'bg-amber-500/20 text-amber-600'

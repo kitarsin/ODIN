@@ -409,25 +409,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const updatedAchievements = [...existingAchievements, newAchievement];
       const updatedBadges = dedupeBadges([...(user.badges || []), achievement.name]);
       const syncRate = calculateSyncRate(updatedAchievements, updatedBadges);
-      
-      // Update database
+
+      // Optimistic local update — Profile/Dashboard reflect it immediately
+      setUser({ ...user, achievements: updatedAchievements, badges: updatedBadges, syncRate });
+
+      // Persist achievements to Supabase (badges is derived from achievements on read)
       const { error } = await supabase
         .from('profiles')
-        .update({ achievements: updatedAchievements, badges: updatedBadges, sync_rate: syncRate })
+        .update({ achievements: updatedAchievements, sync_rate: syncRate })
         .eq('id', user.id);
 
       if (error) {
-        console.error('Error saving achievement:', error);
-        return;
+        console.error('Error saving achievement to Supabase:', error);
       }
-
-      // Update local state
-      setUser({
-        ...user,
-        achievements: updatedAchievements,
-        badges: updatedBadges,
-        syncRate,
-      });
     } catch (error) {
       console.error('Error adding achievement:', error);
     }
