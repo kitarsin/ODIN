@@ -47,15 +47,26 @@ export function GameContainer() {
     return () => window.removeEventListener('message', onMessage);
   }, []);
 
-  // Best-effort end on tab close / browser refresh
+  // Handle browser closure: 1. Show prompt, 2. Cleanup session on actual exit
   useEffect(() => {
-    function onBeforeUnload() {
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      if (activeSessionId.current) {
+        e.preventDefault();
+        e.returnValue = ''; 
+      }
+    }
+    function onUnload() {
       if (activeSessionId.current) {
         navigator.sendBeacon(`${API_URL}/api/session/${activeSessionId.current}/end`);
       }
     }
+
     window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+    window.addEventListener('unload', onUnload);
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload);
+      window.removeEventListener('unload', onUnload);
+    };
   }, []);
 
   // Block in-app navigation while the game page is active
