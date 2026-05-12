@@ -18,6 +18,17 @@ export interface KeystrokeData {
   averageDwellTimeMs: number;
   initialLatencyMs: number;
   totalTimeSeconds: number;
+  pasteDetected?: boolean;
+  rawEvents?: unknown[];
+  inactivityDuration?: number;
+  timeSinceLastSubmit?: number;
+  errorLog?: { category: string; message: string }[];
+  isFirstSubmission?: boolean;
+  typingBurstCoverage?: number;
+  selfCorrectionCount?: number;
+  systemCheckCount?: number;
+  postErrorInactivitySeconds?: number;
+  keyDownCount?: number;
 }
 
 export interface SubmissionResponse {

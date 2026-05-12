@@ -78,6 +78,9 @@ function getBehaviorColor(state: string): string {
     case 'Tinkering': return 'text-amber-400';
     case 'WheelSpinning': return 'text-orange-400';
     case 'GamingTheSystem': return 'text-red-400';
+    case 'PostFailureDisengagement': return 'text-rose-400';
+    case 'LowProgressTrialAndError': return 'text-yellow-400';
+    case 'HintWithheld': return 'text-slate-400';
     default: return 'text-muted-foreground';
   }
 }

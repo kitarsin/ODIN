@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 export function useKeystrokeTracker(textareaRef: React.RefObject<HTMLTextAreaElement>) {
   const flightTimes = useRef<number[]>([]);
   const dwellTimes = useRef<number[]>([]);
-  const lastKeyUp = useRef<number>(0);
+  const lastKeyUp = useRef(0);
   const keyDowns = useRef<Map<string, number>>(new Map());
-  const startTime = useRef<number>(Date.now());
-  const firstKeystroke = useRef<number | null>(null);
+  const perfStart = useRef(performance.now());
+  const firstKeystrokePerf = useRef<number | null>(null);
+  const keyDownCount = useRef(0);
+  const backspaceDownCount = useRef(0);
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -14,8 +16,12 @@ export function useKeystrokeTracker(textareaRef: React.RefObject<HTMLTextAreaEle
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const now = performance.now();
+      keyDownCount.current += 1;
+      if (e.code === 'Backspace' || e.code === 'Delete') {
+        backspaceDownCount.current += 1;
+      }
       keyDowns.current.set(e.code, now);
-      if (firstKeystroke.current === null) firstKeystroke.current = now;
+      if (firstKeystrokePerf.current === null) firstKeystrokePerf.current = now;
       if (lastKeyUp.current > 0) flightTimes.current.push(now - lastKeyUp.current);
     };
 
@@ -36,20 +42,33 @@ export function useKeystrokeTracker(textareaRef: React.RefObject<HTMLTextAreaEle
   }, [textareaRef]);
 
   const getSnapshot = () => {
-    const avg = (arr: number[]) => arr.length ? arr.reduce((a,b)=>a+b,0) / arr.length : 0;
+    const avg = (arr: number[]) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0);
+    const first = firstKeystrokePerf.current;
     return {
       averageFlightTimeMs: avg(flightTimes.current),
       averageDwellTimeMs: avg(dwellTimes.current),
-      initialLatencyMs: firstKeystroke.current ?? 0,
-      totalTimeSeconds: (Date.now() - startTime.current) / 1000
+      initialLatencyMs: first != null ? first - perfStart.current : 0,
+      totalTimeSeconds: (performance.now() - perfStart.current) / 1000,
+      pasteDetected: false,
+      inactivityDuration: 0,
+      timeSinceLastSubmit: 0,
+      errorLog: [] as { category: string; message: string }[],
+      isFirstSubmission: false,
+      typingBurstCoverage: 0,
+      selfCorrectionCount: backspaceDownCount.current,
+      systemCheckCount: 0,
+      postErrorInactivitySeconds: -1,
+      keyDownCount: keyDownCount.current,
     };
   };
 
   const reset = () => {
     flightTimes.current = [];
     dwellTimes.current = [];
-    startTime.current = Date.now();
-    firstKeystroke.current = null;
+    perfStart.current = performance.now();
+    firstKeystrokePerf.current = null;
+    keyDownCount.current = 0;
+    backspaceDownCount.current = 0;
   };
 
   return { getSnapshot, reset };
