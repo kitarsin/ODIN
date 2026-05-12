@@ -14,6 +14,8 @@ type User = {
   syncRate: number;    // UI expects 'syncRate', DB has 'sync_rate'
   status: string;
   pretestCompleted: boolean;
+  currentLevel: number;
+  experiencePoints: number;
   // Add these defaults so your dashboard doesn't crash if they are missing
   progress: { arrays: number; loops: number; grids: number };
   badges: string[];
@@ -203,13 +205,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             studentId: defaultStudentId,
             section: defaultSection,
             role: 'student',
-          avatar: '🧑‍🎓',
-          syncRate: 0,
-          status: 'active',
-          pretestCompleted: false,
-          progress: { arrays: 0, loops: 0, grids: 0 },
-          badges: [],
-          achievements: []
+            avatar: '🧑‍🎓',
+            syncRate: 0,
+            status: 'active',
+            pretestCompleted: false,
+            currentLevel: 0,
+            experiencePoints: 0,
+            progress: { arrays: 0, loops: 0, grids: 0 },
+            badges: [],
+            achievements: []
         });
         setLoading(false);
         return;
@@ -246,6 +250,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           syncRate,
           status: 'active',
           pretestCompleted: data.pretest_completed ?? false,
+          currentLevel: data.current_level ?? 0,
+          experiencePoints: data.experience_points ?? 0,
           progress: { arrays: 0, loops: 0, grids: 0 },
           badges: finalBadges,
           achievements: achievementsData
@@ -392,11 +398,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ pretest_completed: true })
+      .update({ pretest_completed: true, current_level: 1 })
       .eq('id', user.id);
     if (updateError) throw updateError;
 
-    setUser({ ...user, pretestCompleted: true });
+    setUser({ ...user, pretestCompleted: true, currentLevel: 1 });
   };
 
   // Add a new achievement to the user's profile

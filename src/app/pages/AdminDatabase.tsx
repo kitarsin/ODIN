@@ -23,6 +23,8 @@ interface User {
   achievements: Achievement[];
   badges: string[];
   pretestCompleted: boolean;
+  currentLevel: number;
+  experiencePoints: number;
 }
 
 type Achievement = {
@@ -142,6 +144,8 @@ export function AdminDatabase() {
           achievements: achievements as Achievement[],
           badges,
           pretestCompleted: row.pretest_completed || false,
+          currentLevel: row.current_level || 0,
+          experiencePoints: row.experience_points || 0,
         };
       });
       setUsers(mapped);
@@ -298,7 +302,9 @@ export function AdminDatabase() {
         status: 'active',
         achievements: [],
         badges: [],
-        pretestCompleted: false
+        pretestCompleted: false,
+        currentLevel: 0,
+        experiencePoints: 0
       };
       setUsers([...users, newUser]);
     }
@@ -733,6 +739,9 @@ export function AdminDatabase() {
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Pretest
                   </th>
+                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Level
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Last Login
                   </th>
@@ -796,6 +805,9 @@ export function AdminDatabase() {
                       >
                         {user.pretestCompleted ? 'Done' : 'Pending'}
                       </span>
+                    </td>
+                     <td className="px-4 py-3 text-sm font-mono text-primary">
+                      Lvl {user.currentLevel}
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
                       {formatDate(user.lastLogin)}
