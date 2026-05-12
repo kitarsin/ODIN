@@ -136,6 +136,9 @@ export function Analytics() {
   const [pretestResults, setPretestResults] = useState<PretestStudentResult[]>([]);
   const [pretestLoading, setPretestLoading] = useState(true);
   const [pretestError, setPretestError] = useState<string | null>(null);
+  const [posttestResults, setPosttestResults] = useState<PretestStudentResult[]>([]);
+  const [posttestLoading, setPosttestLoading] = useState(true);
+  const [posttestError, setPosttestError] = useState<string | null>(null);
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
   const [interventionLogs, setInterventionLogs] = useState<any[]>([]);
   const [masteryHeatmap, setMasteryHeatmap] = useState<any[]>([]);
@@ -291,6 +294,70 @@ export function Analytics() {
       }
     };
 
+    const fetchPosttestResults = async () => {
+      try {
+        setPosttestLoading(true);
+        setPosttestError(null);
+
+        const [profilesRes, responsesRes] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('id, full_name, student_id, section, posttest_completed')
+            .eq('role', 'student')
+            .order('full_name'),
+          supabase
+            .from('posttest_responses')
+            .select('user_id, question_id, response, avg_flight_time_ms, avg_dwell_time_ms, time_to_first_key_ms, total_time_ms, paste_count, paste_char_count, typed_char_count, is_correct, raw_events')
+            .order('sequence_number'),
+        ]);
+
+        if (profilesRes.error) throw profilesRes.error;
+
+        const responsesByUser: Record<string, any[]> = {};
+        for (const row of responsesRes.data ?? []) {
+          if (!responsesByUser[row.user_id]) responsesByUser[row.user_id] = [];
+          responsesByUser[row.user_id].push(row);
+        }
+
+        const avg = (arr: number[]) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+        const results: PretestStudentResult[] = (profilesRes.data ?? []).map(p => {
+          const rows = responsesByUser[p.id] ?? [];
+          return {
+            userId: p.id,
+            fullName: p.full_name || 'Unknown',
+            studentId: p.student_id || '—',
+            section: p.section || '—',
+            completed: p.posttest_completed ?? false,
+            avgFlightTimeMs: avg(rows.map((r: any) => r.avg_flight_time_ms ?? 0)),
+            avgDwellTimeMs: avg(rows.map((r: any) => r.avg_dwell_time_ms ?? 0)),
+            avgTimeToFirstKeyMs: avg(rows.map((r: any) => r.time_to_first_key_ms ?? 0)),
+            avgTotalTimeMs: avg(rows.map((r: any) => r.total_time_ms ?? 0)),
+            totalPasteCount: rows.reduce((s: number, r: any) => s + (r.paste_count ?? 0), 0),
+            responses: rows.map((r: any) => ({
+              questionId: r.question_id,
+              response: r.response ?? '',
+              totalTimeMs: r.total_time_ms ?? 0,
+              timeToFirstKeyMs: r.time_to_first_key_ms ?? 0,
+              avgFlightTimeMs: r.avg_flight_time_ms ?? 0,
+              avgDwellTimeMs: r.avg_dwell_time_ms ?? 0,
+              pasteCount: r.paste_count ?? 0,
+              pasteCharCount: r.paste_char_count ?? 0,
+              typedCharCount: r.typed_char_count ?? 0,
+              isCorrect: r.is_correct ?? false,
+              rawEvents: Array.isArray(r.raw_events) ? r.raw_events : [],
+            })),
+          };
+        });
+
+        setPosttestResults(results);
+      } catch (err: any) {
+        setPosttestError(err?.message || 'Failed to load posttest results');
+      } finally {
+        setPosttestLoading(false);
+      }
+    };
+
     const fetchApiData = async () => {
       const [ints, heatmap, slist] = await Promise.allSettled([
         getRecentInterventions(100),
@@ -304,6 +371,7 @@ export function Analytics() {
 
     fetchStudents();
     fetchPretestResults();
+    fetchPosttestResults();
     fetchApiData();
   }, []);
   
@@ -695,6 +763,246 @@ export function Analytics() {
                 </div>
 
                 {pretestResults.map(result => {
+                  const isExpanded = expandedStudent === result.userId;
+                  const passCount = result.responses.filter(r => r.isCorrect).length;
+                  const hasPaste = result.totalPasteCount > 0;
+
+                  return (
+                    <div key={result.userId} className="border-b last:border-b-0 border-border">
+                      {/* Summary row */}
+                      <div
+                        className={`flex md:grid md:grid-cols-[minmax(0,2fr)_1fr_90px_90px_90px_90px_80px] items-center gap-2 px-5 py-3 hover:bg-muted/30 transition-colors ${result.completed ? 'cursor-pointer' : 'cursor-default'}`}
+                        onClick={() => result.completed && setExpandedStudent(isExpanded ? null : result.userId)}
+                      >
+                        {/* Name */}
+                        <div className="flex items-center gap-2 min-w-0">
+                          {result.completed
+                            ? (isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />)
+                            : <div className="w-3.5 h-3.5 shrink-0" />
+                          }
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{result.fullName}</p>
+                            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>{result.studentId}</p>
+                          </div>
+                          {hasPaste && (
+                            <span title={`${result.totalPasteCount} paste event(s)`} className="ml-1 shrink-0">
+                              <ClipboardCopy className="w-3.5 h-3.5 text-amber-500" />
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Section */}
+                        <span className="text-xs text-muted-foreground hidden md:block">{result.section}</span>
+
+                        {/* Status */}
+                        <span className={`text-xs font-medium hidden md:flex items-center gap-1 ${result.completed ? 'text-primary' : 'text-amber-500'}`}>
+                          {result.completed ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                          {result.completed ? `${passCount}/${result.responses.length} pass` : 'Pending'}
+                        </span>
+
+                        {/* Keystroke metrics */}
+                        {(['avgFlightTimeMs', 'avgDwellTimeMs', 'avgTimeToFirstKeyMs'] as const).map(key => (
+                          <span key={key} className="text-xs hidden md:block" style={{ fontFamily: 'var(--font-mono)' }}>
+                            {result.completed ? `${result[key].toFixed(0)} ms` : '—'}
+                          </span>
+                        ))}
+
+                        {/* Paste indicator */}
+                        <span className={`text-xs hidden md:block font-medium ${hasPaste ? 'text-amber-500' : 'text-muted-foreground'}`} style={{ fontFamily: 'var(--font-mono)' }}>
+                          {result.completed ? result.totalPasteCount : '—'}
+                        </span>
+                      </div>
+
+                      {/* Expanded: per-problem breakdown */}
+                      {isExpanded && result.responses.length > 0 && (
+                        <div className="bg-muted/20 border-t border-border divide-y divide-border/60">
+                          {result.responses.map((r) => {
+                            const totalChars = r.typedCharCount + r.pasteCharCount;
+                            const pasteRatio = totalChars > 0 ? r.pasteCharCount / totalChars : 0;
+                            const likelyCopied = r.pasteCount > 0 && pasteRatio > 0.5;
+
+                            return (
+                              <div key={r.questionId} className="px-8 py-4">
+                                {/* Problem header */}
+                                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                                  <span className="text-xs font-semibold text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
+                                    {PROBLEM_LABELS[r.questionId] ?? r.questionId}
+                                  </span>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    {/* Correctness badge */}
+                                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${r.isCorrect ? 'bg-green-500/15 text-green-600' : 'bg-destructive/15 text-destructive'}`}>
+                                      {r.isCorrect ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                                      {r.isCorrect ? 'Passed' : 'Did not pass'}
+                                    </span>
+                                    {/* Paste badge */}
+                                    {r.pasteCount > 0 && (
+                                      <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${likelyCopied ? 'bg-amber-500/20 text-amber-600' : 'bg-amber-500/10 text-amber-500'}`}>
+                                        <ClipboardCopy className="w-3 h-3" />
+                                        {likelyCopied ? 'Likely copy-pasted' : `${r.pasteCount} paste`}
+                                      </span>
+                                    )}
+                                    {/* Timing pills */}
+                                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
+                                      <Clock className="w-3 h-3" />{(r.totalTimeMs / 1000).toFixed(1)}s
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
+                                      <Keyboard className="w-3 h-3" />flight {r.avgFlightTimeMs.toFixed(0)}ms · dwell {r.avgDwellTimeMs.toFixed(0)}ms · latency {r.timeToFirstKeyMs.toFixed(0)}ms
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Code submitted */}
+                                <pre className="bg-muted rounded p-3 text-xs overflow-x-auto whitespace-pre-wrap break-words text-foreground" style={{ fontFamily: 'var(--font-mono)', maxHeight: '160px', overflowY: 'auto' }}>
+                                  {r.response.trim() || <span className="italic text-muted-foreground">no code submitted</span>}
+                                </pre>
+
+                                {/* Char breakdown */}
+                                {(r.typedCharCount > 0 || r.pasteCharCount > 0) && (
+                                  <div className="flex gap-4 mt-2 text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
+                                    <span>typed: {r.typedCharCount} chars</span>
+                                    <span className={r.pasteCharCount > 0 ? 'text-amber-500' : ''}>pasted: {r.pasteCharCount} chars</span>
+                                    {totalChars > 0 && <span>paste ratio: {(pasteRatio * 100).toFixed(0)}%</span>}
+                                  </div>
+                                )}
+
+                                {/* Detailed event timeline */}
+                                {r.rawEvents.length > 0 && (() => {
+                                  const segments = buildTimeline(r.rawEvents);
+                                  return (
+                                    <div className="mt-4">
+                                      <p className="text-xs font-semibold text-muted-foreground mb-2" style={{ fontFamily: 'var(--font-mono)' }}>
+                                        Session Timeline
+                                      </p>
+                                      <div className="bg-muted/60 rounded border border-border overflow-y-auto" style={{ maxHeight: '260px' }}>
+                                        {segments.map((seg, si) => {
+                                          if (seg.kind === 'burst') {
+                                            const dur = ((seg.endT - seg.startT) / 1000).toFixed(1);
+                                            const edits = seg.backspaces + seg.deletes;
+                                            return (
+                                              <div key={si} className="flex gap-3 px-3 py-1.5 border-b border-border/50 last:border-0 items-baseline hover:bg-muted/80 transition-colors">
+                                                <span className="text-xs text-muted-foreground shrink-0 w-20" style={{ fontFamily: 'var(--font-mono)' }}>
+                                                  {fmtTs(seg.startT)}
+                                                </span>
+                                                <span className="text-xs font-medium text-foreground">Typing burst</span>
+                                                <span className="text-xs text-muted-foreground ml-auto" style={{ fontFamily: 'var(--font-mono)' }}>
+                                                  {seg.keys - edits} chars · {edits > 0 ? `${seg.backspaces}× ⌫  ${seg.deletes > 0 ? `${seg.deletes}× Del · ` : ''}` : ''}{dur}s
+                                                </span>
+                                              </div>
+                                            );
+                                          }
+                                          // Structural event
+                                          const label = EVENT_LABEL[seg.type] ?? seg.type;
+                                          const isWarning = seg.type === 'paste' || seg.type === 'focus_lost' || seg.type === 'tab_hidden' || (seg.type === 'run_result' && !seg.meta?.startsWith('PASS'));
+                                          const isSuccess = seg.type === 'run_result' && seg.meta?.startsWith('PASS');
+                                          return (
+                                            <div key={si} className={`flex gap-3 px-3 py-1.5 border-b border-border/50 last:border-0 items-baseline hover:bg-muted/80 transition-colors ${isWarning ? 'bg-amber-500/5' : isSuccess ? 'bg-green-500/5' : ''}`}>
+                                              <span className="text-xs text-muted-foreground shrink-0 w-20" style={{ fontFamily: 'var(--font-mono)' }}>
+                                                {fmtTs(seg.t)}
+                                              </span>
+                                              <span className={`text-xs font-medium ${isWarning ? 'text-amber-500' : isSuccess ? 'text-green-600' : 'text-foreground'}`}>
+                                                {label}
+                                              </span>
+                                              {seg.meta && (
+                                                <span className={`text-xs ml-auto ${isWarning ? 'text-amber-400' : isSuccess ? 'text-green-500' : 'text-muted-foreground'}`} style={{ fontFamily: 'var(--font-mono)' }}>
+                                                  {seg.meta}
+                                                </span>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Post Test Results */}
+          <div className="lg:col-span-2 border rounded-lg bg-card border-border transition-colors overflow-hidden mt-6">
+            {/* Section header */}
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <ClipboardList className="w-5 h-5 text-primary" />
+                  Post Test Results
+                </h2>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Post-learning coding assessment — keystroke dynamics, paste detection, and correctness per student
+                </p>
+              </div>
+              {!posttestLoading && !posttestError && (
+                <div className="text-right shrink-0 ml-4">
+                  <p className="text-2xl font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
+                    {posttestResults.filter(r => r.completed).length}
+                    <span className="text-base text-muted-foreground">/{posttestResults.length}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">completed</p>
+                </div>
+              )}
+            </div>
+
+            {/* Summary stat bar */}
+            {!posttestLoading && !posttestError && posttestResults.some(r => r.completed) && (() => {
+              const done = posttestResults.filter(r => r.completed);
+              const classAvgFlight = done.reduce((s, r) => s + r.avgFlightTimeMs, 0) / done.length;
+              const classAvgDwell  = done.reduce((s, r) => s + r.avgDwellTimeMs,  0) / done.length;
+              const classAvgTime   = done.reduce((s, r) => s + r.avgTotalTimeMs,  0) / done.length;
+              const pasteStudents  = done.filter(r => r.totalPasteCount > 0).length;
+              return (
+                <div className="grid grid-cols-4 divide-x divide-border border-b border-border">
+                  {[
+                    { icon: <Keyboard className="w-4 h-4" />, label: 'Class Avg Flight', value: `${classAvgFlight.toFixed(0)} ms` },
+                    { icon: <Keyboard className="w-4 h-4" />, label: 'Class Avg Dwell',  value: `${classAvgDwell.toFixed(0)} ms` },
+                    { icon: <Clock className="w-4 h-4" />,    label: 'Avg Time / Problem', value: `${(classAvgTime / 1000).toFixed(1)} s` },
+                    { icon: <ClipboardCopy className="w-4 h-4" />, label: 'Students w/ Paste', value: `${pasteStudents}`, warn: pasteStudents > 0 },
+                  ].map((stat, i) => (
+                    <div key={i} className="px-5 py-3 flex items-center gap-3">
+                      <span className={stat.warn ? 'text-amber-500' : 'text-muted-foreground'}>{stat.icon}</span>
+                      <div>
+                        <p className={`text-base font-semibold ${stat.warn ? 'text-amber-500' : ''}`} style={{ fontFamily: 'var(--font-mono)' }}>{stat.value}</p>
+                        <p className="text-xs text-muted-foreground">{stat.label}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+
+            {/* States */}
+            {posttestLoading && (
+              <p className="text-sm text-muted-foreground py-10 text-center">Loading posttest data...</p>
+            )}
+            {!posttestLoading && posttestError && (
+              <p className="text-sm text-destructive py-10 text-center">{posttestError}</p>
+            )}
+            {!posttestLoading && !posttestError && posttestResults.length === 0 && (
+              <p className="text-sm text-muted-foreground py-10 text-center">No students found</p>
+            )}
+
+            {/* Student list */}
+            {!posttestLoading && !posttestError && posttestResults.length > 0 && (
+              <div>
+                {/* Table column headers */}
+                <div className="hidden md:grid grid-cols-[minmax(0,2fr)_1fr_90px_90px_90px_90px_80px] text-xs font-medium text-muted-foreground bg-muted/50 px-5 py-2 border-b border-border" style={{ fontFamily: 'var(--font-mono)' }}>
+                  <span>Student</span>
+                  <span>Section</span>
+                  <span>Status</span>
+                  <span>Avg Flight</span>
+                  <span>Avg Dwell</span>
+                  <span>Avg Latency</span>
+                  <span>Paste</span>
+                </div>
+
+                {posttestResults.map(result => {
                   const isExpanded = expandedStudent === result.userId;
                   const passCount = result.responses.filter(r => r.isCorrect).length;
                   const hasPaste = result.totalPasteCount > 0;
