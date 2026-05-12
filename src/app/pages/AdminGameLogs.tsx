@@ -530,8 +530,9 @@ export function AdminGameLogs() {
               <li>Level, XP, and helplessness score → zeroed</li>
               <li>All BKT skill mastery → wiped</li>
               <li>In-game progress (enemies, dialogues) → cleared</li>
-              <li>Achievements, badges, and sync rate → reset</li>
+              <li>Achievements and sync rate (profile fields) → reset</li>
               <li>All sessions, submissions, and interaction logs → deleted</li>
+              <li className="text-foreground/90">Pretest completion and stored pretest responses are not changed</li>
             </ul>
             <div className="flex gap-3 justify-end">
               <button
