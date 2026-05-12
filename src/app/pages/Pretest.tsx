@@ -205,13 +205,24 @@ export function Pretest() {
     const handleFocus = () => {
       pushEvent({ t: elapsed(), type: 'focus_gained' });
     };
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (phase === 'question') {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+
     window.addEventListener('blur', handleBlur);
     window.addEventListener('focus', handleFocus);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
       window.removeEventListener('blur', handleBlur);
       window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, []);
+  }, [phase]);
 
   // ── Keystroke / paste handlers ────────────────────────────────────────────
 

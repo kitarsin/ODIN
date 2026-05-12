@@ -49,17 +49,22 @@ export function GameContainer() {
 
   // Handle browser closure: 1. Show prompt, 2. Cleanup session on actual exit
   useEffect(() => {
-    function onBeforeUnload(e: BeforeUnloadEvent) {
-      if (activeSessionId.current) {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Prompt if there is an active session OR if the game is simply active.
+      // Modern browsers require a user interaction on the page before they will show this prompt.
+      if (activeSessionId.current || gameActive) {
         e.preventDefault();
-        e.returnValue = ''; 
+        // Included for legacy support and to satisfy modern browser requirements
+        e.returnValue = 'Are you sure you want to leave? Your progress will be saved.';
+        return 'Are you sure you want to leave? Your progress will be saved.';
       }
-    }
-    function onUnload() {
+    };
+
+    const onUnload = () => {
       if (activeSessionId.current) {
         navigator.sendBeacon(`${API_URL}/api/session/${activeSessionId.current}/end`);
       }
-    }
+    };
 
     window.addEventListener('beforeunload', onBeforeUnload);
     window.addEventListener('unload', onUnload);
@@ -67,7 +72,7 @@ export function GameContainer() {
       window.removeEventListener('beforeunload', onBeforeUnload);
       window.removeEventListener('unload', onUnload);
     };
-  }, []);
+  }, [gameActive]);
 
   // Block in-app navigation while the game page is active
   const blocker = useBlocker(() => gameActive);
