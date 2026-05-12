@@ -69,13 +69,7 @@ const BEHAVIOR_STYLE: Record<string, string> = {
   GamingTheSystem: 'text-red-500 bg-red-500/10',
 };
 
-const BEHAVIOR_COLORS: Record<string, string> = {
-  ActiveThinking: '#4ade80',
-  ProductiveFailure: '#60a5fa',
-  Tinkering: 'var(--color-secondary)',
-  WheelSpinning: '#f59e0b',
-  GamingTheSystem: '#ef4444',
-};
+
 
 function formatDuration(startedAt: string, endedAt: string | null) {
   if (!endedAt) return '—';
@@ -138,8 +132,9 @@ export function AdminGameLogs() {
       }
       const updated = await getStudentList();
       setStudents(updated);
-    } catch {
-      // Reset failed — silently close; the data is unchanged
+    } catch (error) {
+      console.error('Reset failed:', error);
+      alert('Failed to reset progress. See console for details.');
     } finally {
       setResetting(false);
       setResetTargetStudent(null);
@@ -197,8 +192,7 @@ export function AdminGameLogs() {
     s.section.toLowerCase().includes(search.toLowerCase())
   );
 
-  const selectedStudent = students.find(s => s.id === selectedStudentId) ?? null;
-  const selectedSession = studentSessions.find(s => s.id === selectedSessionId) ?? null;
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -536,7 +530,7 @@ export function AdminGameLogs() {
               <li>Level, XP, and helplessness score → zeroed</li>
               <li>All BKT skill mastery → wiped</li>
               <li>In-game progress (enemies, dialogues) → cleared</li>
-              <li>Achievements and sync rate → reset</li>
+              <li>Achievements, badges, and sync rate → reset</li>
               <li>All sessions, submissions, and interaction logs → deleted</li>
             </ul>
             <div className="flex gap-3 justify-end">

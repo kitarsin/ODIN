@@ -177,12 +177,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Auto-repair: If user exists in Auth but not in Profiles, create their profile now
         // This fixes foreign key constraint errors when submitting pretests
         if (error.code === 'PGRST116' || error.message?.includes('0 rows')) {
+          const defaultName = authUser.user_metadata?.full_name || 'User';
+          const defaultStudentId = authUser.user_metadata?.student_id || `unknown-${authUser.id.substring(0,6)}`;
+          const defaultSection = authUser.user_metadata?.section || 'Unknown';
+
           await supabase.from('profiles').insert([
             {
               id: authUser.id,
-              full_name: 'User',
-              student_id: `unknown-${authUser.id.substring(0,6)}`,
-              section: 'Unknown',
+              full_name: defaultName,
+              student_id: defaultStudentId,
+              section: defaultSection,
               role: 'student',
               avatar_url: '🧑‍🎓',
               sync_rate: 0,
@@ -190,16 +194,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               pretest_completed: false
             }
           ]);
-        }
 
-        // Create default local user object
-        setUser({
-          id: authUser.id,
-          email: authUser.email,
-          name: 'User',
-          studentId: `unknown-${authUser.id.substring(0,6)}`,
-          section: 'Unknown',
-          role: 'student',
+          // Create default local user object
+          setUser({
+            id: authUser.id,
+            email: authUser.email,
+            name: defaultName,
+            studentId: defaultStudentId,
+            section: defaultSection,
+            role: 'student',
           avatar: '🧑‍🎓',
           syncRate: 0,
           status: 'active',
@@ -211,6 +214,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(false);
         return;
       }
+      setLoading(false);
+      return;
+    }
 
       if (data) {
         const rawSyncRate = Number(data.sync_rate);
@@ -301,7 +307,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(true);
     try {
       // 1. Create Auth User
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          data: {
+            full_name: name,
+            student_id: studentId,
+            section: section
+          }
+        }
+      });
       if (error) {
         throw error;
       }
@@ -313,7 +329,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // 2. Create Profile Entry using correct DB column names
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert([
+        .upsert([
           { 
             id: data.user.id, 
             full_name: name,
@@ -325,7 +341,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             achievements: [],
             pretest_completed: false
           }
-        ]);
+        ], { onConflict: 'id' });
       
       if (profileError) {
         console.error('Profile creation error:', profileError);

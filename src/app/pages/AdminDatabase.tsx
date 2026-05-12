@@ -6,6 +6,7 @@ import { Input } from '../components/ui/input';
 import { Checkbox } from '../components/ui/checkbox';
 import { UserModal } from '../components/UserModal';
 import { supabase } from '../../lib/supabaseClient';
+import { resetPlayerProgress } from '../../lib/odinApi';
 import { calculateSyncRate } from '../utils/achievementCatalog';
 import JSZip from 'jszip';
 
@@ -365,6 +366,31 @@ export function AdminDatabase() {
           : user
       )
     );
+  };
+
+  const handleResetProgress = async (student: User) => {
+    if (!confirm(`Are you sure you want to COMPLETELY reset ${student.name}'s progress? This will delete all submissions, sessions, and mastery data.`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await resetPlayerProgress(student.id);
+
+      setUsers((current) =>
+        current.map((user) =>
+          user.id === student.id
+            ? { ...user, syncRate: 0, achievements: [], badges: [] }
+            : user
+        )
+      );
+      alert('Progress successfully reset.');
+    } catch (error) {
+      console.error('Error resetting progress:', error);
+      alert('Unable to reset progress. Check console for details.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ─── Pretest Export Helpers ──────────────────────────────────────────────────
@@ -793,6 +819,14 @@ export function AdminDatabase() {
                           className="text-primary hover:text-primary hover:bg-primary/10 transition-colors"
                         >
                           Reset Sync
+                        </Button>
+                        <Button
+                          onClick={() => handleResetProgress(user)}
+                          variant="ghost"
+                          size="sm"
+                          className="text-amber-500 hover:text-amber-600 hover:bg-amber-500/10 transition-colors"
+                        >
+                          Reset Progress
                         </Button>
                         <Button
                           onClick={() => handleExportPretest(user)}
