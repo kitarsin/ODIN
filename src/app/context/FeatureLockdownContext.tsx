@@ -10,6 +10,7 @@ export const LOCKABLE_FEATURES = [
   { key: 'profile', label: 'Profile', icon: 'User' },
   { key: 'account-settings', label: 'Account Settings', icon: 'Settings' },
   { key: 'test-bench', label: 'Test Bench', icon: 'FlaskConical' },
+  { key: 'posttest', label: 'Post Test', icon: 'ClipboardList' },
 ] as const;
 
 export type FeatureKey = (typeof LOCKABLE_FEATURES)[number]['key'];

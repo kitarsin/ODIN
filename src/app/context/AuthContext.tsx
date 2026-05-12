@@ -14,6 +14,7 @@ type User = {
   syncRate: number;    // UI expects 'syncRate', DB has 'sync_rate'
   status: string;
   pretestCompleted: boolean;
+  posttestCompleted: boolean;
   currentLevel: number;
   experiencePoints: number;
   // Add these defaults so your dashboard doesn't crash if they are missing
@@ -250,6 +251,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           syncRate,
           status: 'active',
           pretestCompleted: data.pretest_completed ?? false,
+          posttestCompleted: data.posttest_completed ?? false,
           currentLevel: data.current_level ?? 0,
           experiencePoints: data.experience_points ?? 0,
           progress: { arrays: 0, loops: 0, grids: 0 },
@@ -405,6 +407,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser({ ...user, pretestCompleted: true, currentLevel: 1 });
   };
 
+  const completePosttest = async (responses: PretestResponse[]) => {
+    if (!user) throw new Error('No user logged in');
+
+    const rows = responses.map(r => ({
+      user_id: user.id,
+      question_id: r.questionId,
+      sequence_number: r.sequenceNumber,
+      response: r.response,
+      time_to_first_key_ms: r.timeToFirstKeyMs,
+      total_time_ms: r.totalTimeMs,
+      avg_flight_time_ms: r.avgFlightTimeMs,
+      avg_dwell_time_ms: r.avgDwellTimeMs,
+      paste_count: r.pasteCount,
+      paste_char_count: r.pasteCharCount,
+      typed_char_count: r.typedCharCount,
+      is_correct: r.isCorrect,
+      raw_events: r.events,
+    }));
+
+    const { error: insertError } = await supabase.from('posttest_responses').insert(rows);
+    if (insertError) throw insertError;
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ posttest_completed: true })
+      .eq('id', user.id);
+    if (updateError) throw updateError;
+
+    setUser({ ...user, posttestCompleted: true });
+  };
+
   // Add a new achievement to the user's profile
   const addAchievement = async (achievement: Omit<Achievement, 'id'>) => {
     if (!user) {
@@ -470,7 +503,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Always render children - let router handle the UI based on auth state
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, updatePassword, resetPasswordForEmail, updateProfileAvatar, addAchievement, completePretest }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, updatePassword, resetPasswordForEmail, updateProfileAvatar, addAchievement, completePretest, completePosttest }}>
       {children}
     </AuthContext.Provider>
   );

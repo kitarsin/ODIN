@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Gamepad2, Book, User, Database, LogOut, Settings, ShieldAlert, Lock } from 'lucide-react';
+import { Home, Gamepad2, Book, User, Database, LogOut, Settings, ShieldAlert, Lock, ClipboardList } from 'lucide-react';
 import logo64 from '../../img/brand/odin-logo-transparent-64.png';
 import logo128 from '../../img/brand/odin-logo-transparent-128.png';
 import logo256 from '../../img/brand/odin-logo-transparent-256.png';
@@ -181,6 +181,7 @@ export function Navigation() {
                 <NavLink to="/dashboard" featureKey="dashboard" icon={<Home className="w-4 h-4" />} label="Dashboard" gameLabel="HQ" />
                 <NavLink to="/play" featureKey="game" icon={<Gamepad2 className="w-4 h-4" />} label="Game" gameLabel="PLAY" />
                 <NavLink to="/wiki" featureKey="wiki" icon={<Book className="w-4 h-4" />} label="Wiki" gameLabel="WIKI" />
+                <NavLink to="/posttest" featureKey="posttest" icon={<ClipboardList className="w-4 h-4" />} label="Post Test" gameLabel="POST" />
                 <NavLink to="/profile" featureKey="profile" icon={<User className="w-4 h-4" />} label="Profile" gameLabel="PROF" />
                 <NavLink to="/account-settings" featureKey="account-settings" icon={<Settings className="w-4 h-4" />} label="Settings" gameLabel="ACC" />
               </>

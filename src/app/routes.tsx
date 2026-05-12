@@ -15,6 +15,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import AccountSettings from './pages/AccountSettings';
 import { OdinTestBench } from './pages/OdinTestBench';
 import { Pretest } from './pages/Pretest';
+import { Posttest } from './pages/Posttest';
 
 export const router = createBrowserRouter([
   {
@@ -122,6 +123,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute skipPretestGate>
         <Pretest />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/posttest',
+    element: (
+      <ProtectedRoute featureKey="posttest">
+        <Posttest />
       </ProtectedRoute>
     )
   },
