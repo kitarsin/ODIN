@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Navigation } from '../components/Navigation';
-import { Gamepad2, Users, Brain, AlertTriangle, ChevronDown, ChevronRight, Clock, CheckCircle, XCircle, Search, RotateCcw } from 'lucide-react';
+import { Gamepad2, Users, Brain, AlertTriangle, ChevronDown, ChevronRight, Clock, CheckCircle, XCircle, Search, RotateCcw, Download } from 'lucide-react';
 import { getClassOverview, getStudentList, getPlayerSessions, getSessionSubmissions, buildPuzzleTitleMap, resetPlayerProgress } from '../../lib/odinApi';
+import JSZip from 'jszip';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -117,6 +118,7 @@ export function AdminGameLogs() {
 
   const [resetTargetStudent, setResetTargetStudent] = useState<StudentEntry | null>(null);
   const [resetting, setResetting] = useState(false);
+  const [exportingAll, setExportingAll] = useState(false);
 
   const handleResetConfirm = useCallback(async () => {
     if (!resetTargetStudent) return;
@@ -192,7 +194,60 @@ export function AdminGameLogs() {
     s.section.toLowerCase().includes(search.toLowerCase())
   );
 
-
+  // ── Export All Game Logs ─────────────────────────────────────────────────
+  const handleExportAllLogs = async () => {
+    setExportingAll(true);
+    try {
+      const playedStudents = students.filter(s => s.totalSubmissions > 0);
+      if (playedStudents.length === 0) {
+        alert('No students have played the game yet.');
+        setExportingAll(false);
+        return;
+      }
+      const zip = new JSZip();
+      for (const student of playedStudents) {
+        const safeName = (student.displayName || student.studentId).replace(/[^a-zA-Z0-9@._-]/g, '_');
+        const sessions = await getPlayerSessions(student.id, 100);
+        const sessionsWithSubs = [];
+        for (const session of sessions) {
+          let submissions: any[] = [];
+          try {
+            submissions = await getSessionSubmissions(session.id);
+          } catch { /* skip */ }
+          sessionsWithSubs.push({ ...session, submissions });
+        }
+        const payload = {
+          student: {
+            id: student.id,
+            studentId: student.studentId,
+            displayName: student.displayName,
+            section: student.section,
+            currentLevel: student.currentLevel,
+            overallMastery: student.overallMastery,
+            helplessnessScore: student.helplessnessScore,
+            totalSubmissions: student.totalSubmissions,
+            status: student.status,
+          },
+          sessions: sessionsWithSubs,
+        };
+        zip.file(`${safeName}_gamelogs.json`, JSON.stringify(payload, null, 2));
+      }
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `all_gamelogs_export_${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Game log export failed:', err);
+      alert('Failed to export game logs. Check console for details.');
+    } finally {
+      setExportingAll(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -273,6 +328,14 @@ export function AdminGameLogs() {
               onChange={e => setSearch(e.target.value)}
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
+            <button
+              onClick={handleExportAllLogs}
+              disabled={exportingAll || overviewLoading || students.filter(s => s.totalSubmissions > 0).length === 0}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded border border-border bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+            >
+              <Download className={`w-4 h-4 ${exportingAll ? 'animate-spin' : ''}`} />
+              {exportingAll ? 'Exporting…' : `Export All (${students.filter(s => s.totalSubmissions > 0).length})`}
+            </button>
           </div>
 
           <div className="overflow-x-auto">
