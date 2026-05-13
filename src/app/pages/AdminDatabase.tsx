@@ -23,6 +23,7 @@ interface User {
   achievements: Achievement[];
   badges: string[];
   pretestCompleted: boolean;
+  posttestCompleted: boolean;
   currentLevel: number;
   experiencePoints: number;
 }
@@ -49,6 +50,8 @@ export function AdminDatabase() {
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
   const [exportingUserId, setExportingUserId] = useState<string | null>(null);
   const [exportingAll, setExportingAll] = useState(false);
+  const [exportingPosttestUserId, setExportingPosttestUserId] = useState<string | null>(null);
+  const [exportingAllPosttests, setExportingAllPosttests] = useState(false);
 
   const sections = ['all', ...Array.from(new Set(users.map(u => u.section)))];
 
@@ -144,6 +147,7 @@ export function AdminDatabase() {
           achievements: achievements as Achievement[],
           badges,
           pretestCompleted: row.pretest_completed || false,
+          posttestCompleted: row.posttest_completed || false,
           currentLevel: row.current_level || 0,
           experiencePoints: row.experience_points || 0,
         };
@@ -303,6 +307,7 @@ export function AdminDatabase() {
         achievements: [],
         badges: [],
         pretestCompleted: false,
+        posttestCompleted: false,
         currentLevel: 0,
         experiencePoints: 0
       };
@@ -481,6 +486,66 @@ export function AdminDatabase() {
       alert('Failed to export all pretest data. Check console for details.');
     } finally {
       setExportingAll(false);
+    }
+  };
+
+  // ─── Posttest Export Helpers ──────────────────────────────────────────────────
+  const handleExportPosttest = async (student: User) => {
+    setExportingPosttestUserId(student.id);
+    try {
+      const emailMap = await fetchEmailMap();
+      const { data, error } = await supabase
+        .from('posttest_responses')
+        .select('*')
+        .eq('user_id', student.id)
+        .order('sequence_number');
+      if (error) throw error;
+      const email = emailMap[student.id] || student.studentId || student.id;
+      const safeEmail = email.replace(/[^a-zA-Z0-9@._-]/g, '_');
+      downloadJson(data || [], `${safeEmail}_posttest.json`);
+    } catch (err) {
+      console.error('Export failed:', err);
+      alert('Failed to export posttest data. Check console for details.');
+    } finally {
+      setExportingPosttestUserId(null);
+    }
+  };
+
+  const handleExportAllPosttests = async () => {
+    setExportingAllPosttests(true);
+    try {
+      const emailMap = await fetchEmailMap();
+      const studentList = users.filter((u) => u.role === 'student');
+      const zip = new JSZip();
+      for (const student of studentList) {
+        const { data, error } = await supabase
+          .from('posttest_responses')
+          .select('*')
+          .eq('user_id', student.id)
+          .order('sequence_number');
+        if (error) {
+          console.warn(`Skipping ${student.name}:`, error);
+          continue;
+        }
+        if (!data || data.length === 0) continue;
+        const email = emailMap[student.id] || student.studentId || student.id;
+        const safeEmail = email.replace(/[^a-zA-Z0-9@._-]/g, '_');
+        zip.file(`${safeEmail}_posttest.json`, JSON.stringify(data, null, 2));
+      }
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `all_posttest_export_${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Bulk export failed:', err);
+      alert('Failed to export all posttest data. Check console for details.');
+    } finally {
+      setExportingAllPosttests(false);
     }
   };
 
@@ -697,7 +762,6 @@ export function AdminDatabase() {
               Add New User
             </Button>
 
-            {/* Export All Pretests */}
             <Button
               onClick={handleExportAllPretests}
               disabled={exportingAll}
@@ -705,6 +769,15 @@ export function AdminDatabase() {
             >
               <Download className="w-4 h-4 mr-2" />
               {exportingAll ? 'Exporting…' : 'Export All Pretests'}
+            </Button>
+            {/* Export All Posttests */}
+            <Button
+              onClick={handleExportAllPosttests}
+              disabled={exportingAllPosttests}
+              className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {exportingAllPosttests ? 'Exporting…' : 'Export All Posttests'}
             </Button>
           </div>
         </div>
@@ -738,6 +811,9 @@ export function AdminDatabase() {
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Pretest
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Posttest
                   </th>
                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Level
@@ -806,6 +882,17 @@ export function AdminDatabase() {
                         {user.pretestCompleted ? 'Done' : 'Pending'}
                       </span>
                     </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.posttestCompleted
+                            ? 'bg-emerald-500/20 text-emerald-500'
+                            : 'bg-amber-500/20 text-amber-500'
+                        }`}
+                      >
+                        {user.posttestCompleted ? 'Done' : 'Pending'}
+                      </span>
+                    </td>
                      <td className="px-4 py-3 text-sm font-mono text-primary">
                       Lvl {user.currentLevel}
                     </td>
@@ -844,12 +931,22 @@ export function AdminDatabase() {
                           onClick={() => handleExportPretest(user)}
                           variant="ghost"
                           size="sm"
-                              disabled={exportingUserId === user.id}
-                              className="text-secondary hover:text-secondary hover:bg-secondary/10 transition-colors"
-                              title="Export pretest JSON"
-                            >
-                              <Download className="w-4 h-4" />
-                            </Button>
+                          disabled={exportingUserId === user.id}
+                          className="text-secondary hover:text-secondary hover:bg-secondary/10 transition-colors"
+                          title="Export pretest JSON"
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          onClick={() => handleExportPosttest(user)}
+                          variant="ghost"
+                          size="sm"
+                          disabled={exportingPosttestUserId === user.id}
+                          className="text-secondary hover:text-secondary hover:bg-secondary/10 transition-colors"
+                          title="Export posttest JSON"
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
                           </>
                         )}
                         <Button
