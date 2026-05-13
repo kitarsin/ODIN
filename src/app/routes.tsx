@@ -11,6 +11,7 @@ import { AdminDatabase } from './pages/AdminDatabase';
 import { Analytics } from './pages/Analytics';
 import { FeatureLockdown } from './pages/FeatureLockdown';
 import { AdminGameLogs } from './pages/AdminGameLogs';
+import { AdminResponseEditor } from './pages/AdminResponseEditor';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import AccountSettings from './pages/AccountSettings';
 import { OdinTestBench } from './pages/OdinTestBench';
@@ -107,6 +108,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute requireAdmin>
         <AdminGameLogs />
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: '/admin/responses',
+    element: (
+      <ProtectedRoute requireAdmin>
+        <AdminResponseEditor />
       </ProtectedRoute>
     )
   },

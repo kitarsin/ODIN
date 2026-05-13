@@ -210,6 +210,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             syncRate: 0,
             status: 'active',
             pretestCompleted: false,
+            posttestCompleted: false,
             currentLevel: 0,
             experiencePoints: 0,
             progress: { arrays: 0, loops: 0, grids: 0 },
