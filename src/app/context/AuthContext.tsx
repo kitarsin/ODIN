@@ -392,11 +392,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ pretest_completed: true, current_level: 1 })
+      .update({ pretest_completed: true })
       .eq('id', user.id);
     if (updateError) throw updateError;
 
-    setUser({ ...user, pretestCompleted: true, currentLevel: 1 });
+    setUser({ ...user, pretestCompleted: true });
   };
 
   const completePosttest = async (responses: PretestResponse[]) => {

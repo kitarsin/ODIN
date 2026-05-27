@@ -86,6 +86,7 @@ export function Profile() {
   const rankInfo = getRankInfo(computedSyncRate);
   const hasGameData = !profileLoading && odinProfile !== null;
 
+
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
       <Navigation />

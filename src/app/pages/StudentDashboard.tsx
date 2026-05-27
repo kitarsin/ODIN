@@ -99,9 +99,10 @@ export function StudentDashboard() {
   const nextObjectiveTitle = nextSession
     ? puzzleTitles.get(nextSession.puzzleId) ?? 'Unknown Puzzle'
     : null;
+  const currentLevel = odinProfile?.currentLevel ?? 0;
   const nextObjectiveLevel = nextSession
     ? LEVEL_LABELS[nextSession.dungeonLevel] ?? `Level ${nextSession.dungeonLevel}`
-    : LEVEL_LABELS[odinProfile?.currentLevel ?? 0] ?? `Level ${odinProfile?.currentLevel ?? 0}`;
+    : LEVEL_LABELS[currentLevel] ?? `Level ${currentLevel}`;
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors">
@@ -178,7 +179,7 @@ export function StudentDashboard() {
                     <div className="h-5 w-12 bg-muted animate-pulse rounded mx-auto" />
                   ) : (
                     <p className="text-lg font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
-                      {odinProfile?.currentLevel ?? 0}
+                      {currentLevel}
                     </p>
                   )}
                   <p className="text-[10px] text-muted-foreground">Dungeon Lvl</p>
