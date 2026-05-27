@@ -41,6 +41,7 @@ export interface SubmissionResponse {
   helplessnessScore: number;
   helplessnessScoreDelta: number;
   masteryProbability: number;
+  masteryPercentage: number;
   isMastered: boolean;
   isWarmUpPhase: boolean;
   interventionType: string;
