@@ -7,7 +7,6 @@ import { Checkbox } from '../components/ui/checkbox';
 import { UserModal } from '../components/UserModal';
 import { supabase } from '../../lib/supabaseClient';
 import { resetPlayerProgress } from '../../lib/odinApi';
-import { calculateSyncRate } from '../utils/achievementCatalog';
 import JSZip from 'jszip';
 
 interface User {
@@ -133,7 +132,7 @@ export function AdminDatabase() {
       const mapped: User[] = (data || []).map((row: any) => {
         const achievements = dedupeAchievements(row.achievements);
         const badges = dedupeBadges(row.badges);
-        const syncRate = calculateSyncRate(achievements as Achievement[], badges);
+        const syncRate = Number.isFinite(Number(row.sync_rate)) ? Number(row.sync_rate) : 0;
         return {
           id: row.id,
           name: row.full_name || 'User',

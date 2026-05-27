@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
-import { calculateSyncRate } from '../utils/achievementCatalog';
 
 // 1. Update the User Type to match what your UI components expect
 type User = {
@@ -225,21 +224,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
       if (data) {
-        const rawSyncRate = Number(data.sync_rate);
+        const syncRate = Number.isFinite(Number(data.sync_rate)) ? Number(data.sync_rate) : 0;
         const achievementsData = dedupeAchievements(coerceJsonArray(data.achievements));
         const badgesData = dedupeBadges(coerceJsonArray((data as any).badges));
         const derivedBadges = achievementsData
           .map((achievement: any) => achievement?.name)
           .filter((name: unknown): name is string => typeof name === 'string' && name.length > 0);
         const finalBadges = badgesData.length > 0 ? badgesData : dedupeBadges(derivedBadges);
-        const syncRate = calculateSyncRate(achievementsData, finalBadges);
-
-        if (Number.isFinite(rawSyncRate) && rawSyncRate !== syncRate) {
-          await supabase
-            .from('profiles')
-            .update({ sync_rate: syncRate })
-            .eq('id', authUser.id);
-        }
         
         setUser({
           id: authUser.id,
@@ -464,15 +455,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const updatedAchievements = [...existingAchievements, newAchievement];
       const updatedBadges = dedupeBadges([...(user.badges || []), achievement.name]);
-      const syncRate = calculateSyncRate(updatedAchievements, updatedBadges);
 
       // Optimistic local update — Profile/Dashboard reflect it immediately
-      setUser({ ...user, achievements: updatedAchievements, badges: updatedBadges, syncRate });
+      setUser({ ...user, achievements: updatedAchievements, badges: updatedBadges });
 
       // Persist achievements to Supabase (badges is derived from achievements on read)
       const { error } = await supabase
         .from('profiles')
-        .update({ achievements: updatedAchievements, sync_rate: syncRate })
+        .update({ achievements: updatedAchievements })
         .eq('id', user.id);
 
       if (error) {

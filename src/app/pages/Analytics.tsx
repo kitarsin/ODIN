@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Navigation } from '../components/Navigation';
 import { AlertTriangle, Activity, TrendingDown, ClipboardList, ChevronDown, ChevronRight, CheckCircle, Clock, Keyboard, ClipboardCopy, XCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
-import { calculateSyncRate } from '../utils/achievementCatalog';
 import { getRecentInterventions, getMasteryHeatmap, getStudentList } from '../../lib/odinApi';
 
 type Student = {
@@ -207,7 +206,7 @@ export function Analytics() {
         const mapped: Student[] = (data || []).map((row: any) => {
           const achievements = dedupeAchievements(row.achievements);
           const badges = dedupeBadges(row.badges);
-          const syncRate = calculateSyncRate(achievements as any[], badges);
+          const syncRate = Number.isFinite(Number(row.sync_rate)) ? Number(row.sync_rate) : 0;
           return {
             id: row.id,
             name: row.full_name || 'User',

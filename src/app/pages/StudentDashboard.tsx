@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Navigation } from '../components/Navigation';
 import { Progress } from '../components/ui/progress';
-import { Trophy, Key, Activity, Zap, Target, Brain, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Trophy, Key, Activity, Zap, Target, Brain, CheckCircle, Clock } from 'lucide-react';
 import { getRankInfo } from '../utils/rank';
 import { calculateSyncRateFromMastery } from '../utils/achievementCatalog';
 import { getPlayerProfile, getPlayerSessions, buildPuzzleTitleMap } from '../../lib/odinApi';
@@ -17,7 +17,6 @@ interface MasteryState {
 interface OdinProfile {
   currentLevel: number;
   experiencePoints: number;
-  helplessnessScore: number;
   totalSubmissions: number;
   masteryStates: MasteryState[];
 }
@@ -43,12 +42,6 @@ function groupMastery(masteryStates: MasteryState[], skills: string[]) {
   const states = skills.map(s => masteryStates.find(m => m.topic === s)).filter(Boolean) as MasteryState[];
   if (states.length === 0) return 0;
   return Math.round(states.reduce((sum, s) => sum + s.masteryPercentage, 0) / states.length);
-}
-
-function helplessnessColor(score: number) {
-  if (score < 30) return 'text-green-500';
-  if (score < 70) return 'text-amber-500';
-  return 'text-red-500';
 }
 
 function formatDuration(startedAt: string, endedAt: string | null) {
@@ -200,19 +193,6 @@ export function StudentDashboard() {
                     </p>
                   )}
                   <p className="text-[10px] text-muted-foreground">Submissions</p>
-                </div>
-                <div className="border rounded-lg p-3 text-center bg-muted/40 border-border">
-                  <AlertTriangle className={`w-4 h-4 mx-auto mb-1 ${hasGameData ? helplessnessColor(odinProfile!.helplessnessScore) : 'text-muted-foreground'}`} />
-                  {loading ? (
-                    <div className="h-5 w-12 bg-muted animate-pulse rounded mx-auto" />
-                  ) : hasGameData ? (
-                    <p className={`text-lg font-semibold ${helplessnessColor(odinProfile!.helplessnessScore)}`} style={{ fontFamily: 'var(--font-mono)' }}>
-                      {odinProfile!.helplessnessScore.toFixed(0)}
-                    </p>
-                  ) : (
-                    <p className="text-lg font-semibold text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>—</p>
-                  )}
-                  <p className="text-[10px] text-muted-foreground">Helplessness</p>
                 </div>
               </div>
             </div>

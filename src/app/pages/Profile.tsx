@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigation } from '../components/Navigation';
 import { useAuth } from '../context/AuthContext';
-import { User, Mail, Calendar, Award, Zap, Brain, Target, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { User, Mail, Calendar, Award, Zap, Brain, Target, Clock, CheckCircle } from 'lucide-react';
 import { Progress } from '../components/ui/progress';
 import { getRankInfo } from '../utils/rank';
 import { calculateSyncRateFromMastery } from '../utils/achievementCatalog';
@@ -18,7 +18,6 @@ interface MasteryState {
 interface OdinProfile {
   currentLevel: number;
   experiencePoints: number;
-  helplessnessScore: number;
   totalSubmissions: number;
   masteryStates: MasteryState[];
 }
@@ -41,12 +40,6 @@ const SKILL_GROUPS = [
 
 function skillLabel(topic: string) {
   return topic.replace(/([A-Z])/g, ' $1').trim();
-}
-
-function helplessnessColor(score: number) {
-  if (score < 30) return 'text-green-500';
-  if (score < 70) return 'text-amber-500';
-  return 'text-red-500';
 }
 
 function formatDuration(startedAt: string, endedAt: string | null) {
@@ -219,19 +212,6 @@ export function Profile() {
                   <p className="text-xs text-muted-foreground">Submissions</p>
                 </div>
 
-                <div className="border rounded-lg p-4 text-center bg-muted/40 border-border">
-                  <AlertTriangle className={`w-5 h-5 mx-auto mb-1 ${hasGameData ? helplessnessColor(odinProfile!.helplessnessScore) : 'text-muted-foreground'}`} />
-                  {profileLoading ? (
-                    <div className="h-7 w-16 bg-muted animate-pulse rounded mx-auto mb-1" />
-                  ) : hasGameData ? (
-                    <p className={`text-2xl font-semibold ${helplessnessColor(odinProfile!.helplessnessScore)}`} style={{ fontFamily: 'var(--font-mono)' }}>
-                      {odinProfile!.helplessnessScore.toFixed(1)}
-                    </p>
-                  ) : (
-                    <p className="text-2xl font-semibold text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>—</p>
-                  )}
-                  <p className="text-xs text-muted-foreground">Helplessness</p>
-                </div>
               </div>
             </div>
           )}
