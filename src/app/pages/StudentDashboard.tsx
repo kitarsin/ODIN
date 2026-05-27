@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Navigation } from '../components/Navigation';
 import { Progress } from '../components/ui/progress';
-import { Trophy, Key, Activity, Zap, Target, Brain, CheckCircle, Clock } from 'lucide-react';
+import { Trophy, Activity, Zap, Target, Brain, CheckCircle, Clock } from 'lucide-react';
 import { getRankInfo } from '../utils/rank';
 import { calculateSyncRateFromMastery } from '../utils/achievementCatalog';
 import { getPlayerProfile, getPlayerSessions, buildPuzzleTitleMap } from '../../lib/odinApi';
@@ -108,7 +108,7 @@ export function StudentDashboard() {
       <Navigation />
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* ── Left Column: Operative Profile ─────────────────────────── */}
           <div className="border rounded-lg p-6 bg-card border-border transition-colors">
@@ -276,92 +276,6 @@ export function StudentDashboard() {
                   ))}
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* ── Right Column: Inventory ─────────────────────────────────── */}
-          <div className="border rounded-lg p-6 bg-card border-border transition-colors">
-            <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
-              <Key className="w-5 h-5 text-primary" />
-              Inventory
-            </h2>
-
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">Source Keys Collected:</p>
-
-              <div className="grid grid-cols-3 gap-4">
-                {[
-                  { key: 'source-key-1', color: 'primary', bg: 'bg-primary/20 border-primary', icon: 'text-primary' },
-                  { key: 'source-key-2', color: 'secondary', bg: 'bg-secondary/20 border-secondary', icon: 'text-secondary' },
-                  { key: 'source-key-3', color: 'amber', bg: 'bg-amber-500/20 border-amber-500', icon: 'text-amber-500' },
-                ].map(({ key, bg, icon }) => (
-                  <div
-                    key={key}
-                    className={`aspect-square rounded-lg border-2 flex items-center justify-center ${
-                      user.badges.includes(key) ? bg : 'bg-muted/40 border-border'
-                    }`}
-                  >
-                    {user.badges.includes(key) ? (
-                      <Key className={`w-8 h-8 ${icon}`} />
-                    ) : (
-                      <div className="text-2xl text-muted-foreground">🔒</div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-2 space-y-2">
-                {user.badges.map((badge: string) => (
-                  <div
-                    key={badge}
-                    className="border rounded p-3 flex items-center gap-3 bg-muted/40 border-border transition-colors"
-                  >
-                    <Key className="w-4 h-4 text-primary" />
-                    <div>
-                      <p className="text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
-                        {badge.replace(/-/g, ' ').toUpperCase()}
-                      </p>
-                      <p className="text-xs text-muted-foreground">Achievement unlocked</p>
-                    </div>
-                  </div>
-                ))}
-                {user.badges.length === 0 && (
-                  <p className="text-sm text-center py-4 text-muted-foreground">No keys collected yet</p>
-                )}
-              </div>
-
-              {/* Session Stats */}
-              <div className="mt-4 pt-4 border-t border-border">
-                <h3 className="text-sm font-semibold mb-3">Session Stats</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Completed Sessions:</span>
-                    {loading ? (
-                      <div className="h-4 w-8 bg-muted animate-pulse rounded" />
-                    ) : (
-                      <span className="text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
-                        {sessions.filter(s => s.isCompleted).length}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Submissions:</span>
-                    {loading ? (
-                      <div className="h-4 w-8 bg-muted animate-pulse rounded" />
-                    ) : (
-                      <span className="text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>
-                        {odinProfile?.totalSubmissions ?? 0}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Status:</span>
-                    <span className="text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
-                      {user.status.toUpperCase()}
-                    </span>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
