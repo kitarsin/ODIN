@@ -2,6 +2,51 @@ import { useState } from 'react';
 import { Book, ChevronRight, ChevronDown, Search, X, Lightbulb } from 'lucide-react';
 import { WIKI_SECTIONS, type WikiSection, type WikiTopic } from '../utils/wikiContent';
 
+// ── C# Syntax Highlighter ─────────────────────────────────────────────────────
+
+const CS_KEYWORDS = new Set([
+  'abstract','as','base','bool','break','byte','case','catch','char','checked',
+  'class','const','continue','decimal','default','delegate','do','double','else',
+  'enum','event','explicit','extern','false','finally','fixed','float','for',
+  'foreach','goto','if','implicit','in','int','interface','internal','is','lock',
+  'long','namespace','new','null','object','operator','out','override','params',
+  'private','protected','public','readonly','ref','return','sbyte','sealed','short',
+  'sizeof','stackalloc','static','string','struct','switch','this','throw','true',
+  'try','typeof','uint','ulong','unchecked','unsafe','ushort','using','virtual',
+  'void','volatile','while','var','dynamic','yield',
+]);
+
+const TOKEN_RE = /(\/\/[^\n]*)|("(?:[^"\\]|\\.)*")|('(?:[^'\\]|\\.)*')|\b(\d+(?:\.\d*)?[fFdDmMlLuU]*)\b|([A-Za-z_]\w*)|([\s\S])/g;
+
+function highlightCSharp(code: string) {
+  const result: (string | JSX.Element)[] = [];
+  TOKEN_RE.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  let key = 0;
+
+  while ((m = TOKEN_RE.exec(code)) !== null) {
+    const [full, comment, str, chr, num, ident] = m;
+    let color: string | null = null;
+
+    if (comment !== undefined)           color = '#6a9955'; // green  — comments
+    else if (str !== undefined
+          || chr !== undefined)          color = '#ce9178'; // orange — strings / chars
+    else if (num !== undefined)          color = '#b5cea8'; // sage   — numbers
+    else if (ident !== undefined) {
+      if (CS_KEYWORDS.has(ident))        color = '#569cd6'; // blue   — keywords
+      else if (code[TOKEN_RE.lastIndex] === '(') color = '#dcdcaa'; // yellow — methods
+      else if (/^[A-Z]/.test(ident))     color = '#4ec9b0'; // teal   — types/classes
+    }
+
+    result.push(color
+      ? <span key={key++} style={{ color }}>{full}</span>
+      : full
+    );
+  }
+
+  return result;
+}
+
 export function WikiSidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
@@ -207,15 +252,15 @@ function TopicCard({
           <p className="text-[11px] text-muted-foreground leading-relaxed">{topic.description}</p>
 
           {topic.codeExamples.map((example, i) => (
-            <div key={i} className="rounded-md border border-border bg-muted/30 overflow-hidden">
+            <div key={i} className="rounded-md border border-border overflow-hidden">
               <div className="px-2.5 py-1 text-[10px] text-muted-foreground bg-muted/50 border-b border-border/50">
                 {example.label}
               </div>
               <pre
-                className="px-2.5 py-2 text-[11px] leading-relaxed overflow-x-auto text-foreground"
-                style={{ fontFamily: 'var(--font-mono)' }}
+                className="px-2.5 py-2 text-[11px] leading-relaxed overflow-x-auto"
+                style={{ fontFamily: 'var(--font-mono)', background: '#1e1e1e', color: '#d4d4d4' }}
               >
-                {example.code}
+                {highlightCSharp(example.code)}
               </pre>
             </div>
           ))}

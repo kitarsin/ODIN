@@ -55,6 +55,7 @@ export function StudentDashboard() {
   const [sessions, setSessions] = useState<GameSession[]>([]);
   const [puzzleTitles, setPuzzleTitles] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
+  const [avatarLoaded, setAvatarLoaded] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -108,9 +109,22 @@ export function StudentDashboard() {
             </h2>
 
             <div className="flex flex-col items-center">
-              <div className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center mb-4 bg-muted">
+              <div className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center mb-4 bg-muted relative">
                 {isAvatarUrl(user.avatar) ? (
-                  <img src={user.avatar} alt="Profile avatar" className="w-full h-full object-cover" />
+                  <>
+                    {!avatarLoaded && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                      </div>
+                    )}
+                    <img
+                      src={user.avatar}
+                      alt="Profile avatar"
+                      className={`w-full h-full object-cover transition-opacity duration-300 ${avatarLoaded ? 'opacity-100' : 'opacity-0'}`}
+                      onLoad={() => setAvatarLoaded(true)}
+                      onError={() => setAvatarLoaded(false)}
+                    />
+                  </>
                 ) : (
                   <span className="text-5xl">{user.avatar}</span>
                 )}

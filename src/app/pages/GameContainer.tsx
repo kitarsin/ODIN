@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useBlocker } from 'react-router-dom';
 import { Navigation } from '../components/Navigation';
 import { GodotGameEmbed } from '../components/GodotGameEmbed';
+import { WikiSidebar } from '../components/WikiSidebar';
 import { patchSessionEnd } from '../../lib/odinApi';
 import { useAuth } from '../context/AuthContext';
 import { AchievementModal } from '../components/AchievementModal';
@@ -110,7 +111,10 @@ export function GameContainer() {
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
       <Navigation />
       <div className="flex flex-1 overflow-hidden">
-        <GodotGameEmbed ref={iframeRef} />
+        <WikiSidebar />
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <GodotGameEmbed ref={iframeRef} />
+        </div>
       </div>
 
       {shownAchievement && (() => {

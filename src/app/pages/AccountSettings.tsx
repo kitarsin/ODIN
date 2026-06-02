@@ -14,6 +14,7 @@ const AccountSettings: React.FC = () => {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   const [loading, setLoading] = useState(false);
+  const [avatarImgLoaded, setAvatarImgLoaded] = useState(false);
 
   const isAvatarUrl = (value: string) => value.startsWith('http') || value.startsWith('data:');
 
@@ -32,6 +33,23 @@ const AccountSettings: React.FC = () => {
     try {
       // Password update
       if (newPassword && newPassword === confirmPassword && newPassword.length > 0) {
+        if (!currentPassword) {
+          setMessage('Please enter your current password.');
+          setMessageType('error');
+          setLoading(false);
+          return;
+        }
+        // Re-authenticate with current password before allowing the change
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: user!.email,
+          password: currentPassword,
+        });
+        if (signInError) {
+          setMessage('Current password is incorrect.');
+          setMessageType('error');
+          setLoading(false);
+          return;
+        }
         await updatePassword(newPassword);
         setNewPassword('');
         setConfirmPassword('');
@@ -57,6 +75,8 @@ const AccountSettings: React.FC = () => {
           .from('avatars')
           .getPublicUrl(fileName);
         await updateProfileAvatar(publicData.publicUrl);
+        setAvatar(publicData.publicUrl);
+        setAvatarImgLoaded(false);
         setAvatarFile(null);
         setMessage('Avatar updated successfully!');
         setMessageType('success');
@@ -101,14 +121,23 @@ const AccountSettings: React.FC = () => {
                 <div className="flex-shrink-0">
                   <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-primary bg-muted">
                     {avatar && isAvatarUrl(avatar) ? (
-                      <img
-                        src={avatar}
-                        alt="Avatar Preview"
-                        className="h-full w-full rounded-full object-cover"
-                      />
+                      <div className="relative h-full w-full">
+                        {!avatarImgLoaded && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                          </div>
+                        )}
+                        <img
+                          src={avatar}
+                          alt="Avatar Preview"
+                          className={`h-full w-full rounded-full object-cover transition-opacity duration-300 ${avatarImgLoaded ? 'opacity-100' : 'opacity-0'}`}
+                          onLoad={() => setAvatarImgLoaded(true)}
+                          onError={() => setAvatarImgLoaded(false)}
+                        />
+                      </div>
                     ) : (
                       <span className="text-4xl">
-                        {user?.avatar || '🧑‍🎓'}
+                        {isAvatarUrl(user?.avatar || '') ? '🧑‍🎓' : (user?.avatar || '🧑‍🎓')}
                       </span>
                     )}
                   </div>
