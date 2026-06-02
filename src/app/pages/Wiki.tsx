@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigation } from '../components/Navigation';
 import { Book, ChevronDown, ChevronRight, Lightbulb, Code, Database, GitBranch, Repeat, Layers, Grid3x3 } from 'lucide-react';
 import { WIKI_SECTIONS, type WikiSection } from '../utils/wikiContent';
+import { highlightCSharp } from '../components/WikiSidebar';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   Code: <Code className="w-5 h-5" />,
@@ -103,10 +104,10 @@ function SectionCard({
                       {example.label}
                     </div>
                     <pre
-                      className={`px-4 py-3 text-sm leading-relaxed overflow-x-auto ${section.color}`}
-                      style={{ fontFamily: 'var(--font-mono)' }}
+                      className="px-4 py-3 text-sm leading-relaxed overflow-x-auto"
+                      style={{ fontFamily: 'var(--font-mono)', background: '#1e1e1e', color: '#d4d4d4' }}
                     >
-                      {example.code}
+                      {highlightCSharp(example.code)}
                     </pre>
                   </div>
                 ))}

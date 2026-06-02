@@ -18,7 +18,7 @@ const CS_KEYWORDS = new Set([
 
 const TOKEN_RE = /(\/\/[^\n]*)|("(?:[^"\\]|\\.)*")|('(?:[^'\\]|\\.)*')|\b(\d+(?:\.\d*)?[fFdDmMlLuU]*)\b|([A-Za-z_]\w*)|([\s\S])/g;
 
-function highlightCSharp(code: string) {
+export function highlightCSharp(code: string) {
   const result: (string | JSX.Element)[] = [];
   TOKEN_RE.lastIndex = 0;
   let m: RegExpExecArray | null;
