@@ -112,7 +112,7 @@ export function GameContainer() {
       <Navigation />
       <div className="flex flex-1 overflow-hidden">
         <WikiSidebar />
-        <div className="flex-1 min-w-0 overflow-hidden">
+        <div className="flex-1 min-w-0 overflow-hidden h-full">
           <GodotGameEmbed ref={iframeRef} />
         </div>
       </div>
