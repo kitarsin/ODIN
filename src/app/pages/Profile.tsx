@@ -8,9 +8,8 @@ import { calculateSyncRateFromMastery } from '../utils/achievementCatalog';
 import { getPlayerProfile, getPlayerSessions, buildPuzzleTitleMap } from '../../lib/odinApi';
 
 interface MasteryState {
-  topic: string;
+  dungeonLevel: number;
   masteryPercentage: number;
-  probabilityMastery: number;
   isMastered: boolean;
   attemptCount: number;
 }
@@ -32,15 +31,14 @@ interface GameSession {
   isCompleted: boolean;
 }
 
-const SKILL_GROUPS = [
-  { label: '1D Arrays', skills: ['ArrayInitialization', 'ArrayAccess'] },
-  { label: 'Loops & Iteration', skills: ['ArrayIteration', 'ArrayOperations'] },
-  { label: '2D Arrays', skills: ['MultidimensionalArrays', 'JaggedArrays'] },
-];
+const LEVEL_LABELS: Record<number, string> = {
+  0: 'Tutorial',
+  1: 'Library Maze',
+  2: 'Fast Food Maze',
+  3: 'Billiards Hall',
+};
 
-function skillLabel(topic: string) {
-  return topic.replace(/([A-Z])/g, ' $1').trim();
-}
+const DUNGEON_LEVELS = [0, 1, 2, 3];
 
 function formatDuration(startedAt: string, endedAt: string | null) {
   if (!endedAt) return 'In Progress';
@@ -159,7 +157,7 @@ export function Profile() {
                 <div className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500" style={{ width: `${profileLoading ? user.syncRate : computedSyncRate}%` }} />
               </div>
               <p className="text-xs mt-2 text-muted-foreground">
-                {odinProfile?.masteryStates?.length ? 'Based on BKT skill mastery' : 'Based on achievements unlocked'}
+                {odinProfile?.masteryStates?.length ? 'Based on BKT level mastery' : 'Based on achievements unlocked'}
               </p>
             </div>
           )}
@@ -217,62 +215,41 @@ export function Profile() {
             </div>
           )}
 
-          {/* BKT Mastery Breakdown — replaces always-zero progress bars */}
+          {/* BKT Mastery Breakdown — per dungeon level */}
           {user.role === 'student' && (
             <div className="border rounded-lg p-6 bg-card border-border transition-colors">
-              <h3 className="text-lg font-semibold mb-6">Skill Mastery</h3>
+              <h3 className="text-lg font-semibold mb-6">Level Mastery</h3>
 
               {profileLoading ? (
-                <div className="space-y-6">
-                  {SKILL_GROUPS.map(g => (
-                    <div key={g.label}>
-                      <div className="h-4 w-40 bg-muted animate-pulse rounded mb-3" />
-                      <div className="space-y-3">
-                        {g.skills.map(s => (
-                          <div key={s} className="h-6 bg-muted animate-pulse rounded" />
-                        ))}
-                      </div>
-                    </div>
+                <div className="space-y-4">
+                  {DUNGEON_LEVELS.map(l => (
+                    <div key={l} className="h-8 bg-muted animate-pulse rounded" />
                   ))}
                 </div>
               ) : (
-                <div className="space-y-6">
-                  {SKILL_GROUPS.map(group => {
-                    const groupStates = group.skills.map(skill =>
-                      odinProfile?.masteryStates?.find(m => m.topic === skill)
-                    );
+                <div className="space-y-4">
+                  {DUNGEON_LEVELS.map(level => {
+                    const state = odinProfile?.masteryStates?.find(m => m.dungeonLevel === level);
+                    const pct = state?.masteryPercentage ?? 0;
                     return (
-                      <div key={group.label}>
-                        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-3">
-                          {group.label}
-                        </p>
-                        <div className="space-y-3">
-                          {group.skills.map((skill, i) => {
-                            const state = groupStates[i];
-                            const pct = state?.masteryPercentage ?? 0;
-                            return (
-                              <div key={skill}>
-                                <div className="flex justify-between items-center mb-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-sm">{skillLabel(skill)}</span>
-                                    {state?.isMastered && (
-                                      <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-3">
-                                    <span className="text-xs text-muted-foreground">
-                                      {state?.attemptCount ?? 0} attempts
-                                    </span>
-                                    <span className="text-sm font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
-                                      {pct}%
-                                    </span>
-                                  </div>
-                                </div>
-                                <Progress value={pct} className="h-2" />
-                              </div>
-                            );
-                          })}
+                      <div key={level}>
+                        <div className="flex justify-between items-center mb-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">{LEVEL_LABELS[level]}</span>
+                            {state?.isMastered && (
+                              <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-muted-foreground">
+                              {state ? `${state.attemptCount} attempts` : 'Not started'}
+                            </span>
+                            <span className="text-sm font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
+                              {state ? `${pct}%` : '—'}
+                            </span>
+                          </div>
                         </div>
+                        <Progress value={pct} className="h-2" />
                       </div>
                     );
                   })}

@@ -8,7 +8,7 @@ import { calculateSyncRateFromMastery } from '../utils/achievementCatalog';
 import { getPlayerProfile, getPlayerSessions, buildPuzzleTitleMap } from '../../lib/odinApi';
 
 interface MasteryState {
-  topic: string;
+  dungeonLevel: number;
   masteryPercentage: number;
   isMastered: boolean;
   attemptCount: number;
@@ -31,18 +31,7 @@ interface GameSession {
   isCompleted: boolean;
 }
 
-// Group skill topics into the three broad categories shown on the dashboard
-const MASTERY_GROUPS = [
-  { label: '1D Arrays', skills: ['ArrayInitialization', 'ArrayAccess'] },
-  { label: 'Loops & Iteration', skills: ['ArrayIteration', 'ArrayOperations'] },
-  { label: '2D Arrays', skills: ['MultidimensionalArrays', 'JaggedArrays'] },
-];
-
-function groupMastery(masteryStates: MasteryState[], skills: string[]) {
-  const states = skills.map(s => masteryStates.find(m => m.topic === s)).filter(Boolean) as MasteryState[];
-  if (states.length === 0) return 0;
-  return Math.round(states.reduce((sum, s) => sum + s.masteryPercentage, 0) / states.length);
-}
+const DUNGEON_LEVELS = [0, 1, 2, 3];
 
 function formatDuration(startedAt: string, endedAt: string | null) {
   if (!endedAt) return 'Active';
@@ -156,7 +145,7 @@ export function StudentDashboard() {
                   />
                 </div>
                 <p className="text-xs mt-2 text-muted-foreground">
-                  {hasGameData && odinProfile!.masteryStates?.length ? 'Based on BKT skill mastery' : 'Based on achievements unlocked'}
+                  {hasGameData && odinProfile!.masteryStates?.length ? 'Based on BKT level mastery' : 'Based on achievements unlocked'}
                 </p>
               </div>
 
@@ -207,25 +196,24 @@ export function StudentDashboard() {
             </h2>
 
             <div className="space-y-6">
-              {MASTERY_GROUPS.map(group => {
-                const pct = loading ? 0 : groupMastery(masteryStates, group.skills);
-                const allMastered = !loading && group.skills.every(
-                  s => masteryStates.find(m => m.topic === s)?.isMastered
-                );
+              {DUNGEON_LEVELS.map(level => {
+                const state = masteryStates.find(m => m.dungeonLevel === level);
+                const pct = loading ? 0 : (state?.masteryPercentage ?? 0);
+                const isMastered = !loading && (state?.isMastered ?? false);
                 return (
-                  <div key={group.label}>
+                  <div key={level}>
                     <div className="flex justify-between items-center mb-2">
                       <div className="flex items-center gap-2">
                         <span className="text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
-                          {group.label}
+                          {LEVEL_LABELS[level]}
                         </span>
-                        {allMastered && <CheckCircle className="w-3.5 h-3.5 text-green-500" />}
+                        {isMastered && <CheckCircle className="w-3.5 h-3.5 text-green-500" />}
                       </div>
                       {loading ? (
                         <div className="h-4 w-10 bg-muted animate-pulse rounded" />
                       ) : (
                         <span className="text-sm font-semibold text-primary" style={{ fontFamily: 'var(--font-mono)' }}>
-                          {pct}%
+                          {state ? `${pct}%` : '—'}
                         </span>
                       )}
                     </div>
