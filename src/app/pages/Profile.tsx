@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigation } from '../components/Navigation';
 import { useAuth } from '../context/AuthContext';
-import { User, Mail, Calendar, Award, Zap, Brain, Target, Clock, CheckCircle } from 'lucide-react';
+import { User, Mail, Calendar, Award, Zap, Brain, Target, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Progress } from '../components/ui/progress';
 import { getRankInfo } from '../utils/rank';
 import { calculateSyncRateFromMastery } from '../utils/achievementCatalog';
