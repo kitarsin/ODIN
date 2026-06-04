@@ -38,6 +38,8 @@ export interface SubmissionResponse {
   diagnosticMessage: string;
   compilerDiagnostics: { id: string; severity: string; message: string; line: number; column: number }[];
   behaviorState: string;
+  hbdaReasoning: string;
+  behaviorConfidence: string;
   helplessnessScore: number;
   helplessnessScoreDelta: number;
   masteryProbability: number;
