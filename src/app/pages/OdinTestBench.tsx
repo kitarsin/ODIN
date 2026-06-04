@@ -140,6 +140,8 @@ interface TelemetryOverrides {
 interface Puzzle {
   id: string;
   title: string;
+  description?: string;
+  starterCode?: string;
   skillType?: string;
 }
 
@@ -180,6 +182,8 @@ export function OdinTestBench() {
   const [puzzles, setPuzzles]                 = useState<Puzzle[]>([]);
   const [selectedPuzzle, setSelectedPuzzle]   = useState<Puzzle | null>(null);
   const [puzzlesLoading, setPuzzlesLoading]   = useState(false);
+  // When true, bypass level/puzzle selection entirely and use 'test-bench' id
+  const [rawMode, setRawMode]                 = useState(false);
   const [sessionId, setSessionId]             = useState<string | null>(null);
   const [result, setResult]                   = useState<SubmissionResponse | null>(null);
   const [history, setHistory]                 = useState<HistoryEntry[]>([]);
@@ -204,6 +208,11 @@ export function OdinTestBench() {
 
   const handleAchievementClose = useCallback(() => setShownAchievement(null), []);
 
+  // Synthetic entry — uses 'test-bench' puzzle ID so no output comparison runs.
+  // Correctness is determined by AST diagnostics only (no errors → isCorrect: true).
+  // Ideal for behavior preset testing where you just want to control HBDA inputs.
+  const BEHAVIOR_TEST_PUZZLE: Puzzle = { id: 'test-bench', title: '⚗ Behavior Test (no puzzle)' };
+
   // Load puzzles for a given level
   const loadPuzzles = useCallback(async (level: number) => {
     setPuzzlesLoading(true);
@@ -211,14 +220,16 @@ export function OdinTestBench() {
     setSelectedPuzzle(null);
     try {
       const data: Puzzle[] = await getPuzzlesByLevel(level);
-      setPuzzles(data);
-      if (data.length > 0) setSelectedPuzzle(data[0]);
+      const withFallback = [BEHAVIOR_TEST_PUZZLE, ...data];
+      setPuzzles(withFallback);
+      setSelectedPuzzle(withFallback[0]);
     } catch {
-      setPuzzles([]);
+      setPuzzles([BEHAVIOR_TEST_PUZZLE]);
+      setSelectedPuzzle(BEHAVIOR_TEST_PUZZLE);
     } finally {
       setPuzzlesLoading(false);
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Start a session for the current level + puzzle
   const startNewSession = useCallback((level: number, puzzleId: string) => {
@@ -234,15 +245,28 @@ export function OdinTestBench() {
     loadPuzzles(dungeonLevel);
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Start session when puzzle is selected
+  // Start session and pre-fill code when puzzle changes
   useEffect(() => {
-    if (selectedPuzzle) startNewSession(dungeonLevel, selectedPuzzle.id);
+    if (!selectedPuzzle) return;
+    startNewSession(dungeonLevel, selectedPuzzle.id);
+    if (selectedPuzzle.starterCode) {
+      setCode(selectedPuzzle.starterCode);
+      resetKeystrokes();
+    }
   }, [selectedPuzzle]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Raw mode: start a plain 'test-bench' session (no puzzle, AST-only correctness)
+  useEffect(() => {
+    if (!rawMode || !user?.id) return;
+    startNewSession(dungeonLevel, 'test-bench');
+    setCode(PRESETS[0].code);
+    resetKeystrokes();
+  }, [rawMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLevelChange = (level: number) => {
     setDungeonLevel(level);
     setShowLevelDrop(false);
-    loadPuzzles(level);
+    if (!rawMode) loadPuzzles(level);
   };
 
   const handleSubmit = async () => {
@@ -365,68 +389,104 @@ export function OdinTestBench() {
           {/* ── Left: Editor + Controls ── */}
           <div className="space-y-3">
 
-            {/* Level + Puzzle selectors */}
-            <div className="grid grid-cols-2 gap-2">
-              {/* Dungeon level */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowLevelDrop(!showLevelDrop)}
-                  className="w-full flex items-center justify-between px-3 py-2 text-xs border border-border rounded-md bg-card hover:bg-muted transition-colors font-mono"
-                >
-                  <span className="truncate">{DUNGEON_LEVELS.find(l => l.value === dungeonLevel)?.label}</span>
-                  <ChevronDown className="w-3.5 h-3.5 shrink-0 ml-1" />
-                </button>
-                {showLevelDrop && (
-                  <div className="absolute z-10 w-full mt-1 border border-border rounded-md bg-card shadow-lg">
-                    {DUNGEON_LEVELS.map((l) => (
-                      <button
-                        key={l.value}
-                        onClick={() => handleLevelChange(l.value)}
-                        className={`w-full text-left px-3 py-2 text-xs font-mono hover:bg-muted transition-colors ${dungeonLevel === l.value ? 'bg-muted font-semibold' : ''}`}
-                      >
-                        {l.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Puzzle / enemy selector */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowPuzzleDrop(!showPuzzleDrop)}
-                  disabled={puzzlesLoading || puzzles.length === 0}
-                  className="w-full flex items-center justify-between px-3 py-2 text-xs border border-border rounded-md bg-card hover:bg-muted transition-colors font-mono disabled:opacity-50"
-                >
-                  <span className="flex items-center gap-1.5 truncate">
-                    <Swords className="w-3 h-3 shrink-0 text-muted-foreground" />
-                    {puzzlesLoading ? 'Loading…' : (selectedPuzzle?.title ?? 'No puzzles')}
-                  </span>
-                  <ChevronDown className="w-3.5 h-3.5 shrink-0 ml-1" />
-                </button>
-                {showPuzzleDrop && puzzles.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 border border-border rounded-md bg-card shadow-lg max-h-48 overflow-y-auto">
-                    {puzzles.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => { setSelectedPuzzle(p); setShowPuzzleDrop(false); }}
-                        className={`w-full text-left px-3 py-2 text-xs font-mono hover:bg-muted transition-colors ${selectedPuzzle?.id === p.id ? 'bg-muted font-semibold' : ''}`}
-                      >
-                        {p.title}
-                        <span className="text-muted-foreground ml-2">{p.id.slice(0, 8)}…</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+            {/* Mode toggle */}
+            <div className="flex items-center gap-2 p-2 rounded-md border border-border bg-muted/30">
+              <button
+                onClick={() => { setRawMode(false); loadPuzzles(dungeonLevel); }}
+                className={`flex-1 py-1.5 text-xs rounded transition-colors font-medium ${!rawMode ? 'bg-card border border-border shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                Puzzle Mode
+              </button>
+              <button
+                onClick={() => setRawMode(true)}
+                className={`flex-1 py-1.5 text-xs rounded transition-colors font-medium ${rawMode ? 'bg-card border border-border shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                ⚗ Test-Bench Mode
+              </button>
             </div>
+
+            {/* Level + Puzzle selectors (puzzle mode only) */}
+            {!rawMode && (
+              <div className="grid grid-cols-2 gap-2">
+                {/* Dungeon level */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowLevelDrop(!showLevelDrop)}
+                    className="w-full flex items-center justify-between px-3 py-2 text-xs border border-border rounded-md bg-card hover:bg-muted transition-colors font-mono"
+                  >
+                    <span className="truncate">{DUNGEON_LEVELS.find(l => l.value === dungeonLevel)?.label}</span>
+                    <ChevronDown className="w-3.5 h-3.5 shrink-0 ml-1" />
+                  </button>
+                  {showLevelDrop && (
+                    <div className="absolute z-10 w-full mt-1 border border-border rounded-md bg-card shadow-lg">
+                      {DUNGEON_LEVELS.map((l) => (
+                        <button
+                          key={l.value}
+                          onClick={() => handleLevelChange(l.value)}
+                          className={`w-full text-left px-3 py-2 text-xs font-mono hover:bg-muted transition-colors ${dungeonLevel === l.value ? 'bg-muted font-semibold' : ''}`}
+                        >
+                          {l.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Puzzle / enemy selector */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowPuzzleDrop(!showPuzzleDrop)}
+                    disabled={puzzlesLoading || puzzles.length === 0}
+                    className="w-full flex items-center justify-between px-3 py-2 text-xs border border-border rounded-md bg-card hover:bg-muted transition-colors font-mono disabled:opacity-50"
+                  >
+                    <span className="flex items-center gap-1.5 truncate">
+                      <Swords className="w-3 h-3 shrink-0 text-muted-foreground" />
+                      {puzzlesLoading ? 'Loading…' : (selectedPuzzle?.title ?? 'No puzzles')}
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5 shrink-0 ml-1" />
+                  </button>
+                  {showPuzzleDrop && puzzles.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 border border-border rounded-md bg-card shadow-lg max-h-48 overflow-y-auto">
+                      {puzzles.map((p) => (
+                        <button
+                          key={p.id}
+                          onClick={() => { setSelectedPuzzle(p); setShowPuzzleDrop(false); }}
+                          className={`w-full text-left px-3 py-2 text-xs font-mono hover:bg-muted transition-colors ${selectedPuzzle?.id === p.id ? 'bg-muted font-semibold' : ''}`}
+                        >
+                          {p.title}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Puzzle description (puzzle mode, real puzzle selected) */}
+            {!rawMode && selectedPuzzle && selectedPuzzle.id !== 'test-bench' && selectedPuzzle.description && (
+              <div className="rounded-md border border-border bg-muted/30 px-3 py-2 space-y-0.5">
+                <p className="text-[10px] font-semibold text-primary uppercase tracking-wider">{selectedPuzzle.title}</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">{selectedPuzzle.description}</p>
+              </div>
+            )}
+
+            {/* Raw mode note */}
+            {rawMode && (
+              <div className="rounded-md border border-amber-500/20 bg-amber-500/5 px-3 py-2">
+                <p className="text-[11px] text-amber-400 font-mono">
+                  Test-Bench Mode — no puzzle loaded. Correctness is determined by AST diagnostics only (no errors = correct). Ideal for testing HBDA behavior in isolation.
+                </p>
+              </div>
+            )}
 
             {/* Session info + new session */}
             <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground px-1">
               <span>Session: {sessionId ? sessionId.slice(0, 8) + '…' : '—'}</span>
               <span>Submissions: {history.length}</span>
               <button
-                onClick={() => selectedPuzzle && startNewSession(dungeonLevel, selectedPuzzle.id)}
+                onClick={() => rawMode
+                  ? startNewSession(dungeonLevel, 'test-bench')
+                  : (selectedPuzzle && startNewSession(dungeonLevel, selectedPuzzle.id))}
                 className="flex items-center gap-1 hover:text-foreground transition-colors"
               >
                 <Plus className="w-3 h-3" /> New session
@@ -662,7 +722,7 @@ export function OdinTestBench() {
                 <div className="text-center">
                   <Brain className="w-8 h-8 mx-auto mb-2 text-muted-foreground/30" />
                   <p className="text-xs text-muted-foreground">
-                    {selectedPuzzle ? `Ready — ${selectedPuzzle.title}` : 'Select a puzzle to start'}
+                    {rawMode ? 'Test-Bench Mode ready' : selectedPuzzle ? `Ready — ${selectedPuzzle.title}` : 'Select a puzzle to start'}
                   </p>
                 </div>
               </div>
