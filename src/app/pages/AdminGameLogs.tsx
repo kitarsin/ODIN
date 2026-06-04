@@ -63,11 +63,12 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 const BEHAVIOR_STYLE: Record<string, string> = {
-  ActiveThinking: 'text-green-400 bg-green-400/10',
-  ProductiveFailure: 'text-blue-400 bg-blue-400/10',
-  Tinkering: 'text-secondary bg-secondary/10',
-  WheelSpinning: 'text-amber-500 bg-amber-500/10',
-  GamingTheSystem: 'text-red-500 bg-red-500/10',
+  ActiveThinking:           'text-emerald-400 bg-emerald-400/10',
+  HintWithheld:             'text-slate-400 bg-slate-400/10',
+  LowProgressTrialAndError: 'text-yellow-400 bg-yellow-400/10',
+  WheelSpinning:            'text-orange-400 bg-orange-400/10',
+  PostFailureDisengagement: 'text-rose-400 bg-rose-400/10',
+  GamingTheSystem:          'text-red-500 bg-red-500/10',
 };
 
 
