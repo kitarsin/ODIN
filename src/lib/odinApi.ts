@@ -230,13 +230,3 @@ export async function compilePretestCode(
   if (!res.ok) throw new Error(`Compile failed: ${res.status}`);
   return res.json();
 }
-
-export async function reevaluateData(jsonData: any) {
-  const res = await fetch(`${API_URL}/api/submission/reevaluate`, {
-    method: 'POST',
-    headers: await getAuthHeaders(),
-    body: JSON.stringify(jsonData),
-  });
-  if (!res.ok) throw new Error(`Reevaluation failed: ${res.status}`);
-  return res.json();
-}

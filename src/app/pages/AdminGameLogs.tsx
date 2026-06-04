@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Navigation } from '../components/Navigation';
 import { Gamepad2, Users, Brain, AlertTriangle, ChevronDown, ChevronRight, Clock, CheckCircle, XCircle, Search, RotateCcw, Download } from 'lucide-react';
-import { getClassOverview, getStudentList, getPlayerSessions, getSessionSubmissions, buildPuzzleTitleMap, resetPlayerProgress, reevaluateData } from '../../lib/odinApi';
+import { getClassOverview, getStudentList, getPlayerSessions, getSessionSubmissions, buildPuzzleTitleMap, resetPlayerProgress } from '../../lib/odinApi';
 import JSZip from 'jszip';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -118,36 +118,6 @@ export function AdminGameLogs() {
   const [resetTargetStudent, setResetTargetStudent] = useState<StudentEntry | null>(null);
   const [resetting, setResetting] = useState(false);
   const [exportingAll, setExportingAll] = useState(false);
-  const [reevaluating, setReevaluating] = useState(false);
-
-  const handleReevaluate = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    setReevaluating(true);
-    try {
-      const text = await file.text();
-      const cleanJson = text.replace(/^\s*\/\/.*$/gm, '');
-      const data = JSON.parse(cleanJson);
-      
-      const result = await reevaluateData(data);
-      alert(result.message || 'Reevaluation successful!');
-      
-      // Refresh data
-      const ov = await getClassOverview();
-      setOverview(ov);
-      const st = await getStudentList();
-      setStudents(st);
-    } catch (err) {
-      console.error('Reevaluation failed:', err);
-      alert('Failed to re-evaluate data. Check console for details.');
-    } finally {
-      setReevaluating(false);
-      // Clear file input
-      e.target.value = '';
-    }
-  };
-
   const handleResetConfirm = useCallback(async () => {
     if (!resetTargetStudent) return;
     setResetting(true);
@@ -357,18 +327,6 @@ export function AdminGameLogs() {
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
             <div className="flex items-center gap-2">
-              <label className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded border border-border bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors cursor-pointer disabled:opacity-50">
-                <RotateCcw className={`w-4 h-4 ${reevaluating ? 'animate-spin' : ''}`} />
-                {reevaluating ? 'Processing…' : 'Re-evaluate Data'}
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleReevaluate}
-                  className="hidden"
-                  disabled={reevaluating}
-                />
-              </label>
-
               <button
                 onClick={handleExportAllLogs}
                 disabled={exportingAll || overviewLoading || students.filter(s => s.totalSubmissions > 0).length === 0}
