@@ -99,10 +99,11 @@ const PRESETS: Preset[] = [
     label: 'PostFailure Disengage',
     targetState: 'PostFailureDisengagement',
     description: 'Long inactivity (≥120 s) after a previous wrong answer',
-    code: 'int[] arr = new int[5];\nConsole.WriteLine(arr[0]);',
-    // inactivityDuration is what HBDA actually reads — not SI
+    // arr[10] on a 5-element array → IndexOutOfRange → isCorrect: false (required by PostFailure)
+    code: 'int[] arr = new int[5];\nConsole.WriteLine(arr[10]);',
+    // inactivityDuration is what HBDA reads for this — NOT timeSinceLastSubmit
     telemetry: { si: 5, inactivityDuration: 125, systemCheckCount: 0 },
-    tip: 'Requires a PREVIOUS wrong submission. Set InactivityDuration ≥ 120 s (not SI).',
+    tip: 'MUST have a previous wrong submission first. Submit this preset once (gets stored as previous), then submit it again — PostFailure fires on the second attempt.',
   },
   {
     label: 'Gaming System',
