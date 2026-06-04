@@ -29,6 +29,7 @@ export interface KeystrokeData {
   systemCheckCount?: number;
   postErrorInactivitySeconds?: number;
   keyDownCount?: number;
+  taskBypassedDuration?: number | null;
 }
 
 export interface SubmissionResponse {

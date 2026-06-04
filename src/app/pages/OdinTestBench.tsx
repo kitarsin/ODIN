@@ -2,13 +2,13 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Navigation } from '../components/Navigation';
 import { useAuth } from '../context/AuthContext';
 import { useKeystrokeTracker } from '../../hooks/useKeystrokeTracker';
-import { submitCode, createSession, type SubmissionResponse } from '../../lib/odinApi';
+import { submitCode, createSession, getPuzzlesByLevel, type SubmissionResponse } from '../../lib/odinApi';
 import { AchievementModal } from '../components/AchievementModal';
 import { getAchievementDetail } from '../utils/achievementCatalog';
 import { Button } from '../components/ui/button';
 import {
   Play, RotateCcw, ChevronDown, CheckCircle2, XCircle,
-  MessageSquare, Brain, Activity, Zap, Shield, Plus, Info,
+  MessageSquare, Brain, Activity, Zap, Shield, Plus, Info, Swords,
 } from 'lucide-react';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -19,6 +19,14 @@ const DUNGEON_LEVELS = [
   { value: 2, label: 'Level 2 — Fast Food Maze' },
   { value: 3, label: 'Level 3 — Billiards Hall' },
 ];
+
+// Skill type that best represents each dungeon level (used as fallback)
+const LEVEL_SKILL: Record<number, string> = {
+  0: 'ArrayInitialization',
+  1: 'ArrayAccess',
+  2: 'ArrayIteration',
+  3: 'MultidimensionalArrays',
+};
 
 const BEHAVIOR_COLORS: Record<string, string> = {
   ActiveThinking:            'text-emerald-400',
@@ -44,83 +52,75 @@ const INTERVENTION_COLORS: Record<string, string> = {
 };
 
 // ── Behavior presets ──────────────────────────────────────────────────────────
-// Each preset documents which HBDA indicators it targets and what telemetry
-// overrides are required to trigger it reliably.
 
 interface Preset {
   label: string;
   targetState: string;
   description: string;
   code: string;
-  skill: string;
   telemetry: Partial<TelemetryOverrides>;
   tip: string;
 }
 
 const PRESETS: Preset[] = [
   {
-    label: 'Correct Answer',
+    label: 'Active Thinking',
     targetState: 'ActiveThinking',
-    description: 'Long pause then correct code → ActiveThinking (Low–Moderate)',
-    code: 'int[] arr = {1, 2, 3, 4, 5};\nfor (int i = 0; i < arr.Length; i++)\n{\n    Console.WriteLine(arr[i]);\n}',
-    skill: 'ArrayIteration',
+    description: 'Long pause (>15 s) then correct answer',
+    code: 'int[] arr = {1, 2, 3, 4, 5};\nfor (int i = 0; i < arr.Length; i++)\n    Console.WriteLine(arr[i]);',
     telemetry: { si: 20, initialLatencyMs: 12000, systemCheckCount: 0 },
-    tip: 'Wait >15 s before submitting. Gets Moderate if no corroborating signals.',
+    tip: 'SI > 15 s + correct answer + ≤ 1 system check. Submit once with the selected puzzle loaded.',
   },
   {
     label: 'WheelSpinning',
     targetState: 'WheelSpinning',
-    description: 'Submit the same wrong code ≥3 times in a row',
+    description: 'Same wrong code 3+ times in a row',
     code: 'int[] arr = new int[5];\nConsole.WriteLine(arr[10]);',
-    skill: 'ArrayAccess',
     telemetry: { si: 3, systemCheckCount: 0 },
     tip: 'Hit Submit 3+ times without changing the code. Structural stasis triggers ind1.',
   },
   {
     label: 'Tinkering',
     targetState: 'LowProgressTrialAndError',
-    description: 'Rapid submissions (<6 s) with varying structure but same error',
+    description: 'Rapid (<6 s) submissions with varying values, same error',
     code: 'int[] arr = new int[3];\nConsole.WriteLine(arr[5]);',
-    skill: 'ArrayAccess',
     telemetry: { si: 2, systemCheckCount: 0 },
-    tip: 'Change the index each time (arr[5] → arr[6] → arr[7]) — same error, structure varies.',
+    tip: 'Change the index each submit (arr[5] → arr[6] → arr[7]) keeping SI < 6 s.',
   },
   {
     label: 'HintWithheld',
     targetState: 'HintWithheld',
-    description: 'Long pause (>15 s) then wrong answer with a different error type',
+    description: 'Long pause (>15 s) then wrong answer with a different error',
     code: 'int[] arr = {1,2,3};\nfor (int i = 0; i <= arr.Length; i++)\n    Console.WriteLine(arr[i]);',
-    skill: 'ArrayIteration',
     telemetry: { si: 18, systemCheckCount: 0 },
-    tip: 'First submit a different error, then use this preset with SI > 15 s.',
+    tip: 'First submit a different error type, then load this preset (SI > 15 s + new error).',
   },
   {
     label: 'PostFailure Disengage',
     targetState: 'PostFailureDisengagement',
-    description: 'Long inactivity (≥120 s) after previous wrong answer',
+    description: 'Long inactivity (≥120 s) after a previous wrong answer',
     code: 'int[] arr = new int[5];\nConsole.WriteLine(arr[0]);',
-    skill: 'ArrayAccess',
-    telemetry: { si: 125, systemCheckCount: 0 },
-    tip: 'Set SI ≥ 120 s and submit a wrong answer after a previous wrong answer.',
+    // inactivityDuration is what HBDA actually reads — not SI
+    telemetry: { si: 5, inactivityDuration: 125, systemCheckCount: 0 },
+    tip: 'Requires a PREVIOUS wrong submission. Set InactivityDuration ≥ 120 s (not SI).',
   },
   {
     label: 'Gaming System',
     targetState: 'GamingTheSystem',
-    description: 'Task completed suspiciously fast (<15 s)',
-    code: '',
-    skill: 'ArrayInitialization',
-    telemetry: { si: 3, taskBypassedDuration: 8, systemCheckCount: 0 },
-    tip: 'Set TaskBypassed < 15 s. Empty code also works for rapid bypass detection.',
+    description: 'TaskBypassedDuration < 15 s (task completed suspiciously fast)',
+    // Non-empty code so [Required] validation passes; gaming fires on taskBypassedDuration
+    code: 'int[] arr = {1};\nConsole.WriteLine(arr[0]);',
+    telemetry: { si: 2, taskBypassedDuration: 8, systemCheckCount: 0 },
+    tip: 'Fires when TaskBypassed < 15 s. Enable TaskBypassed in telemetry overrides.',
   },
 ];
 
-// Behavior reference — what each state means and its priority
 const BEHAVIOR_GUIDE = [
   { state: 'GamingTheSystem',           priority: 1, color: 'text-red-400',    trigger: 'Task bypass < 15 s or > 3 hints in 60 s',                          delta: '+20.0' },
-  { state: 'PostFailureDisengagement',  priority: 2, color: 'text-rose-400',   trigger: 'Inactivity ≥ 120 s after error and/or unchanged resubmit (ED ≤ 5)', delta: '+8–20' },
+  { state: 'PostFailureDisengagement',  priority: 2, color: 'text-rose-400',   trigger: 'InactivityDuration ≥ 120 s after error and/or unchanged resubmit', delta: '+8–20' },
   { state: 'WheelSpinning',             priority: 3, color: 'text-orange-400', trigger: '3+ consecutive same error + same normalized structure',              delta: '+5–15' },
   { state: 'LowProgressTrialAndError',  priority: 4, color: 'text-yellow-400', trigger: 'SI < 6 s with varying structure, or persistent error (no stasis)',   delta: '+3–10' },
-  { state: 'HintWithheld',              priority: 5, color: 'text-slate-400',  trigger: 'SI > 15 s and new / different error type',                          delta: '−5.0' },
+  { state: 'HintWithheld',              priority: 5, color: 'text-slate-400',  trigger: 'SI > 15 s and new/different error type',                            delta: '−5.0'  },
   { state: 'ActiveThinking',            priority: 6, color: 'text-emerald-400',trigger: 'SI > 15 s + progressive attempt + ≤ 1 system check',                delta: '−8–20' },
 ];
 
@@ -129,10 +129,18 @@ const BEHAVIOR_GUIDE = [
 interface TelemetryOverrides {
   si: number;
   initialLatencyMs: number;
+  inactivityDuration: number;
+  postErrorInactivitySeconds: number;
   typingBurstCoverage: number;
   systemCheckCount: number;
   selfCorrectionCount: number;
   taskBypassedDuration: number | null;
+}
+
+interface Puzzle {
+  id: string;
+  title: string;
+  skillType?: string;
 }
 
 interface HistoryEntry {
@@ -152,6 +160,8 @@ interface HistoryEntry {
 const DEFAULT_TELEMETRY: TelemetryOverrides = {
   si: 5,
   initialLatencyMs: 0,
+  inactivityDuration: 0,
+  postErrorInactivitySeconds: -1,
   typingBurstCoverage: 0,
   systemCheckCount: 0,
   selfCorrectionCount: 0,
@@ -165,18 +175,21 @@ export function OdinTestBench() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { getSnapshot, reset: resetKeystrokes } = useKeystrokeTracker(textareaRef);
 
-  const [code, setCode]                     = useState(PRESETS[0].code);
-  const [skillType, setSkillType]           = useState('ArrayIteration');
-  const [dungeonLevel, setDungeonLevel]     = useState(1);
-  const [sessionId, setSessionId]           = useState<string | null>(null);
-  const [result, setResult]                 = useState<SubmissionResponse | null>(null);
-  const [history, setHistory]               = useState<HistoryEntry[]>([]);
-  const [error, setError]                   = useState<string | null>(null);
-  const [loading, setLoading]               = useState(false);
-  const [showGuide, setShowGuide]           = useState(false);
-  const [showTelemetry, setShowTelemetry]   = useState(true);
-  const [showLevelDrop, setShowLevelDrop]   = useState(false);
-  const [telemetry, setTelemetry]           = useState<TelemetryOverrides>(DEFAULT_TELEMETRY);
+  const [code, setCode]                       = useState(PRESETS[0].code);
+  const [dungeonLevel, setDungeonLevel]       = useState(1);
+  const [puzzles, setPuzzles]                 = useState<Puzzle[]>([]);
+  const [selectedPuzzle, setSelectedPuzzle]   = useState<Puzzle | null>(null);
+  const [puzzlesLoading, setPuzzlesLoading]   = useState(false);
+  const [sessionId, setSessionId]             = useState<string | null>(null);
+  const [result, setResult]                   = useState<SubmissionResponse | null>(null);
+  const [history, setHistory]                 = useState<HistoryEntry[]>([]);
+  const [error, setError]                     = useState<string | null>(null);
+  const [loading, setLoading]                 = useState(false);
+  const [showGuide, setShowGuide]             = useState(false);
+  const [showTelemetry, setShowTelemetry]     = useState(true);
+  const [showLevelDrop, setShowLevelDrop]     = useState(false);
+  const [showPuzzleDrop, setShowPuzzleDrop]   = useState(false);
+  const [telemetry, setTelemetry]             = useState<TelemetryOverrides>(DEFAULT_TELEMETRY);
   const [achievementQueue, setAchievementQueue] = useState<string[]>([]);
   const [shownAchievement, setShownAchievement] = useState<string | null>(null);
 
@@ -191,32 +204,69 @@ export function OdinTestBench() {
 
   const handleAchievementClose = useCallback(() => setShownAchievement(null), []);
 
-  const startNewSession = useCallback((level: number) => {
+  // Load puzzles for a given level
+  const loadPuzzles = useCallback(async (level: number) => {
+    setPuzzlesLoading(true);
+    setPuzzles([]);
+    setSelectedPuzzle(null);
+    try {
+      const data: Puzzle[] = await getPuzzlesByLevel(level);
+      setPuzzles(data);
+      if (data.length > 0) setSelectedPuzzle(data[0]);
+    } catch {
+      setPuzzles([]);
+    } finally {
+      setPuzzlesLoading(false);
+    }
+  }, []);
+
+  // Start a session for the current level + puzzle
+  const startNewSession = useCallback((level: number, puzzleId: string) => {
     if (!user?.id) return;
-    createSession(user.id, level, 'test-bench')
+    createSession(user.id, level, puzzleId)
       .then((s) => { setSessionId(s.id); setHistory([]); setResult(null); setError(null); })
       .catch((e) => setError(`Session creation failed: ${e.message}`));
   }, [user?.id]);
 
-  useEffect(() => { startNewSession(dungeonLevel); }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  // On mount: load puzzles for initial level
+  useEffect(() => {
+    if (!user?.id) return;
+    loadPuzzles(dungeonLevel);
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Start session when puzzle is selected
+  useEffect(() => {
+    if (selectedPuzzle) startNewSession(dungeonLevel, selectedPuzzle.id);
+  }, [selectedPuzzle]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleLevelChange = (level: number) => {
+    setDungeonLevel(level);
+    setShowLevelDrop(false);
+    loadPuzzles(level);
+  };
 
   const handleSubmit = async () => {
-    if (!user?.id || !sessionId) { setError('No session — refresh the page'); return; }
+    if (!user?.id || !sessionId) { setError('No session — select a puzzle first'); return; }
     setLoading(true);
     setError(null);
     try {
       const snap = getSnapshot();
-      // Apply telemetry overrides onto the keystroke snapshot
+      const skillType = selectedPuzzle?.skillType ?? LEVEL_SKILL[dungeonLevel] ?? 'ArrayIteration';
+      const puzzleId = selectedPuzzle?.id ?? 'test-bench';
+
       const overriddenSnap = {
         ...snap,
-        timeSinceLastSubmit: telemetry.si,
-        initialLatencyMs: telemetry.initialLatencyMs,
-        typingBurstCoverage: telemetry.typingBurstCoverage,
-        systemCheckCount: telemetry.systemCheckCount,
-        selfCorrectionCount: telemetry.selfCorrectionCount,
-        taskBypassedDuration: telemetry.taskBypassedDuration ?? undefined,
+        timeSinceLastSubmit:       telemetry.si,
+        initialLatencyMs:          telemetry.initialLatencyMs,
+        inactivityDuration:        telemetry.inactivityDuration,
+        postErrorInactivitySeconds:telemetry.postErrorInactivitySeconds,
+        typingBurstCoverage:       telemetry.typingBurstCoverage,
+        systemCheckCount:          telemetry.systemCheckCount,
+        selfCorrectionCount:       telemetry.selfCorrectionCount,
+        taskBypassedDuration:      telemetry.taskBypassedDuration ?? undefined,
       };
-      const res = await submitCode(user.id, sessionId, 'test-bench', skillType, code, overriddenSnap, 0);
+
+      const res = await submitCode(user.id, sessionId, puzzleId, skillType, code, overriddenSnap, 0);
       setResult(res);
       setHistory((prev) => [{
         n: prev.length + 1,
@@ -242,7 +292,6 @@ export function OdinTestBench() {
 
   const loadPreset = (p: Preset) => {
     setCode(p.code);
-    setSkillType(p.skill);
     setTelemetry({ ...DEFAULT_TELEMETRY, ...p.telemetry });
     setResult(null);
     setError(null);
@@ -263,9 +312,7 @@ export function OdinTestBench() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-xl font-bold font-mono tracking-tight">ODIN Pipeline Test Bench</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              HBDA → BKT → Affective State → Intervention
-            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">HBDA → BKT → Affective State → Intervention</p>
           </div>
           <button
             onClick={() => setShowGuide(!showGuide)}
@@ -306,7 +353,7 @@ export function OdinTestBench() {
                 title={p.tip}
                 className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded border border-border bg-card hover:bg-muted transition-colors"
               >
-                <span className={`w-1.5 h-1.5 rounded-full ${BEHAVIOR_COLORS[p.targetState]?.replace('text-', 'bg-') ?? 'bg-muted-foreground'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${(BEHAVIOR_COLORS[p.targetState] ?? 'text-muted-foreground').replace('text-', 'bg-')}`} />
                 {p.label}
               </button>
             ))}
@@ -318,23 +365,23 @@ export function OdinTestBench() {
           {/* ── Left: Editor + Controls ── */}
           <div className="space-y-3">
 
-            {/* Session row */}
-            <div className="flex items-center gap-2">
+            {/* Level + Puzzle selectors */}
+            <div className="grid grid-cols-2 gap-2">
               {/* Dungeon level */}
-              <div className="relative flex-1">
+              <div className="relative">
                 <button
                   onClick={() => setShowLevelDrop(!showLevelDrop)}
                   className="w-full flex items-center justify-between px-3 py-2 text-xs border border-border rounded-md bg-card hover:bg-muted transition-colors font-mono"
                 >
-                  <span>{DUNGEON_LEVELS.find(l => l.value === dungeonLevel)?.label}</span>
-                  <ChevronDown className="w-3.5 h-3.5" />
+                  <span className="truncate">{DUNGEON_LEVELS.find(l => l.value === dungeonLevel)?.label}</span>
+                  <ChevronDown className="w-3.5 h-3.5 shrink-0 ml-1" />
                 </button>
                 {showLevelDrop && (
                   <div className="absolute z-10 w-full mt-1 border border-border rounded-md bg-card shadow-lg">
                     {DUNGEON_LEVELS.map((l) => (
                       <button
                         key={l.value}
-                        onClick={() => { setDungeonLevel(l.value); setShowLevelDrop(false); startNewSession(l.value); }}
+                        onClick={() => handleLevelChange(l.value)}
                         className={`w-full text-left px-3 py-2 text-xs font-mono hover:bg-muted transition-colors ${dungeonLevel === l.value ? 'bg-muted font-semibold' : ''}`}
                       >
                         {l.label}
@@ -343,14 +390,46 @@ export function OdinTestBench() {
                   </div>
                 )}
               </div>
-              {/* New session */}
+
+              {/* Puzzle / enemy selector */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowPuzzleDrop(!showPuzzleDrop)}
+                  disabled={puzzlesLoading || puzzles.length === 0}
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs border border-border rounded-md bg-card hover:bg-muted transition-colors font-mono disabled:opacity-50"
+                >
+                  <span className="flex items-center gap-1.5 truncate">
+                    <Swords className="w-3 h-3 shrink-0 text-muted-foreground" />
+                    {puzzlesLoading ? 'Loading…' : (selectedPuzzle?.title ?? 'No puzzles')}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 shrink-0 ml-1" />
+                </button>
+                {showPuzzleDrop && puzzles.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 border border-border rounded-md bg-card shadow-lg max-h-48 overflow-y-auto">
+                    {puzzles.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => { setSelectedPuzzle(p); setShowPuzzleDrop(false); }}
+                        className={`w-full text-left px-3 py-2 text-xs font-mono hover:bg-muted transition-colors ${selectedPuzzle?.id === p.id ? 'bg-muted font-semibold' : ''}`}
+                      >
+                        {p.title}
+                        <span className="text-muted-foreground ml-2">{p.id.slice(0, 8)}…</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Session info + new session */}
+            <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground px-1">
+              <span>Session: {sessionId ? sessionId.slice(0, 8) + '…' : '—'}</span>
+              <span>Submissions: {history.length}</span>
               <button
-                onClick={() => startNewSession(dungeonLevel)}
-                title="Start new session (resets history)"
-                className="flex items-center gap-1.5 px-3 py-2 text-xs border border-border rounded-md bg-card hover:bg-muted transition-colors"
+                onClick={() => selectedPuzzle && startNewSession(dungeonLevel, selectedPuzzle.id)}
+                className="flex items-center gap-1 hover:text-foreground transition-colors"
               >
-                <Plus className="w-3.5 h-3.5" />
-                New Session
+                <Plus className="w-3 h-3" /> New session
               </button>
             </div>
 
@@ -364,48 +443,71 @@ export function OdinTestBench() {
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showTelemetry ? 'rotate-180' : ''}`} />
               </button>
               {showTelemetry && (
-                <div className="px-3 pb-3 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-border/50 pt-3">
-                  {([
-                    ['si',                   'SI (s)',              0,    300,  0.5],
-                    ['initialLatencyMs',     'Initial Latency (ms)',0,    30000,500],
-                    ['typingBurstCoverage',  'Burst Coverage (0–1)',0,    1,    0.05],
-                    ['systemCheckCount',     'System Checks',       0,    10,   1],
-                    ['selfCorrectionCount',  'Self-Corrections',    0,    20,   1],
-                  ] as [keyof TelemetryOverrides, string, number, number, number][]).map(([key, label, min, max, step]) => (
-                    <label key={key} className="flex flex-col gap-0.5">
-                      <span className="text-[10px] text-muted-foreground font-mono">{label}</span>
-                      <div className="flex items-center gap-1.5">
-                        <input
-                          type="range" min={min} max={max} step={step}
-                          value={telemetry[key] as number}
-                          onChange={(e) => setT(key, parseFloat(e.target.value))}
-                          className="flex-1 h-1 accent-primary"
-                        />
-                        <span className="text-[10px] font-mono w-8 text-right">{(telemetry[key] as number).toFixed(step < 1 ? 2 : 0)}</span>
-                      </div>
-                    </label>
-                  ))}
-                  <label className="flex flex-col gap-0.5 col-span-2">
-                    <span className="text-[10px] text-muted-foreground font-mono">Task Bypassed Duration (null = off)</span>
-                    <div className="flex items-center gap-2">
+                <div className="px-3 pb-3 pt-3 border-t border-border/50 space-y-2">
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    {([
+                      ['si',                    'SI / timeSinceLastSubmit (s)',   0, 300,   0.5 ],
+                      ['initialLatencyMs',      'Initial Latency (ms)',           0, 30000, 500 ],
+                      ['inactivityDuration',    'Inactivity Duration (s)',        0, 300,   1   ],
+                      ['typingBurstCoverage',   'Burst Coverage (0–1)',           0, 1,     0.05],
+                      ['systemCheckCount',      'System Checks',                  0, 10,    1   ],
+                      ['selfCorrectionCount',   'Self-Corrections',               0, 20,    1   ],
+                    ] as [keyof TelemetryOverrides, string, number, number, number][]).map(([key, label, min, max, step]) => (
+                      <label key={key} className="flex flex-col gap-0.5">
+                        <span className="text-[10px] text-muted-foreground font-mono">{label}</span>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="range" min={min} max={max} step={step}
+                            value={telemetry[key] as number}
+                            onChange={(e) => setT(key, parseFloat(e.target.value))}
+                            className="flex-1 h-1 accent-primary"
+                          />
+                          <span className="text-[10px] font-mono w-10 text-right tabular-nums">
+                            {(telemetry[key] as number).toFixed(step < 1 ? 2 : 0)}
+                          </span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+
+                  {/* PostErrorInactivity */}
+                  <label className="flex flex-col gap-0.5">
+                    <span className="text-[10px] text-muted-foreground font-mono">PostError Inactivity (s) — −1 = off</span>
+                    <div className="flex items-center gap-1.5">
                       <input
-                        type="checkbox"
-                        checked={telemetry.taskBypassedDuration !== null}
-                        onChange={(e) => setT('taskBypassedDuration', e.target.checked ? 8 : null)}
-                        className="accent-primary"
+                        type="range" min={-1} max={300} step={1}
+                        value={telemetry.postErrorInactivitySeconds}
+                        onChange={(e) => setT('postErrorInactivitySeconds', parseFloat(e.target.value))}
+                        className="flex-1 h-1 accent-primary"
                       />
-                      {telemetry.taskBypassedDuration !== null && (
+                      <span className="text-[10px] font-mono w-10 text-right tabular-nums">
+                        {telemetry.postErrorInactivitySeconds.toFixed(0)}
+                      </span>
+                    </div>
+                  </label>
+
+                  {/* TaskBypassed */}
+                  <label className="flex items-center gap-3">
+                    <span className="text-[10px] text-muted-foreground font-mono shrink-0">Task Bypassed</span>
+                    <input
+                      type="checkbox"
+                      checked={telemetry.taskBypassedDuration !== null}
+                      onChange={(e) => setT('taskBypassedDuration', e.target.checked ? 8 : null)}
+                      className="accent-primary"
+                    />
+                    {telemetry.taskBypassedDuration !== null && (
+                      <>
                         <input
                           type="number" min={0} max={60} step={1}
                           value={telemetry.taskBypassedDuration}
                           onChange={(e) => setT('taskBypassedDuration', parseFloat(e.target.value))}
-                          className="w-16 px-2 py-0.5 text-xs font-mono border border-border rounded bg-background"
+                          className="w-14 px-2 py-0.5 text-xs font-mono border border-border rounded bg-background"
                         />
-                      )}
-                      <span className="text-[10px] text-muted-foreground font-mono">
-                        {telemetry.taskBypassedDuration !== null ? `${telemetry.taskBypassedDuration} s — Gaming if < 15` : 'disabled'}
-                      </span>
-                    </div>
+                        <span className={`text-[10px] font-mono ${telemetry.taskBypassedDuration < 15 ? 'text-red-400' : 'text-muted-foreground'}`}>
+                          {telemetry.taskBypassedDuration < 15 ? '→ Gaming fires' : '≥ 15 s, safe'}
+                        </span>
+                      </>
+                    )}
                   </label>
                 </div>
               )}
@@ -418,8 +520,8 @@ export function OdinTestBench() {
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 spellCheck={false}
-                className="w-full h-56 p-3 font-mono text-xs bg-card border border-border rounded-md resize-none focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
-                placeholder="C# code..."
+                className="w-full h-52 p-3 font-mono text-xs bg-card border border-border rounded-md resize-none focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
+                placeholder="C# code…"
               />
               <span className="absolute bottom-2 right-2 text-[10px] text-muted-foreground font-mono">{code.length} ch</span>
             </div>
@@ -429,19 +531,13 @@ export function OdinTestBench() {
               <Button onClick={handleSubmit} disabled={loading || !sessionId} className="flex-1 h-8 text-xs">
                 {loading
                   ? <span className="flex items-center gap-1.5"><div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />Analyzing…</span>
-                  : <span className="flex items-center gap-1.5"><Play className="w-3.5 h-3.5" />Submit</span>
+                  : <span className="flex items-center gap-1.5"><Play className="w-3.5 h-3.5" />Submit to Pipeline</span>
                 }
               </Button>
               <Button variant="outline" className="h-8 px-3"
                 onClick={() => { setResult(null); setError(null); setCode(''); resetKeystrokes(); }}>
                 <RotateCcw className="w-3.5 h-3.5" />
               </Button>
-            </div>
-
-            {/* Session info */}
-            <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground font-mono">
-              <span>Session: {sessionId ? sessionId.slice(0, 8) + '…' : '—'}</span>
-              <span>Submissions: {history.length}</span>
             </div>
 
             {error && (
@@ -565,7 +661,9 @@ export function OdinTestBench() {
               <div className="flex items-center justify-center h-48 border border-dashed border-border rounded-md">
                 <div className="text-center">
                   <Brain className="w-8 h-8 mx-auto mb-2 text-muted-foreground/30" />
-                  <p className="text-xs text-muted-foreground">Submit code to see pipeline results</p>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedPuzzle ? `Ready — ${selectedPuzzle.title}` : 'Select a puzzle to start'}
+                  </p>
                 </div>
               </div>
             )}
@@ -576,14 +674,18 @@ export function OdinTestBench() {
                 <div className="px-3 py-2 border-b border-border bg-muted/40">
                   <p className="text-[10px] font-semibold uppercase tracking-wider">Session History ({history.length})</p>
                 </div>
-                <div className="divide-y divide-border/40 max-h-64 overflow-y-auto">
+                <div className="divide-y divide-border/40 max-h-56 overflow-y-auto">
                   {history.map((h) => (
-                    <div key={h.n} className="px-3 py-2 text-[10px] font-mono grid grid-cols-[1.2rem_6rem_3.5rem_1fr_2rem] gap-2 items-center">
+                    <div key={h.n} className="px-3 py-2 text-[10px] font-mono grid grid-cols-[1.5rem_6.5rem_3.5rem_1fr_2.5rem] gap-2 items-center">
                       <span className="text-muted-foreground">#{h.n}</span>
-                      <span className={BEHAVIOR_COLORS[h.state] ?? 'text-foreground'} title={h.reasoning}>{h.state.replace('LowProgressTrialAndError','Tinkering').replace('PostFailureDisengagement','PFD')}</span>
+                      <span className={BEHAVIOR_COLORS[h.state] ?? 'text-foreground'} title={h.reasoning}>
+                        {h.state.replace('LowProgressTrialAndError','Tinkering').replace('PostFailureDisengagement','PFD')}
+                      </span>
                       <span className={CONFIDENCE_COLORS[h.confidence] ?? 'text-muted-foreground'}>{h.confidence}</span>
                       <span className="text-muted-foreground truncate" title={h.reasoning}>{h.reasoning || '—'}</span>
-                      <span className={h.delta >= 0 ? 'text-red-400' : 'text-emerald-400'}>{h.delta >= 0 ? '+' : ''}{h.delta.toFixed(0)}</span>
+                      <span className={h.delta >= 0 ? 'text-red-400' : 'text-emerald-400'}>
+                        {h.delta >= 0 ? '+' : ''}{h.delta.toFixed(0)}
+                      </span>
                     </div>
                   ))}
                 </div>
