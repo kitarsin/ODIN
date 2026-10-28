@@ -1,15 +1,19 @@
 # ODIN
 
-ODIN is a web-based, gamified intelligent tutoring system for introductory C# programming. It pairs a student portal with an embedded Godot game and a backend that analyzes code submissions, tracks progress, and returns contextual feedback.
+ODIN is a web-based, gamified intelligent tutoring system for college-level C# array concepts. It pairs a student portal with an embedded Godot game and a backend that analyzes code submissions, tracks progress, and returns contextual feedback.
 
-The project focuses on C# arrays and related programming tasks. ODIN uses code diagnostics and observable interaction signals to guide support. Its behavioral signals are proxies for learning behavior; ODIN does not diagnose a student's mental or clinical state.
+## C# learning focus
+
+ODIN's current learning domain is C# arrays. Its tasks target array problem-solving and common logic misconceptions, especially off-by-one indexing and out-of-bounds access. Collections and object-oriented constructs are identified as possible future expansions, not current areas of focus.
+
+ODIN combines code diagnostics with observable interaction signals to guide support. Behavioral signals are proxies for learning behavior; ODIN does not diagnose a student's mental or clinical state.
 
 ## What is in this repository
 
 - **React + TypeScript web client**, built with Vite.
 - **Supabase authentication and profile data** for student and instructor experiences.
 - **Embedded Godot Web game** served from `/godot/index.html`.
-- **ODIN API integration** for game sessions, puzzles, submissions, progress, and instructor views.
+- **ODIN API integration** for game sessions, array puzzles, submissions, progress, and instructor views.
 - **Profile and achievement views** connected to student progress.
 
 The API is maintained in [kitarsin/odinroot](https://github.com/kitarsin/odinroot).
@@ -22,7 +26,7 @@ Browser
 │   ├── Supabase Auth and profile data
 │   └── Godot Web game
 └── ODIN Core API (ASP.NET Core)
-    ├── C# code diagnostics
+    ├── C# array code diagnostics
     ├── behavioral classification and mastery tracking
     └── adaptive feedback, sessions, and progress
         └── Supabase PostgreSQL
@@ -78,8 +82,8 @@ The production build is written to `dist/`.
 
 ## Related project
 
-- [ODIN Core API](https://github.com/kitarsin/odinroot) — ASP.NET Core service for code submissions, diagnostics, behavioral analysis, mastery, and interventions.
+- [ODIN Core API](https://github.com/kitarsin/odinroot) — ASP.NET Core service for C# array diagnostics, behavioral analysis, mastery, and interventions.
 
 ## Research scope
 
-ODIN uses a transparent, rule-based approach for its current C# programming domain. Behavioral classifications are based on observable interaction data and should be interpreted as learning-support signals, not clinical assessments. Evaluation results in the accompanying research describe a prototype study and do not establish causal effectiveness.
+ODIN uses a transparent, rule-based approach for its current C# array domain. Behavioral classifications are based on observable interaction data and should be interpreted as learning-support signals, not clinical assessments. Evaluation results in the accompanying research describe a prototype study and do not establish causal effectiveness.
