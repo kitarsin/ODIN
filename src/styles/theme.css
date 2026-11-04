@@ -21,7 +21,7 @@
   --card-foreground: #1A2332;
   --popover: #FFFFFF;
   --popover-foreground: #1A2332;
-  --primary: #0DA99F;
+  --primary: #087F94;
   --primary-foreground: #FFFFFF;
   --secondary: #246FBC;
   --secondary-foreground: #FFFFFF;
@@ -37,8 +37,8 @@
   --switch-background: #D2E2EA;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #0DA99F;
-  --chart-1: #0DA99F;
+  --ring: #087F94;
+  --chart-1: #087F94;
   --chart-2: #246FBC;
   --chart-3: #F5A623;
   --chart-4: #1FAF97;
@@ -46,12 +46,12 @@
   --radius: 0.5rem;
   --sidebar: #FFFFFF;
   --sidebar-foreground: #1A2332;
-  --sidebar-primary: #0DA99F;
+  --sidebar-primary: #087F94;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #EBF0F5;
   --sidebar-accent-foreground: #1A2332;
   --sidebar-border: #D2E2EA;
-  --sidebar-ring: #0DA99F;
+  --sidebar-ring: #087F94;
 }
 
 /* Game Mode - Light (Retro 8-bit) */
@@ -78,52 +78,55 @@
   --ring: #18C9B9;
 }
 
-/* Dark mode styles removed - light mode only */
 .dark {
-  --background: #F8FBFC;
-  --foreground: #1A2332;
-  --card: #FFFFFF;
-  --card-foreground: #1A2332;
-  --popover: #FFFFFF;
-  --popover-foreground: #1A2332;
-  --primary: #0DA99F;
-  --primary-foreground: #FFFFFF;
-  --secondary: #246FBC;
-  --secondary-foreground: #FFFFFF;
-  --muted: #EBF0F5;
-  --muted-foreground: #5A7280;
-  --accent: #F5A623;
-  --accent-foreground: #FFFFFF;
-  --destructive: #DC2626;
+  color-scheme: dark;
+  --background: #071426;
+  --foreground: #EAF2FA;
+  --card: #0E1D30;
+  --card-foreground: #EAF2FA;
+  --popover: #102238;
+  --popover-foreground: #EAF2FA;
+  --primary: #63D7E7;
+  --primary-foreground: #071426;
+  --secondary: #4B96C6;
+  --secondary-foreground: #071426;
+  --muted: #17283C;
+  --muted-foreground: #A5B5C8;
+  --accent: #FFD84D;
+  --accent-foreground: #172234;
+  --destructive: #EF6B70;
   --destructive-foreground: #FFFFFF;
-  --border: #D2E2EA;
-  --input: #D2E2EA;
-  --ring: #0DA99F;
+  --border: #26425F;
+  --input: #294661;
+  --input-background: #0C192A;
+  --switch-background: #294661;
+  --ring: #63D7E7;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --chart-1: #0DA99F;
-  --chart-2: #246FBC;
-  --chart-3: #F5A623;
-  --chart-4: #1FAF97;
-  --chart-5: #DC2626;
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #1A2332;
-  --sidebar-primary: #0DA99F;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #EBF0F5;
-  --sidebar-accent-foreground: #1A2332;
-  --sidebar-border: #D2E2EA;
-  --sidebar-ring: #0DA99F;
+  --chart-1: #63D7E7;
+  --chart-2: #4B96C6;
+  --chart-3: #FFD84D;
+  --chart-4: #51E2C2;
+  --chart-5: #EF6B70;
+  --sidebar: #0C192A;
+  --sidebar-foreground: #EAF2FA;
+  --sidebar-primary: #63D7E7;
+  --sidebar-primary-foreground: #071426;
+  --sidebar-accent: #17283C;
+  --sidebar-accent-foreground: #EAF2FA;
+  --sidebar-border: #26425F;
+  --sidebar-ring: #63D7E7;
 }
 
 :root.light-mode {
+  color-scheme: light;
   --background: #F8FBFC;
   --foreground: #1A2332;
   --card: #FFFFFF;
   --card-foreground: #1A2332;
   --popover: #FFFFFF;
   --popover-foreground: #1A2332;
-  --primary: #0DA99F;
+  --primary: #087F94;
   --primary-foreground: #FFFFFF;
   --secondary: #246FBC;
   --secondary-foreground: #FFFFFF;
@@ -137,20 +140,20 @@
   --input: #D2E2EA;
   --input-background: #FFFFFF;
   --switch-background: #D2E2EA;
-  --ring: #0DA99F;
-  --chart-1: #0DA99F;
+  --ring: #087F94;
+  --chart-1: #087F94;
   --chart-2: #246FBC;
   --chart-3: #F5A623;
   --chart-4: #1FAF97;
   --chart-5: #DC2626;
   --sidebar: #FFFFFF;
   --sidebar-foreground: #1A2332;
-  --sidebar-primary: #0DA99F;
+  --sidebar-primary: #087F94;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #EBF0F5;
   --sidebar-accent-foreground: #1A2332;
   --sidebar-border: #D2E2EA;
-  --sidebar-ring: #0DA99F;
+  --sidebar-ring: #087F94;
 }
 
 /* Light Mode + Game Mode */
@@ -278,4 +281,39 @@
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
   }
+}
+
+.color-mode-control {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 120;
+}
+
+.color-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+  color: var(--foreground);
+  box-shadow: 0 8px 26px rgba(4, 14, 27, .18);
+  backdrop-filter: blur(12px);
+  font: 500 11px var(--font-mono), monospace;
+  cursor: pointer;
+  transition: background-color .2s ease, border-color .2s ease, color .2s ease, transform .2s ease;
+}
+
+.color-mode-toggle svg { width: 15px; height: 15px; color: var(--primary); }
+.color-mode-toggle:hover { border-color: var(--primary); transform: translateY(-1px); }
+.color-mode-toggle:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+
+body { transition: background-color .2s ease, color .2s ease; }
+
+@media (max-width: 760px) {
+  .color-mode-control { right: 12px; bottom: 12px; }
+  .color-mode-toggle { min-height: 38px; padding: 0 11px; font-size: 10px; }
 }

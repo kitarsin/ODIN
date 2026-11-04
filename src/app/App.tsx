@@ -2,6 +2,7 @@ import { RouterProvider } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { FeatureLockdownProvider } from './context/FeatureLockdownContext';
+import { ThemeToggle } from './components/ThemeToggle';
 import { router } from './routes';
 import { Suspense } from 'react';
 
@@ -21,6 +22,7 @@ export default function App() {
   return (
     <Suspense fallback={<LoadingScreen />}>
       <ThemeProvider>
+        <div className="color-mode-control"><ThemeToggle /></div>
         <AuthProvider>
           <FeatureLockdownProvider>
             <Suspense fallback={<LoadingScreen />}>

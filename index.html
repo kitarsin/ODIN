@@ -10,6 +10,19 @@
       <link rel="apple-touch-icon" sizes="180x180" href="/brand/apple-touch-icon.png" />
       <link rel="icon" type="image/png" sizes="192x192" href="/brand/android-chrome-192.png" />
       <link rel="icon" type="image/png" sizes="512x512" href="/brand/android-chrome-512.png" />
+      <script>
+        (function () {
+          try {
+            var mode = localStorage.getItem('odin-color-mode') === 'light' ? 'light' : 'dark';
+            document.documentElement.classList.toggle('dark', mode === 'dark');
+            document.documentElement.classList.toggle('light-mode', mode === 'light');
+            document.documentElement.dataset.theme = mode;
+          } catch (error) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.dataset.theme = 'dark';
+          }
+        })();
+      </script>
     </head>
 
     <body>
@@ -60,4 +73,3 @@
       <script type="module" src="/src/main.tsx"></script>
     </body>
   </html>
-  
