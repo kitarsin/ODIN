@@ -41,16 +41,17 @@ export function LandingPage() {
         </Link>
         <nav className="landing-nav" aria-label="Main navigation">
           <a href="#how-it-works">How it works</a>
-          <a href="#scope">Project scope</a>
+          <a href="#scope">The experience</a>
+          <a href="#research">The research</a>
           <Link className="landing-nav-cta" to="/login">Enter the portal <ArrowRight aria-hidden="true" /></Link>
         </nav>
       </header>
 
       <section className="landing-hero">
         <div className="hero-copy">
-          <div className="eyebrow"><span className="status-dot" /> A transparent coding tutor inside an 8-bit RPG</div>
-          <h1>Support beyond<br /><span>compiler errors.</span></h1>
-          <p className="hero-lede">ODIN helps novice programmers work through C# arrays with contextual hints, clear code feedback, and a game that makes room for the next attempt.</p>
+          <div className="eyebrow"><span className="status-dot" /> A coding adventure by InsomniCode</div>
+          <h1>Learn to code.<br /><span>Keep going.</span></h1>
+          <p className="hero-lede">A little guidance can change the game. Explore C# arrays in an 8-bit RPG where thoughtful hints help you find your own way forward.</p>
           <div className="hero-actions">
             <Link className="pixel-button primary-button" to="/login">Enter the ODIN portal <ArrowRight aria-hidden="true" /></Link>
             <a className="text-button" href="#how-it-works">Explore the system <ArrowDown aria-hidden="true" /></a>
@@ -65,7 +66,7 @@ export function LandingPage() {
           </div>
         </div>
 
-        <div className="hero-art" aria-label="ODIN game system preview">
+        <div className="hero-art" aria-label="Illustrative preview of the ODIN game and code editor">
           <div className="orbit orbit-one" /><div className="orbit orbit-two" />
           <div className="scanline" />
           <div className="hero-signal signal-top"><span className="signal-led" /> SYSTEM READY <b>01</b></div>
@@ -97,7 +98,7 @@ export function LandingPage() {
                 <div className="hint-strip"><span className="hint-spark">✦</span> Try tracing the last valid index.</div>
               </div>
             </div>
-            <div className="window-footer"><span><i /> ODIN GUIDANCE ACTIVE</span><span>XP +120</span></div>
+            <div className="window-footer"><span><i /> ODIN GUIDANCE ACTIVE</span><span>ILLUSTRATIVE PREVIEW</span></div>
           </div>
           <div className="hero-signal signal-bottom"><span>FIELD NOTE</span><b>Support the process.<br />Let the student solve.</b></div>
         </div>
@@ -135,6 +136,29 @@ export function LandingPage() {
           <div><span>01</span><p><b>Observable signals</b> guide timely support; they are not a clinical diagnosis.</p></div>
           <div><span>02</span><p><b>Prewritten hints</b> point to a next step without giving away answers.</p></div>
           <div><span>03</span><p><b>Readable code</b> stays clear while pixel art belongs to the game world.</p></div>
+        </div>
+      </section>
+
+      <section className="landing-section research-section" id="research">
+        <div className="research-intro">
+          <div className="section-kicker">03 / THE RESEARCH</div>
+          <h2>Built to make the next attempt feel possible.</h2>
+          <p>ODIN was developed at FEU Institute of Technology to explore how timely, interpretable support can help students learning to program.</p>
+          <span className="research-label"><span className="status-dot" /> CS EXPO 2026 · INSOMNICODE</span>
+        </div>
+        <div className="research-results">
+          <article><span className="result-index">01 / LEARNING</span><strong>+1.14</strong><h3>mean score change</h3><p>On a 0–5 C# array assessment across 21 students in the pretest–posttest study.</p></article>
+          <article><span className="result-index">02 / ACCEPTANCE</span><strong>4.25<span>/5</span></strong><h3>perceived usefulness</h3><p>Student technology acceptance rating, based on responses from 20 students.</p></article>
+          <p className="research-caveat">These are early prototype findings. The study used one group without a control, so the results do not establish cause and effect.</p>
+        </div>
+      </section>
+
+      <section className="landing-section faq-section">
+        <div><div className="section-kicker">04 / PLAYER GUIDE</div><h2>A few things to know.</h2><p>Everything you need before starting your first quest.</p></div>
+        <div className="faq-list">
+          <details><summary>Who is ODIN for?<span>+</span></summary><p>ODIN is designed as supplementary support for college students learning C# array concepts.</p></details>
+          <details><summary>Will ODIN give me the answer?<span>+</span></summary><p>No. ODIN offers prewritten hints to help you think through a problem while you remain in control of the solution.</p></details>
+          <details><summary>What do I need to play?<span>+</span></summary><p>Use a laptop or desktop browser with a physical keyboard. The coding game uses keyboard timing as one of its learning-support signals.</p></details>
         </div>
       </section>
 
