@@ -1,0 +1,49 @@
+/* Tailwind v4 snippet. The site uses Tailwind v4 (see src/styles/theme.css).
+   Paste inside an @theme block to get classes like bg-odin-deep, text-odin-cyan,
+   border-odin-border, font-odin-pixel. Fonts still need the @font-face rules from odin-web.css. */
+@theme {
+  /* Panels and text */
+  --color-odin-panel: #1F2228;
+  --color-odin-border: #1593FF;
+  --color-odin-white: #F0F6FF;
+  --color-odin-text: #DEE6F2;
+  --color-odin-label: #96A0B4;
+  --color-odin-muted: #606A7E;
+  --color-odin-ink: #0A0C14;
+  /* ODIN and the background */
+  --color-odin-deep: #070E26;
+  --color-odin-dots: #162652;
+  --color-odin-navy: #0B1C45;
+  --color-odin-cyan: #5FCDE4;
+  --color-odin-teal: #1BD1C3;
+  --color-odin-ice: #BEF0E8;
+  --color-odin-gold: #FBF236;
+  --color-odin-speaker: #00FFFF;
+  /* Status */
+  --color-odin-red: #D92626;
+  --color-odin-error: #FF6E6E;
+  --color-odin-correct: #5BE37B;
+  --color-odin-amber: #FFBE46;
+  --color-odin-ground: #243C78;
+  --color-odin-poster-navy: #273C6F;
+  /* The five behaviours */
+  --color-odin-helpless: #6FA8FF;
+  --color-odin-tinker: #FFA53B;
+  --color-odin-active: #5BE37B;
+  --color-odin-wheel: #C77DFF;
+  --color-odin-gaming: #FF5A6E;
+  /* The four levels */
+  --color-odin-level0: #00A8FF;
+  --color-odin-level1: #00FF20;
+  --color-odin-level2: #F12222;
+  --color-odin-level3: #DBFF00;
+  /* In-game code editor */
+  --color-odin-code-keyword: #66B2FF;
+  --color-odin-code-number: #FFC468;
+  --color-odin-code-string: #F0A078;
+  --color-odin-code-comment: #76A86E;
+  --color-odin-code-error-line: #6C2427;
+  --color-odin-code-divider: #1B568A;
+  --font-odin-pixel: "ODIN Pixel", monospace;
+  --font-odin-title: "Dedicool", monospace;
+}

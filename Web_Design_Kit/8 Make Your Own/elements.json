@@ -1,0 +1,120 @@
+{
+  "_comment": "Each entry below makes one element. Change the words, run  python make_elements.py  and the PNGs appear in the out folder. Keys starting with _ are notes and are ignored. All the options are in START HERE.html.",
+  "scales": [2, 3, 4],
+  "elements": [
+    {
+      "_comment": "A panel with a lead-in line and bullet points, in the look of the game's code editor.",
+      "type": "panel",
+      "name": "example_bullets",
+      "title": "OBJECTIVES",
+      "label": "CHAPTER 1",
+      "width": 300,
+      "blocks": [
+        {"text": "A short lead-in sentence goes here. Panels wrap text for you.", "color": "label"},
+        {"bullets": [
+          "First point of the slide",
+          "Second point, which can be longer and will wrap onto a second line by itself",
+          "Third point"
+        ]}
+      ]
+    },
+    {
+      "_comment": "Code with one line marked as the error, then the output, like the AVP.",
+      "type": "panel",
+      "name": "example_code",
+      "title": "CODE EDITOR",
+      "label": "LEVEL 1",
+      "blocks": [
+        {"code": ["int[] bookIDs = new int[5];", "bookIDs[2] = 99;", "Console.WriteLine(bookIDs[2])"], "error_line": 3},
+        {"divider": true},
+        {"text": "OUTPUT:", "color": "label"},
+        {"text": "Syntax error.\n(line 3)", "color": "error"}
+      ],
+      "button": "SUBMIT"
+    },
+    {
+      "_comment": "One big figure with a caption, for a results slide. Put your real number in.",
+      "type": "panel",
+      "name": "example_big_number",
+      "title": "RESULT",
+      "label": "CHAPTER 4",
+      "width": 160,
+      "blocks": [
+        {"big": "00%", "color": "gold", "align": "center"},
+        {"text": "What this number measures", "align": "center"}
+      ]
+    },
+    {
+      "_comment": "ODIN talking, as in the AVP. hint draws the HINT tab with 1 of 3 boxes filled.",
+      "type": "dialog",
+      "name": "example_odin_says",
+      "speaker": "Odin",
+      "text": "Type what ODIN says here. Long lines wrap by themselves.",
+      "hint": [1, 3]
+    },
+    {
+      "_comment": "A dialogue box with a picture inside. portrait can be odin, a team member (jerson, johan, russell, ian), doc_jello, doc_shane, enemy25, or a file.",
+      "type": "dialog",
+      "name": "example_member_says",
+      "speaker": "Russell",
+      "portrait": "russell",
+      "width": 360,
+      "text": "Hi! Each of us can talk on the slides too.",
+      "more": false
+    },
+    {
+      "_comment": "A chapter or section heading: big pixel letters with a shadow, a line underneath.",
+      "type": "heading",
+      "name": "example_heading",
+      "title": "CHAPTER 3",
+      "subtitle": "METHODOLOGY",
+      "scale": 3,
+      "subtitle_scale": 2
+    },
+    {
+      "_comment": "A heading with one word in another colour.",
+      "type": "heading",
+      "name": "example_heading_highlight",
+      "title": "HOW ODIN HELPS",
+      "highlight": "ODIN",
+      "color": "white"
+    },
+    {
+      "_comment": "Lettering in Dedicool, the game's font, with no box. Keep size a multiple of 8.",
+      "type": "lettering",
+      "name": "example_lettering",
+      "text": "Thank you!",
+      "size": 32,
+      "color": "cyan",
+      "shadow": "navy"
+    },
+    {
+      "_comment": "A card like the behaviour cards in the AVP, with an enemy as its picture.",
+      "type": "card",
+      "name": "example_card_enemy",
+      "title": "NESTED BEAST",
+      "detail": "LEVEL 2",
+      "accent": "level2",
+      "image": "enemy25",
+      "image_scale": 1
+    },
+    {
+      "_comment": "A card with a team member's sprite.",
+      "type": "card",
+      "name": "example_card_member",
+      "title": "Russell D. Magdaong",
+      "detail": "P3",
+      "accent": "border",
+      "image": "russell",
+      "image_scale": 2
+    },
+    {
+      "_comment": "A small label chip.",
+      "type": "tag",
+      "name": "example_tag",
+      "text": "NEW",
+      "color": "gold",
+      "text_color": "ink"
+    }
+  ]
+}

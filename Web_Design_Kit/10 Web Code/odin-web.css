@@ -1,0 +1,173 @@
+/* ==========================================================================
+   ODIN web kit: fonts, colours and the game's panel look, as plain CSS.
+   Drop this file next to a page (or into src/styles/ later) and link it.
+   Font paths assume this file sits in "10 Web Code"; change ../1 Fonts/
+   if you move it.
+   ========================================================================== */
+
+/* ---------- Fonts ---------- */
+@font-face {
+  font-family: "ODIN Pixel";
+  src: url("../1 Fonts/odin-pixel.woff") format("woff"),
+       url("../1 Fonts/ODIN Pixel.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dedicool";
+  src: url("../1 Fonts/dedicool.woff") format("woff"),
+       url("../1 Fonts/Dedicool.ttf") format("truetype");
+  font-display: swap;
+}
+
+/* ---------- Colours (same values as the game, the AVP and the poster) ---------- */
+:root {
+  /* Panels and text */
+  --odin-panel: #1F2228;
+  --odin-border: #1593FF;
+  --odin-white: #F0F6FF;
+  --odin-text: #DEE6F2;
+  --odin-label: #96A0B4;
+  --odin-muted: #606A7E;
+  --odin-ink: #0A0C14;
+
+  /* ODIN and the background */
+  --odin-deep: #070E26;
+  --odin-dots: #162652;
+  --odin-navy: #0B1C45;
+  --odin-cyan: #5FCDE4;
+  --odin-teal: #1BD1C3;
+  --odin-ice: #BEF0E8;
+  --odin-gold: #FBF236;
+  --odin-speaker: #00FFFF;
+
+  /* Status */
+  --odin-red: #D92626;
+  --odin-error: #FF6E6E;
+  --odin-correct: #5BE37B;
+  --odin-amber: #FFBE46;
+  --odin-ground: #243C78;
+  --odin-poster-navy: #273C6F;
+
+  /* The five behaviours */
+  --odin-helpless: #6FA8FF;
+  --odin-tinker: #FFA53B;
+  --odin-active: #5BE37B;
+  --odin-wheel: #C77DFF;
+  --odin-gaming: #FF5A6E;
+
+  /* The four levels */
+  --odin-level0: #00A8FF;
+  --odin-level1: #00FF20;
+  --odin-level2: #F12222;
+  --odin-level3: #DBFF00;
+
+  /* In-game code editor (sampled from the game's editor) */
+  --odin-code-keyword: #66B2FF;
+  --odin-code-number: #FFC468;
+  --odin-code-string: #F0A078;
+  --odin-code-comment: #76A86E;
+  --odin-code-error-line: #6C2427;
+  --odin-code-divider: #1B568A;
+
+  /* Type */
+  --odin-font-pixel: "ODIN Pixel", "Press Start 2P", monospace;
+  --odin-font-title: "Dedicool", "ODIN Pixel", monospace;
+  --odin-font-body: "Inter", system-ui, sans-serif;  /* what the site uses now */
+  --odin-font-code: "JetBrains Mono", Consolas, monospace;
+
+  /* One art pixel. The AVP is 480x270 drawn at 4x, so 4px at 1920 wide.
+     On the web, 2px or 3px usually looks best. */
+  --odin-px: 3px;
+}
+
+/* ---------- Helpers ---------- */
+
+/* Use on every pixel-art <img> so the browser doesn't blur it. */
+.odin-pixelated { image-rendering: pixelated; image-rendering: crisp-edges; }
+
+/* The AVP's dotted navy background. */
+.odin-dots-bg {
+  background-color: var(--odin-deep);
+  background-image: radial-gradient(var(--odin-dots) 1.5px, transparent 1.6px);
+  background-size: 48px 48px;
+}
+
+/* Pixel fonts stay crisp only at whole multiples of their grid. */
+.odin-pixel { font-family: var(--odin-font-pixel); font-weight: normal; -webkit-font-smoothing: none; font-smooth: never; }
+.odin-pixel-sm { font-size: 10px; }
+.odin-pixel-md { font-size: 20px; }
+.odin-pixel-lg { font-size: 40px; }
+.odin-title { font-family: var(--odin-font-title); font-weight: normal; }
+.odin-title-md { font-size: 32px; }
+.odin-title-lg { font-size: 64px; }
+.odin-title-shadow { text-shadow: var(--odin-px) var(--odin-px) 0 var(--odin-navy); }
+
+/* ---------- The game panel (the code editor box) ---------- */
+.odin-panel {
+  background: color-mix(in srgb, var(--odin-panel) 96%, transparent);
+  border: calc(var(--odin-px) * 1) solid var(--odin-border);
+  color: var(--odin-text);
+  font-family: var(--odin-font-pixel);
+}
+.odin-panel-header {
+  display: flex; justify-content: space-between; gap: 16px;
+  padding: 6px 12px;
+  border-bottom: 2px solid var(--odin-code-divider);
+}
+.odin-panel-header > :first-child { color: var(--odin-white); }
+.odin-panel-header > :last-child { color: var(--odin-label); }
+.odin-panel-body { padding: 10px 12px; }
+
+/* ---------- ODIN dialogue box ---------- */
+.odin-dialog { position: relative; margin-top: 18px; }
+.odin-dialog-speaker {
+  position: absolute; top: -18px; left: 8px;
+  padding: 0 8px;
+  background: var(--odin-panel);
+  border: 2px solid var(--odin-border);
+  color: var(--odin-speaker);
+  font-family: var(--odin-font-title);
+}
+.odin-dialog .odin-panel-body { font-size: 20px; line-height: 1.25; padding-top: 22px; }
+
+/* ---------- Buttons ---------- */
+.odin-button {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px;
+  background: var(--odin-panel);
+  border: 2px solid var(--odin-border);
+  color: var(--odin-white);
+  font: 20px var(--odin-font-pixel);
+  cursor: pointer;
+  box-shadow: var(--odin-px) var(--odin-px) 0 var(--odin-ink);
+  transition: transform .08s steps(2), box-shadow .08s steps(2);
+}
+.odin-button:hover { background: #2A2E36; }
+.odin-button:active { transform: translate(var(--odin-px), var(--odin-px)); box-shadow: none; }
+.odin-button-primary { background: var(--odin-cyan); border-color: var(--odin-cyan); color: var(--odin-ink); }
+.odin-button-primary:hover { background: #83E8F1; }
+
+/* ---------- Tag (small label) ---------- */
+.odin-tag {
+  display: inline-block; padding: 0 6px;
+  background: var(--odin-border); color: var(--odin-white);
+  font: 10px var(--odin-font-pixel);
+}
+
+/* ---------- Code inside a panel ---------- */
+.odin-code { font-family: var(--odin-font-pixel); font-size: 20px; line-height: 1.1; white-space: pre; }
+.odin-code .kw { color: var(--odin-code-keyword); }
+.odin-code .num { color: var(--odin-code-number); }
+.odin-code .str { color: var(--odin-code-string); }
+.odin-code .com { color: var(--odin-code-comment); }
+.odin-code .ln { color: var(--odin-muted); user-select: none; }
+.odin-code .err { background: var(--odin-code-error-line); display: block; }
+
+/* ---------- Motion: quick, stepped, like the game ---------- */
+@keyframes odin-pop { from { transform: scale(.9); opacity: 0; } to { transform: none; opacity: 1; } }
+.odin-pop { animation: odin-pop .25s steps(4) both; }
+@keyframes odin-blink { 50% { opacity: 0; } }
+.odin-caret::after { content: "▌"; animation: odin-blink 1s steps(1) infinite; color: var(--odin-cyan); }
+@media (prefers-reduced-motion: reduce) {
+  .odin-pop, .odin-caret::after { animation: none; }
+}

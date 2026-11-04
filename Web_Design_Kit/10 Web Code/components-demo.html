@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ODIN Web Components</title>
+<link rel="stylesheet" href="odin-web.css">
+<style>
+  body { margin: 0; color: var(--odin-text); font-family: var(--odin-font-body); }
+  main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 80px; }
+  section { margin: 40px 0; }
+  h2 { margin: 0 0 12px; color: var(--odin-label); }
+  .row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  .note { color: var(--odin-label); font-size: 14px; max-width: 70ch; }
+  img { max-width: 100%; height: auto; }
+</style>
+</head>
+<body class="odin-dots-bg">
+<main>
+  <p class="odin-pixel odin-pixel-sm" style="color: var(--odin-cyan)">INSOMNICODE // WEB KIT</p>
+  <h1 class="odin-title odin-title-lg odin-title-shadow" style="color: var(--odin-cyan); margin: 0">ODIN components</h1>
+  <p class="note">Every block below uses only <code>odin-web.css</code> and files from this kit. Open this page in a browser, inspect it, and copy what you need.</p>
+
+  <section>
+    <h2 class="odin-pixel odin-pixel-md">Panel</h2>
+    <div class="odin-panel" style="max-width: 520px">
+      <div class="odin-panel-header odin-pixel-md"><span>CODE EDITOR</span><span>LEVEL 2: THE NESTED BEAST</span></div>
+      <div class="odin-panel-body odin-code"><span class="ln">1 </span><span class="kw">int</span> tables = <span class="num">3</span>;
+<span class="ln">2 </span><span class="com">// Print each combination</span>
+<span class="ln">3 </span><span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; tables; i++)
+<span class="err"><span class="ln">4 </span>    Console.WriteLine(<span class="str">"Table "</span> + i)</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="odin-pixel odin-pixel-md">ODIN dialogue</h2>
+    <div class="odin-panel odin-dialog odin-pop" style="max-width: 620px">
+      <span class="odin-dialog-speaker odin-title-md">Odin</span>
+      <div class="odin-panel-body odin-caret">Check line 4. Every statement needs a mark to end it. What's missing?</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="odin-pixel odin-pixel-md">Buttons and tags</h2>
+    <div class="row">
+      <button class="odin-button">SUBMIT</button>
+      <button class="odin-button odin-button-primary">ENTER THE PORTAL</button>
+      <span class="odin-tag">NEW</span>
+      <span class="odin-tag" style="background: var(--odin-gold); color: var(--odin-ink)">LEVEL 2</span>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="odin-pixel odin-pixel-md">Pixel art at whole-number sizes</h2>
+    <div class="row">
+      <img class="odin-pixelated" src="../2 Brand and Logos/odin_head_blinking@4x.gif" alt="ODIN blinking">
+      <img class="odin-pixelated" src="../3 Characters/team/russell_standing@4x.png" alt="Team sprite">
+      <img class="odin-pixelated" src="../3 Characters/enemies/level2/25_nested_beast@1x.png" width="172" alt="The Nested Beast (the @1x file shown at exactly 2x)">
+      <img class="odin-pixelated" src="../6 Ready-made Elements/behavior_cards/behavior_active@2x.png" alt="Active thinking card">
+    </div>
+    <p class="note">Always add <code>image-rendering: pixelated</code> and show art at its own size, or exactly 2x / 0.5x of it.</p>
+  </section>
+
+  <section>
+    <h2 class="odin-pixel odin-pixel-md">Background video</h2>
+    <video src="../5 AVP Clips and Stills/clips_1080p/03_odin_scaffolded_hint.mp4" autoplay muted loop playsinline style="width: 100%; max-width: 720px; border: 3px solid var(--odin-border)"></video>
+  </section>
+</main>
+</body>
+</html>

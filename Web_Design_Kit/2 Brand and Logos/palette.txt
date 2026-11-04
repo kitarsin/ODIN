@@ -1,0 +1,32 @@
+ODIN colour palette (name, hex, RGB). The same values as the AVP and the poster.
+
+panel        #1F2228    31  34  40
+border       #1593FF    21 147 255
+white        #F0F6FF   240 246 255
+ink          #0A0C14    10  12  20
+deep         #070E26     7  14  38
+dots         #162652    22  38  82
+navy         #0B1C45    11  28  69
+cyan         #5FCDE4    95 205 228
+teal         #1BD1C3    27 209 195
+ice          #BEF0E8   190 240 232
+gold         #FBF236   251 242  54
+speaker      #00FFFF     0 255 255
+red          #D92626   217  38  38
+error        #FF6E6E   255 110 110
+correct      #5BE37B    91 227 123
+amber        #FFBE46   255 190  70
+text         #DEE6F2   222 230 242
+label        #96A0B4   150 160 180
+muted        #606A7E    96 106 126
+ground       #243C78    36  60 120
+poster_navy  #273C6F    39  60 111
+helpless     #6FA8FF   111 168 255
+tinker       #FFA53B   255 165  59
+active       #5BE37B    91 227 123
+wheel        #C77DFF   199 125 255
+gaming       #FF5A6E   255  90 110
+level0       #00A8FF     0 168 255
+level1       #00FF20     0 255  32
+level2       #F12222   241  34  34
+level3       #DBFF00   219 255   0

@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ODIN Web Design Kit</title>
+<style>
+@font-face { font-family: "ODIN Pixel"; src: url("1%20Fonts/odin-pixel.woff") format("woff"); }
+@font-face { font-family: "Dedicool"; src: url("1%20Fonts/dedicool.woff") format("woff"); }
+:root {
+  --deep: #070E26; --panel: #1F2228; --border: #1593FF; --white: #F0F6FF; --text: #DEE6F2;
+  --label: #96A0B4; --muted: #606A7E; --cyan: #5FCDE4; --gold: #FBF236; --red: #D92626; --dots: #162652;
+}
+* { box-sizing: border-box; }
+html { background: var(--deep); }
+body {
+  margin: 0; color: var(--text); font: 16px/1.6 "Segoe UI", system-ui, -apple-system, sans-serif;
+  background-color: var(--deep);
+  background-image: radial-gradient(var(--dots) 1.5px, transparent 1.6px);
+  background-size: 48px 48px;
+}
+main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 80px; }
+h1, h2, h3 { font-weight: normal; color: var(--white); line-height: 1.2; }
+h1 { font-family: "Dedicool", monospace; font-size: 64px; margin: 8px 0 0; color: var(--cyan); text-shadow: 4px 4px 0 #0B1C45; }
+h2 { font-family: "ODIN Pixel", monospace; font-size: 30px; margin: 56px 0 16px; letter-spacing: 1px; }
+h2 .n { color: var(--cyan); }
+h3 { font-family: "ODIN Pixel", monospace; font-size: 20px; margin: 28px 0 8px; color: var(--cyan); }
+p, li { max-width: 72ch; }
+a { color: var(--cyan); }
+code, kbd {
+  font-family: Consolas, "JetBrains Mono", monospace; font-size: 0.9em; color: var(--gold);
+  background: rgba(255, 255, 255, 0.06); padding: 1px 5px; border-radius: 3px;
+}
+pre {
+  font-family: Consolas, "JetBrains Mono", monospace; font-size: 14px; line-height: 1.5; color: var(--text);
+  background: #0B1124; border: 2px solid #22345E; padding: 12px 14px; overflow-x: auto; margin: 8px 0 16px;
+}
+img { image-rendering: pixelated; max-width: 100%; height: auto; display: block; }
+.lede { font-size: 19px; color: var(--white); max-width: 60ch; }
+.box { background: rgba(31, 34, 40, 0.92); border: 3px solid var(--border); padding: 4px 22px 18px; margin: 16px 0; }
+.box > h3:first-child { margin-top: 16px; }
+.tag { display: inline-block; font-family: "ODIN Pixel", monospace; font-size: 15px; background: var(--border); color: var(--white); padding: 0 6px; margin-right: 6px; }
+.steps { counter-reset: s; list-style: none; padding: 0; }
+.steps li { counter-increment: s; position: relative; padding-left: 48px; margin: 14px 0; }
+.steps li::before {
+  content: counter(s); position: absolute; left: 0; top: 0; width: 32px; height: 32px; text-align: center;
+  font: 20px/32px "ODIN Pixel", monospace; background: var(--border); color: var(--white);
+}
+table { border-collapse: collapse; width: 100%; margin: 8px 0 16px; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid #2A3550; }
+th { font-family: "ODIN Pixel", monospace; font-weight: normal; color: var(--label); font-size: 15px; }
+td:first-child { white-space: nowrap; color: var(--white); }
+.wrap-table { overflow-x: auto; }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; margin: 12px 0 20px; }
+.sw { display: flex; gap: 10px; align-items: center; background: rgba(31, 34, 40, 0.9); padding: 6px; border: 1px solid #2A3550; }
+.sw i { width: 36px; height: 36px; flex: none; border: 1px solid #3A4560; }
+.sw b { display: block; font: 15px "ODIN Pixel", monospace; color: var(--white); font-weight: normal; }
+.sw span { font-size: 13px; color: var(--label); line-height: 1.3; display: block; }
+.sw code { font-size: 11px; padding: 0 3px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin: 12px 0; }
+.grid figure { margin: 0; }
+.grid img { border: 1px solid #2A3550; background: var(--deep); }
+figcaption { font-size: 13px; color: var(--label); margin-top: 4px; }
+.shot img { image-rendering: auto; border: 3px solid var(--border); }
+.specimen { margin: 10px 0 18px; padding: 14px 16px; background: rgba(31, 34, 40, 0.9); border: 1px solid #2A3550; }
+.pix { font-family: "ODIN Pixel", monospace; color: var(--white); font-size: 40px; line-height: 1.1; }
+.ded { font-family: "Dedicool", monospace; color: var(--white); font-size: 48px; line-height: 1.1; }
+.small { font-size: 14px; color: var(--label); }
+.warn { border-left: 4px solid var(--gold); padding: 4px 14px; background: rgba(251, 242, 54, 0.06); }
+.do, .dont { padding: 4px 14px; margin: 6px 0; }
+.do { border-left: 4px solid #5BE37B; }
+.dont { border-left: 4px solid var(--red); }
+nav ol { columns: 2; column-gap: 32px; padding-left: 22px; }
+nav a { text-decoration: none; }
+@media (max-width: 640px) {
+  h1 { font-size: 44px; }
+  h2 { font-size: 24px; }
+  nav ol { columns: 1; }
+  td:first-child { white-space: normal; }
+}
+</style>
+</head>
+<body>
+<main>
+  <span class="tag">INSOMNICODE WEB KIT</span>
+  <h1>ODIN Web Design Kit</h1>
+  <p class="lede">Everything you need to redesign the ODIN landing page (and later the rest of the website)
+  so it looks like the game, the AVP and the poster: fonts, colours, logos, characters, backgrounds, clips,
+  ready-made pieces, CSS you can paste in, and a record of what the website says today.</p>
+
+  <nav>
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#start">Start in four steps</a></li>
+      <li><a href="#rules">The ground rules</a></li>
+      <li><a href="#colours">Colours</a></li>
+      <li><a href="#fonts">Fonts and sizes</a></li>
+      <li><a href="#folders">What's in each folder</a></li>
+      <li><a href="#code">Using it in the code</a></li>
+      <li><a href="#today">The website today</a></li>
+      <li><a href="#make">Make your own elements</a></li>
+      <li><a href="#notes">Notes and checks</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="start"><span class="n">1</span> Start in four steps</h2>
+  <ol class="steps">
+    <li>Read <code>7 Website Today/landing_page_copy.md</code> and look at the screenshots next to it.
+      That is the content you're designing around. <strong>The words stay; the look changes.</strong></li>
+    <li>Install the two fonts in <code>1 Fonts</code> (right-click each <code>.ttf</code> → <em>Install</em>) so
+      Figma, Photoshop or Canva can use them.</li>
+    <li>Open <code>10 Web Code/components-demo.html</code> in a browser. It shows the game's panel, dialogue box,
+      buttons, pixel art and a clip, built only from this kit's CSS.</li>
+    <li>Design with the pieces in folders 2 to 6 and 9. For anything new in the same pixel style, use
+      <code>8 Make Your Own</code>, or build it in CSS with <code>10 Web Code/odin-web.css</code>.</li>
+  </ol>
+
+  <h2 id="rules"><span class="n">2</span> The ground rules</h2>
+  <div class="box">
+    <h3>Don't change the content</h3>
+    <p>Keep every heading, paragraph, number, button label, link and the section order from
+    <code>landing_page_copy.md</code>. Moving things around inside a section, splitting text into cards, adding
+    pictures and changing the styling are all fine. Rewording is not, unless the team agrees.</p>
+    <p class="warn">The study results (<code>+1.14</code> and <code>4.25/5</code>) must always sit next to their caveat,
+    and the footer disclaimer ("ODIN does not diagnose…") must stay.</p>
+  </div>
+  <ol>
+    <li><strong>Pixel art is enlarged by whole numbers only.</strong> Show art at the size of the file you picked
+      (<code>@2x</code>, <code>@3x</code>, <code>@4x</code>) and add <code>image-rendering: pixelated</code>. Never let the browser
+      scale it to a width like <code>100%</code> or <code>37vw</code>: the pixels smear.</li>
+    <li><strong>Dark navy background, game panels on top.</strong> Panels are the game's code editor: dark grey box,
+      blue border, a header strip with a white title on the left and a grey label on the right.</li>
+    <li><strong>Colour has a job.</strong> Cyan = ODIN and highlights. Gold = key numbers. Red = errors only.
+      Green = success. The five behaviours and the four levels keep their own colours.</li>
+    <li><strong>Pixel fonts for flavour, a normal font for reading.</strong> ODIN Pixel for labels, buttons, code and short
+      text; Dedicool for titles, names and what characters say. Long paragraphs stay in a readable font (the site uses Inter).</li>
+    <li><strong>Both themes.</strong> The site has a dark mode and a <em>Light mode</em> toggle. Design dark first, then check
+      that light mode still reads (use <code>poster_navy</code> for dark text on light backgrounds).</li>
+    <li><strong>Desktop first, phone friendly.</strong> The game needs a keyboard, so the landing page is the main thing phone
+      visitors see. It must work at 390 px wide with no sideways scrolling.</li>
+    <li><strong>Move like the game.</strong> Quick pops (about 0.25 s), text that types itself out, stepped motion. Nothing slow,
+      nothing spinning. Respect <code>prefers-reduced-motion</code>.</li>
+  </ol>
+  <p class="do">Do: use the GIFs and MP4 clips for motion, they're light and already in style.</p>
+  <p class="dont">Don't: stretch or blur sprites, add soft glows to pixel art, use other display fonts, or use
+  the screenshot numbers as real results (see <a href="#notes">notes</a>).</p>
+
+  <h2 id="colours"><span class="n">3</span> Colours</h2>
+  <p>The same values as the game, the AVP and the poster. In code they're CSS variables in
+  <code>10 Web Code/odin-web.css</code> (<code>var(--odin-cyan)</code>), a JSON file for tools, and a Tailwind snippet.
+  For drawing tools load <code>2 Brand and Logos/ODIN palette.gpl</code>.</p>
+  <h3>Panels and text</h3>
+<div class="swatches">
+<div class="sw"><i style="background:#1F2228"></i><div><b>panel</b><span>#1F2228 · panel background</span><code>--odin-panel</code></div></div>
+<div class="sw"><i style="background:#1593FF"></i><div><b>border</b><span>#1593FF · panel borders, tags, links</span><code>--odin-border</code></div></div>
+<div class="sw"><i style="background:#F0F6FF"></i><div><b>white</b><span>#F0F6FF · titles, names</span><code>--odin-white</code></div></div>
+<div class="sw"><i style="background:#DEE6F2"></i><div><b>text</b><span>#DEE6F2 · body text and code</span><code>--odin-text</code></div></div>
+<div class="sw"><i style="background:#96A0B4"></i><div><b>label</b><span>#96A0B4 · small grey labels</span><code>--odin-label</code></div></div>
+<div class="sw"><i style="background:#606A7E"></i><div><b>muted</b><span>#606A7E · line numbers, disabled</span><code>--odin-muted</code></div></div>
+<div class="sw"><i style="background:#0A0C14"></i><div><b>ink</b><span>#0A0C14 · shadows, text on gold or cyan</span><code>--odin-ink</code></div></div>
+</div>
+<h3>ODIN and the background</h3>
+<div class="swatches">
+<div class="sw"><i style="background:#070E26"></i><div><b>deep</b><span>#070E26 · page background</span><code>--odin-deep</code></div></div>
+<div class="sw"><i style="background:#162652"></i><div><b>dots</b><span>#162652 · background dot grid</span><code>--odin-dots</code></div></div>
+<div class="sw"><i style="background:#0B1C45"></i><div><b>navy</b><span>#0B1C45 · ODIN's face, title shadow</span><code>--odin-navy</code></div></div>
+<div class="sw"><i style="background:#5FCDE4"></i><div><b>cyan</b><span>#5FCDE4 · ODIN, highlights, main buttons</span><code>--odin-cyan</code></div></div>
+<div class="sw"><i style="background:#1BD1C3"></i><div><b>teal</b><span>#1BD1C3 · ODIN's trim</span><code>--odin-teal</code></div></div>
+<div class="sw"><i style="background:#BEF0E8"></i><div><b>ice</b><span>#BEF0E8 · outline around team sprites</span><code>--odin-ice</code></div></div>
+<div class="sw"><i style="background:#FBF236"></i><div><b>gold</b><span>#FBF236 · key numbers, ODIN's eyes</span><code>--odin-gold</code></div></div>
+<div class="sw"><i style="background:#00FFFF"></i><div><b>speaker</b><span>#00FFFF · name on a dialogue box</span><code>--odin-speaker</code></div></div>
+</div>
+<h3>Status</h3>
+<div class="swatches">
+<div class="sw"><i style="background:#D92626"></i><div><b>red</b><span>#D92626 · the error line</span><code>--odin-red</code></div></div>
+<div class="sw"><i style="background:#FF6E6E"></i><div><b>error</b><span>#FF6E6E · error text</span><code>--odin-error</code></div></div>
+<div class="sw"><i style="background:#5BE37B"></i><div><b>correct</b><span>#5BE37B · success</span><code>--odin-correct</code></div></div>
+<div class="sw"><i style="background:#FFBE46"></i><div><b>amber</b><span>#FFBE46 · hints, warnings</span><code>--odin-amber</code></div></div>
+<div class="sw"><i style="background:#243C78"></i><div><b>ground</b><span>#243C78 · floor under characters</span><code>--odin-ground</code></div></div>
+<div class="sw"><i style="background:#273C6F"></i><div><b>poster-navy</b><span>#273C6F · dark text on light backgrounds</span><code>--odin-poster-navy</code></div></div>
+</div>
+<h3>The five behaviours</h3>
+<div class="swatches">
+<div class="sw"><i style="background:#6FA8FF"></i><div><b>helpless</b><span>#6FA8FF · learned helplessness</span><code>--odin-helpless</code></div></div>
+<div class="sw"><i style="background:#FFA53B"></i><div><b>tinker</b><span>#FFA53B · tinkering</span><code>--odin-tinker</code></div></div>
+<div class="sw"><i style="background:#5BE37B"></i><div><b>active</b><span>#5BE37B · active thinking</span><code>--odin-active</code></div></div>
+<div class="sw"><i style="background:#C77DFF"></i><div><b>wheel</b><span>#C77DFF · wheel-spinning</span><code>--odin-wheel</code></div></div>
+<div class="sw"><i style="background:#FF5A6E"></i><div><b>gaming</b><span>#FF5A6E · gaming the system</span><code>--odin-gaming</code></div></div>
+</div>
+<h3>The four levels</h3>
+<div class="swatches">
+<div class="sw"><i style="background:#00A8FF"></i><div><b>level0</b><span>#00A8FF · Level 0: diagnostic protocol</span><code>--odin-level0</code></div></div>
+<div class="sw"><i style="background:#00FF20"></i><div><b>level1</b><span>#00FF20 · Level 1: 1D arrays</span><code>--odin-level1</code></div></div>
+<div class="sw"><i style="background:#F12222"></i><div><b>level2</b><span>#F12222 · Level 2: loops</span><code>--odin-level2</code></div></div>
+<div class="sw"><i style="background:#DBFF00"></i><div><b>level3</b><span>#DBFF00 · Level 3: multidimensional arrays</span><code>--odin-level3</code></div></div>
+</div>
+<h3>In-game code editor</h3>
+<div class="swatches">
+<div class="sw"><i style="background:#66B2FF"></i><div><b>code-keyword</b><span>#66B2FF · int, for, new</span><code>--odin-code-keyword</code></div></div>
+<div class="sw"><i style="background:#FFC468"></i><div><b>code-number</b><span>#FFC468 · 3, 0</span><code>--odin-code-number</code></div></div>
+<div class="sw"><i style="background:#F0A078"></i><div><b>code-string</b><span>#F0A078 · "Table "</span><code>--odin-code-string</code></div></div>
+<div class="sw"><i style="background:#76A86E"></i><div><b>code-comment</b><span>#76A86E · // comments</span><code>--odin-code-comment</code></div></div>
+<div class="sw"><i style="background:#6C2427"></i><div><b>code-error-line</b><span>#6C2427 · error line background</span><code>--odin-code-error-line</code></div></div>
+<div class="sw"><i style="background:#1B568A"></i><div><b>code-divider</b><span>#1B568A · lines inside a panel</span><code>--odin-code-divider</code></div></div>
+</div>
+  <p class="small">The current website uses its own, slightly different blues and cyans (see
+  <code>7 Website Today/current_styles</code>). Moving the site to the palette above is part of the redesign.</p>
+
+  <h2 id="fonts"><span class="n">4</span> Fonts and sizes</h2>
+  <div class="specimen">
+    <p class="small">ODIN Pixel: labels, buttons, code, short text. Made from the AVP's 5×7 letters.</p>
+    <div class="pix">CODE EDITOR int[] grid</div>
+    <div class="pix" style="font-size: 20px">The quick brown fox jumps over the lazy dog. 0123456789</div>
+  </div>
+  <div class="specimen">
+    <p class="small">Dedicool: the game's font. Titles, names, what characters say.</p>
+    <div class="ded">Learn to code.</div>
+    <div class="ded" style="font-size: 32px">Check line 4. What's missing?</div>
+  </div>
+  <div class="wrap-table"><table>
+    <tr><th>Font</th><th>Sharp sizes on the web</th><th>Files</th></tr>
+    <tr><td>ODIN Pixel</td><td>Multiples of 10 px: 10 small labels, <b>20 body and buttons</b>, 40 headings, 60 big numbers. Line height 1.1.</td><td><code>odin-pixel.woff</code>, <code>ODIN Pixel.ttf</code></td></tr>
+    <tr><td>Dedicool</td><td>Multiples of 8 px: 16 small, <b>32 dialogue and names</b>, 48 or 64 titles.</td><td><code>dedicool.woff</code>, <code>Dedicool.ttf</code></td></tr>
+    <tr><td>Inter, Roboto Mono</td><td>Any size. Already loaded from Google Fonts by the site.</td><td>none needed</td></tr>
+  </table></div>
+  <p class="small">In between sizes look blurry. For a title that has to scale with the screen, swap between sharp sizes
+  with media queries instead of using <code>clamp()</code> or <code>vw</code>.</p>
+
+  <h2 id="folders"><span class="n">5</span> What's in each folder</h2>
+  <div class="wrap-table"><table>
+    <tr><th>Folder</th><th>What's inside</th></tr>
+    <tr><td>1 Fonts</td><td>ODIN Pixel and Dedicool as <code>.ttf</code> (to install) and <code>.woff</code> (for the website).</td></tr>
+    <tr><td>2 Brand and Logos</td><td>ODIN's head at <code>@1x</code> to <code>@16x</code>, closed-eye version and a blinking GIF · ODIN logo with the name ·
+      InsomniCode wordmark · "Start your journey here!" · website QR code · FEU logos · SDG 4 badge · palette files ·
+      <code>website_logos</code>: the logos the site uses now (PNG and WebP, 32 to 1024 px) ·
+      <code>website_favicons</code>: the current favicons and app icons.</td></tr>
+    <tr><td>3 Characters</td><td><code>team</code> and <code>faculty</code>: idle and walk GIFs, standing PNGs at <code>@1x</code>, <code>@4x</code>, <code>@8x</code> ·
+      <code>portrait_cards</code>: each person's character-select card (good for an "about the team" section) ·
+      <code>enemies</code>: all 20 enemies by level · <code>game_players</code>: the two player characters with walk cycles in four directions.</td></tr>
+    <tr><td>4 Backgrounds</td><td>The AVP's dot background, animated and still, 1080p and 4K · pixel-art campus · real campus photo · pixel-art classroom.</td></tr>
+    <tr><td>5 AVP Clips and Stills</td><td>The five AVP animations as 1080p MP4s (5 to 10 s, under 3 MB each, good for a hero or section background)
+      and 12 stills of their key moments.</td></tr>
+    <tr><td>6 Ready-made Elements</td><td>The game's code editor (problem, error, solved) · the character select · the five behaviour cards ·
+      ODIN's dialogue boxes · titles: the thesis title, "InsomniCode presents" in three colours, a big ODIN, "BEHAVIORS ODIN TRACKS".
+      All at <code>@2x</code>, <code>@3x</code>, <code>@4x</code>. These are pictures; build the real, readable version in CSS when the text matters.</td></tr>
+    <tr><td>7 Website Today</td><td>Screenshots of the current landing and login pages · <code>landing_page_copy.md</code>, all the text to keep ·
+      <code>current_styles</code>, copies of the site's CSS for reference (editing these copies changes nothing).</td></tr>
+    <tr><td>8 Make Your Own</td><td>The element maker, same as the Slides Kit. See <a href="#make">section 8</a>.</td></tr>
+    <tr><td>9 Game Screenshots</td><td>The real game at 1920 × 1080: menus, all overworld areas (plus <code>_map_only</code> crops), story, battles step by step ·
+      <code>animated</code>: looping GIFs of the game in motion · <code>original_1152x648</code>: the untouched captures.</td></tr>
+    <tr><td>10 Web Code</td><td><code>odin-web.css</code>: fonts, colours and ready classes (panel, dialogue, button, tag, code colours, pixel helpers) ·
+      <code>odin-tokens.json</code> · <code>tailwind-theme-snippet.css</code> · <code>components-demo.html</code>.</td></tr>
+  </table></div>
+
+  <h2 id="code"><span class="n">6</span> Using it in the code</h2>
+  <p>The website is React + Vite + Tailwind v4. The landing page is two files:</p>
+  <div class="wrap-table"><table>
+    <tr><th>File</th><th>What it is</th></tr>
+    <tr><td><code>src/app/pages/LandingPage.tsx</code></td><td>The structure and all the text. Change class names and wrappers freely; keep the words.</td></tr>
+    <tr><td><code>src/app/pages/LandingPage.css</code></td><td>The landing page's styles, including <code>.light-mode</code> overrides. Most of the redesign happens here.</td></tr>
+    <tr><td><code>src/styles/theme.css</code></td><td>Site-wide colours for dark and light mode, used by every other page. Change last, and check the other pages after.</td></tr>
+  </table></div>
+  <div class="box">
+    <h3>Bringing kit files into the site</h3>
+    <ol>
+      <li>Copy only the files you use: fonts into <code>public/fonts/</code>, images into <code>src/img/</code> (imported, like the logo is now)
+        or <code>public/</code> (big videos). Don't import straight from <code>Web_Design_Kit</code>.</li>
+      <li>Paste the <code>@font-face</code> rules and the <code>:root</code> colours from <code>odin-web.css</code> into
+        <code>src/styles/fonts.css</code> and <code>theme.css</code>, fixing the font paths to <code>/fonts/…</code>.</li>
+      <li>Optional: paste <code>tailwind-theme-snippet.css</code> into an <code>@theme</code> block to get classes like
+        <code>bg-odin-deep</code> and <code>text-odin-cyan</code>.</li>
+    </ol>
+    <pre>npm install
+npm run dev        # http://localhost:5173
+npm run build      # check it builds before pushing</pre>
+  </div>
+  <p class="small">This kit folder is about 33 MB. Keep it out of the deployed site; if it goes into git, ask the team first.</p>
+
+  <h2 id="today"><span class="n">7</span> The website today</h2>
+  <div class="grid shot">
+    <figure><img src="7%20Website%20Today/landing_desktop_1440_first_screen.png" alt="Current landing page, first screen"><figcaption>landing_desktop_1440_first_screen</figcaption></figure>
+    <figure><img src="7%20Website%20Today/login_desktop_1440.png" alt="Current login page"><figcaption>login_desktop_1440</figcaption></figure>
+  </div>
+  <p>The whole page is in <code>landing_desktop_1440_full.png</code>. Taken 2026-11-04 in dark mode.</p>
+
+  <h2 id="make"><span class="n">8</span> Make your own elements</h2>
+  <p>The element maker draws new panels, dialogue boxes, headings, cards and tags with the same code as the AVP, so they match exactly.</p>
+  <pre>pip install pillow numpy          # once
+cd "8 Make Your Own"
+python make_elements.py            # everything in elements.json
+python make_elements.py --only my_panel</pre>
+  <p>Edit <code>elements.json</code> (copy an example, change the words). PNGs appear in <code>8 Make Your Own/out</code> at
+  <code>@2x</code>, <code>@3x</code> and <code>@4x</code>. The full list of options is in section 7 of the Slides Kit's
+  <code>START HERE.html</code> (<code>Thesis4\Slides_Kit</code>). For the web, prefer CSS for anything with text people need to read
+  or translate, and use the maker for decorative pieces.</p>
+  <p>Drawing pixel art yourself: Aseprite, LibreSprite or Piskel with <code>ODIN palette.gpl</code> loaded. Export enlarged by whole numbers with no smoothing.</p>
+
+  <h2 id="notes"><span class="n">9</span> Notes and checks</h2>
+  <ul>
+    <li><strong>Game screenshot numbers aren't results.</strong> The screenshots were taken with the server's replies typed in by hand:
+      "Level 2 Mastery: 92%" and "+50 XP" are example numbers. The only results on the site are the two in the research section.</li>
+    <li>The hero's game window on the current site is labelled <em>ILLUSTRATIVE PREVIEW</em>. If you swap it for real screenshots or
+      clips from this kit, the label can go; if you keep a mock-up, keep the label.</li>
+    <li>QR code: <code>odin_website_qr_cyan.png</code> holds <code>insomnicode-odin.vercel.app/</code>.</li>
+    <li>Dedicool is by Alexis Lefrançois and ships with the game; ODIN Pixel was made from the AVP's 5×7 letters.
+      FEU logos and the SDG 4 badge belong to their owners; use them only as they appear on the poster.</li>
+    <li>Before calling it done: dark and light mode, 390 px phone width, keyboard focus visible on every link and button,
+      and <code>npm run build</code> passes.</li>
+  </ul>
+</main>
+</body>
+</html>

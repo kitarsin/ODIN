@@ -1,0 +1,86 @@
+{
+  "_note": "ODIN palette. Same values as odin-web.css, the game, the AVP and the poster.",
+  "colors": {
+    "Panels and text": {
+      "panel": "#1F2228",
+      "border": "#1593FF",
+      "white": "#F0F6FF",
+      "text": "#DEE6F2",
+      "label": "#96A0B4",
+      "muted": "#606A7E",
+      "ink": "#0A0C14"
+    },
+    "ODIN and the background": {
+      "deep": "#070E26",
+      "dots": "#162652",
+      "navy": "#0B1C45",
+      "cyan": "#5FCDE4",
+      "teal": "#1BD1C3",
+      "ice": "#BEF0E8",
+      "gold": "#FBF236",
+      "speaker": "#00FFFF"
+    },
+    "Status": {
+      "red": "#D92626",
+      "error": "#FF6E6E",
+      "correct": "#5BE37B",
+      "amber": "#FFBE46",
+      "ground": "#243C78",
+      "poster-navy": "#273C6F"
+    },
+    "The five behaviours": {
+      "helpless": "#6FA8FF",
+      "tinker": "#FFA53B",
+      "active": "#5BE37B",
+      "wheel": "#C77DFF",
+      "gaming": "#FF5A6E"
+    },
+    "The four levels": {
+      "level0": "#00A8FF",
+      "level1": "#00FF20",
+      "level2": "#F12222",
+      "level3": "#DBFF00"
+    },
+    "In-game code editor": {
+      "code-keyword": "#66B2FF",
+      "code-number": "#FFC468",
+      "code-string": "#F0A078",
+      "code-comment": "#76A86E",
+      "code-error-line": "#6C2427",
+      "code-divider": "#1B568A"
+    }
+  },
+  "fonts": {
+    "pixel": {
+      "family": "ODIN Pixel",
+      "files": [
+        "1 Fonts/odin-pixel.woff",
+        "1 Fonts/ODIN Pixel.ttf"
+      ],
+      "crisp_sizes_px": "multiples of 10 (10, 20, 40, 60)",
+      "use": "panels, labels, code, short body text"
+    },
+    "title": {
+      "family": "Dedicool",
+      "files": [
+        "1 Fonts/dedicool.woff",
+        "1 Fonts/Dedicool.ttf"
+      ],
+      "crisp_sizes_px": "multiples of 8 (16, 32, 48, 64)",
+      "use": "titles, names, what characters say"
+    },
+    "body_current_site": {
+      "family": "Inter",
+      "source": "Google Fonts",
+      "use": "long paragraphs on the current website"
+    },
+    "mono_current_site": {
+      "family": "Roboto Mono",
+      "source": "Google Fonts"
+    }
+  },
+  "art_pixel_px": {
+    "web_default": 3,
+    "avp_at_1920": 4
+  }
+}
