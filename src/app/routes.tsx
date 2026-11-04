@@ -1,5 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { createBrowserRouter, Link, Navigate, useLocation } from 'react-router-dom';
+import { type ReactNode } from 'react';
+import { createBrowserRouter, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Keyboard } from 'lucide-react';
 import { LandingPage } from './pages/LandingPage';
 import odinMark from '../img/brand/new-logo.png';
@@ -21,18 +21,10 @@ import AccountSettings from './pages/AccountSettings';
 import { OdinTestBench } from './pages/OdinTestBench';
 import { Pretest } from './pages/Pretest';
 import { Posttest } from './pages/Posttest';
+import { isMobileDevice } from './utils/mobileDevice';
 
 function DesktopExperience({ children }: { children: ReactNode }) {
-  const { pathname } = useLocation();
-  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 767px)').matches);
-
-  useEffect(() => {
-    const query = window.matchMedia('(max-width: 767px)');
-    const update = () => setIsMobile(query.matches);
-    query.addEventListener('change', update);
-    update();
-    return () => query.removeEventListener('change', update);
-  }, []);
+  const isMobile = isMobileDevice();
 
   if (!isMobile) return children;
 

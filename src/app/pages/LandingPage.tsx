@@ -1,5 +1,7 @@
 import { ArrowDown, ArrowRight, Braces, Code2, Keyboard, ShieldCheck, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { isMobileDevice } from '../utils/mobileDevice';
 import odinMark from '../../img/brand/new-logo.png';
 import odinPortrait128 from '../../img/brand/odin-logo-transparent-128.png';
 import odinPortrait256 from '../../img/brand/odin-logo-transparent-256.png';
@@ -31,8 +33,28 @@ const processSteps = [
 ];
 
 export function LandingPage() {
+  const noticeRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (!isMobileDevice()) return;
+    try {
+      if (sessionStorage.getItem('odin-mobile-notice-seen')) return;
+      sessionStorage.setItem('odin-mobile-notice-seen', '1');
+    } catch {
+      // The notice still works if browser storage is unavailable.
+    }
+    noticeRef.current?.showModal();
+  }, []);
+
   return (
     <main className="odin-landing">
+      <dialog ref={noticeRef} className="mobile-notice" aria-labelledby="mobile-notice-title" aria-describedby="mobile-notice-description">
+        <div className="mobile-notice-icon"><Keyboard aria-hidden="true" /></div>
+        <p className="mobile-notice-kicker">ODIN // DEVICE NOTICE</p>
+        <h2 id="mobile-notice-title">Your quest is best on a bigger screen.</h2>
+        <p id="mobile-notice-description">ODIN is optimized for a desktop or laptop with a physical keyboard. Feel free to explore this page on your phone, then switch to a computer to enter the portal.</p>
+        <form method="dialog"><button className="pixel-button primary-button" autoFocus>Explore the website <ArrowRight aria-hidden="true" /></button></form>
+      </dialog>
       <header className="landing-header">
         <Link to="/" className="landing-brand" aria-label="ODIN home">
           <img src={odinMark} alt="" />
@@ -46,6 +68,11 @@ export function LandingPage() {
           <Link className="landing-nav-cta" to="/login">Enter the portal <ArrowRight aria-hidden="true" /></Link>
         </nav>
       </header>
+      <nav className="mobile-section-nav" aria-label="Explore this page">
+        <a href="#how-it-works">How it works</a>
+        <a href="#scope">The experience</a>
+        <a href="#research">Research</a>
+      </nav>
 
       <section className="landing-hero">
         <div className="hero-copy">

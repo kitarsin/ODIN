@@ -498,3 +498,36 @@
 .light-mode .research-results strong span, .light-mode .research-results article p, .light-mode .research-caveat { color: #526c78; }
 .light-mode .research-caveat { background: #dfeae3; }
 .light-mode .faq-list summary span { color: #087f94; }
+
+/* Mobile visitors can explore the landing page before moving to a computer. */
+.mobile-section-nav { display: none; }
+.mobile-notice {
+  width: min(420px, calc(100% - 36px));
+  max-height: calc(100dvh - 36px);
+  margin: auto;
+  padding: 28px;
+  border: 1px solid #63d7e7;
+  background: #102638;
+  color: #eef4fb;
+  box-shadow: 6px 6px 0 #22516a, 0 24px 70px rgba(0,0,0,.45);
+  font-family: var(--font-inter), Inter, sans-serif;
+}
+.mobile-notice::backdrop { background: rgba(3, 13, 23, .78); }
+.mobile-notice-icon { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid #63d7e7; color: #63d7e7; }
+.mobile-notice-icon svg { width: 20px; }
+.mobile-notice-kicker { margin: 23px 0 12px; color: #63d7e7; font: 10px var(--font-mono), monospace; letter-spacing: .12em; }
+.mobile-notice h2 { margin: 0; font-size: 26px; line-height: 1.15; letter-spacing: -.04em; }
+.mobile-notice > p:not(.mobile-notice-kicker) { margin: 15px 0 24px; color: #b9cbd7; font-size: 14px; line-height: 1.65; }
+.mobile-notice .pixel-button { width: 100%; cursor: pointer; }
+.light-mode .mobile-notice { background: #edf2eb; color: #163344; border-color: #087f94; box-shadow: 6px 6px 0 #8cb7b0, 0 24px 70px rgba(20,54,52,.25); }
+.light-mode .mobile-notice-icon { color: #087f94; border-color: #087f94; }
+.light-mode .mobile-notice-kicker { color: #087f94; }
+.light-mode .mobile-notice > p:not(.mobile-notice-kicker) { color: #435f62; }
+@media (max-width: 760px) {
+  .mobile-section-nav { width: calc(100% - 30px); margin: 10px auto 0; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: thin; }
+  .mobile-section-nav a { flex: 0 0 auto; padding: 10px 12px; border: 1px solid var(--line); color: var(--soft-text); font: 10px var(--font-mono), monospace; }
+  .mobile-section-nav a:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+  .hero-actions .primary-button { min-height: 48px; }
+  .light-mode .mobile-callout { color: #435f62; border-color: #c8b67c; background: #eee9d5; }
+  .light-mode .mobile-callout strong { color: #705400; }
+}
