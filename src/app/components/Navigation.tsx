@@ -123,21 +123,21 @@ export function Navigation() {
         ? 'border-[#00ff41] bg-[#16213e] shadow-[0_0_10px_rgba(0,255,65,0.3)]'
         : 'border-border bg-card'
     }`}>
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between gap-4 min-w-0">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
+        <div className="flex items-center justify-between gap-2 sm:gap-4 min-w-0">
 
           {/* Logo */}
-          <Link to="/dashboard" className="flex items-center gap-3 shrink-0">
+          <Link to="/dashboard" className="flex items-center gap-2 sm:gap-3 shrink-0">
             <img
               src={logo128}
               srcSet={`${logo64} 64w, ${logo128} 128w, ${logo256} 256w`}
               sizes="40px"
               alt="ODIN"
-              className={`w-10 h-10 ${isGameMode ? 'drop-shadow-[0_0_12px_rgba(100,241,209,0.6)]' : ''}`}
+              className={`w-9 h-9 sm:w-10 sm:h-10 ${isGameMode ? 'drop-shadow-[0_0_12px_rgba(100,241,209,0.6)]' : ''}`}
               style={{ imageRendering: 'pixelated' }}
             />
             <span
-              className={`text-xl font-semibold transition-all ${isGameMode ? 'text-[#00ff41]' : 'text-foreground'}`}
+              className={`text-lg sm:text-xl font-semibold transition-all ${isGameMode ? 'text-[#00ff41]' : 'text-foreground'}`}
               style={isGameMode ? { fontFamily: 'var(--font-pixel)' } : { fontFamily: 'var(--font-mono)' }}
             >
               ODIN
@@ -180,10 +180,10 @@ export function Navigation() {
               </div>
             )}
 
-            <LandingPageLink className="shrink-0 px-2 py-2" />
+            <LandingPageLink className="shrink-0 px-1.5 sm:px-2 py-2" />
 
             {/* User info + logout */}
-            <div className={`flex items-center gap-3 shrink-0 ml-2 pl-3 border-l ${
+            <div className={`flex items-center gap-2 sm:gap-3 shrink-0 ml-1 sm:ml-2 pl-2 sm:pl-3 border-l ${
               isGameMode ? 'border-[#00ff41]' : 'border-border'
             }`}>
               <div className="text-right hidden sm:block">

@@ -881,3 +881,156 @@ html:has(.odin-landing) { scroll-behavior: smooth; }
   .odin-landing [data-odin-reveal] { opacity: 1 !important; transform: none !important; }
   .window-scan, .pixel-caret { display: none; }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Portrait mobile polish. Tightens spacing, keeps decorative art inside the
+ * frame, and sizes tap targets comfortably on phones without flattening the
+ * 8-bit personality.
+ * ───────────────────────────────────────────────────────────────────────────*/
+@media (max-width: 760px) {
+  .odin-landing { overflow-x: clip; }
+
+  /* Sticky section chip nav so people can jump sections without scrolling home. */
+  .mobile-section-nav {
+    position: sticky;
+    top: 6px;
+    z-index: 8;
+    padding: 6px 0;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  .mobile-section-nav::before {
+    content: '';
+    position: absolute;
+    inset: -6px -20px;
+    background: linear-gradient(180deg, var(--space) 60%, transparent);
+    z-index: -1;
+  }
+
+  /* Header: clean brand + CTA on narrow phones. */
+  .landing-header { padding: 0 11px 0 13px; }
+  .landing-brand img { width: 30px; height: 30px; }
+  .landing-brand > span { font-size: 24px; }
+  .landing-nav-cta { min-height: 40px; padding: 0 12px; font-size: 12px; }
+
+  /* Hero: rebalance the two columns so copy breathes and art stays clipped. */
+  .landing-hero { padding-top: 46px; padding-bottom: 56px; gap: 20px; }
+  .landing-hero::before { inset: 0 -10vw 25% -10vw; opacity: .18; }
+  .hero-copy { padding: 0; }
+  .hero-copy h1 {
+    font-size: clamp(38px, 11vw, 54px);
+    line-height: 1.04;
+    letter-spacing: -.045em;
+  }
+  .hero-lede { font-size: 14px; line-height: 1.7; margin-top: 20px; }
+  .hero-actions { gap: 12px; }
+  .hero-actions .primary-button { flex: 1 1 100%; width: 100%; min-height: 50px; }
+  .hero-actions .text-button { flex: 1 1 100%; justify-content: center; }
+  .hero-meta { margin-top: 20px; gap: 10px 18px; font-size: 10px; }
+
+  /* Art column: smaller mascot, clipped orbits, less wasted vertical space. */
+  .hero-art { min-height: 340px; width: 100%; }
+  .orbit { opacity: .6; right: -60px; }
+  .orbit-two { opacity: .55; right: 10px; }
+  .hero-mascot { width: 128px; height: 128px; top: 2px; }
+  .game-window { margin-top: 52px; width: 100%; box-shadow: 4px 4px 0 #030919; }
+  .scanline { width: 220px; top: 70px; }
+  .signal-top { top: 20px; left: 0; padding: 7px 9px; font-size: 7px; }
+  .signal-bottom { padding: 8px 10px; font-size: 7px; }
+  .scroll-cue { display: none; }
+
+  /* Process cards: comfortable spacing, bigger tap body. */
+  .system-section { padding: 56px 0 44px; }
+  .process-grid { gap: 12px; margin-top: 26px; }
+  .process-card { min-height: 162px; padding: 20px 20px 24px; }
+  .process-card h3 { margin-top: 18px; font-size: 18px; }
+  .loop-note { padding: 14px 15px; gap: 12px; }
+  .loop-note p { font-size: 13px; }
+
+  /* Scope block: clearer two-row rhythm. */
+  .scope-section { padding: 50px 18px 56px; gap: 18px; }
+  .scope-mark { width: 60px; height: 60px; padding: 7px; }
+  .scope-copy h2 { font-size: 26px; }
+  .scope-tags { gap: 7px; }
+  .scope-tags span { padding: 7px 10px; }
+
+  /* Research + FAQ */
+  .research-section { padding: 56px 0 56px; gap: 28px; }
+  .research-intro h2 { font-size: clamp(28px, 7.5vw, 34px); }
+  .faq-section { padding: 48px 0 62px; gap: 24px; }
+  .faq-section h2 { font-size: clamp(28px, 7.5vw, 34px); }
+  .faq-list summary { padding: 22px 0; font-size: 15px; line-height: 1.35; gap: 14px; }
+  .faq-list summary span { font-size: 24px; }
+  .faq-list details p { padding-bottom: 22px; font-size: 14px; }
+
+  /* CTA: stack cleanly with full-width portal button. */
+  .landing-cta { flex-direction: column; align-items: stretch; padding: 32px 20px; gap: 12px; }
+  .landing-cta .section-kicker { text-align: left; }
+  .landing-cta h2 { font-size: 24px; text-align: left; }
+  .landing-cta .pixel-button { width: 100%; min-height: 52px; }
+
+  /* Footer */
+  .landing-footer { min-height: unset; padding: 24px 0 32px; text-align: center; }
+  .footer-brand { justify-content: center; }
+  .landing-footer > p { font-size: 11px; line-height: 1.6; }
+
+  /* Mobile notice dialog: fit nicely on 360px screens. */
+  .mobile-notice { padding: 24px; }
+  .mobile-notice h2 { font-size: 22px; line-height: 1.18; }
+  .mobile-notice > p:not(.mobile-notice-kicker) { font-size: 13px; }
+}
+
+@media (max-width: 540px) {
+  /* Research results: stack, keep the divider horizontal. */
+  .research-results { grid-template-columns: 1fr; }
+  .research-results article + article {
+    border-left: 0;
+    border-top: 1px solid rgba(116, 190, 204, .16);
+  }
+  .research-results strong { font-size: 42px; margin-top: 24px; }
+  .research-results article { padding: 22px 20px; }
+  .research-caveat { padding: 16px 20px; }
+
+  /* Loop note: stack the arrow above the text for readability. */
+  .loop-note { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .note-mark { font-size: 18px; }
+}
+
+@media (max-width: 420px) {
+  .landing-header { padding: 0 9px 0 11px; }
+  .landing-brand img { width: 26px; height: 26px; }
+  .landing-brand > span { font-size: 22px; }
+  .landing-nav-cta { min-height: 38px; padding: 0 10px; font-size: 11px; gap: 6px; }
+  .landing-nav-cta svg { width: 12px; height: 12px; }
+
+  .landing-hero { padding: 40px 15px 52px; gap: 18px; }
+  .hero-copy h1 { font-size: clamp(34px, 11.5vw, 44px); }
+  .hero-lede { font-size: 13.5px; }
+  .hero-art { min-height: 300px; }
+  .hero-mascot { width: 110px; height: 110px; }
+  .game-window { margin-top: 44px; }
+  .orbit { right: -80px; width: 300px; height: 220px; }
+  .orbit-two { right: 0; width: 260px; height: 180px; }
+  .scanline { width: 180px; top: 56px; }
+
+  .process-card { padding: 16px 16px 22px; }
+  .process-card h3 { font-size: 17px; margin-top: 14px; }
+  .process-card p { font-size: 13px; }
+  .landing-cta { padding: 28px 16px; }
+  .landing-cta h2 { font-size: 21px; }
+  .landing-footer { padding: 20px 0 28px; }
+  .landing-footer > p { font-size: 10.5px; }
+}
+
+/* Taller phones (modern 19:9+): reclaim some vertical breathing room. */
+@media (max-width: 760px) and (min-height: 760px) {
+  .landing-hero { padding-top: 60px; }
+  .hero-art { min-height: 380px; }
+}
+
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
+  /* CTA border crawl reads busy on tiny screens — tone down. */
+  .landing-cta::after { opacity: .3; }
+  /* Scope mark tilt animation also feels much larger on mobile; shorten range. */
+  @keyframes odin-tilt { 0%, 100% { transform: rotate(-1deg); } 50% { transform: rotate(1deg); } }
+}
