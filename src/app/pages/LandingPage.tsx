@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import { isMobileDevice } from '../utils/mobileDevice';
 import odinMark from '../../img/brand/new-logo.png';
+import gameplayPreview from '../../img/landing/odin-gameplay.png';
 import odinPortrait128 from '../../img/brand/odin-logo-transparent-128.png';
 import odinPortrait256 from '../../img/brand/odin-logo-transparent-256.png';
 import odinPortrait512 from '../../img/brand/odin-logo-transparent-512.png';
@@ -93,7 +94,7 @@ export function LandingPage() {
           </div>
         </div>
 
-        <div className="hero-art" aria-label="Illustrative preview of the ODIN game and code editor">
+        <div className="hero-art" aria-label="Preview of the ODIN game and code editor">
           <div className="orbit orbit-one" /><div className="orbit orbit-two" />
           <div className="scanline" />
           <div className="hero-signal signal-top"><span className="signal-led" /> SYSTEM READY <b>01</b></div>
@@ -106,26 +107,8 @@ export function LandingPage() {
           />
           <div className="game-window">
             <div className="window-bar"><span><i /><i /><i /></span><b>ARRAY QUEST // 01</b><span className="window-live">LIVE</span></div>
-            <div className="window-content">
-              <div className="window-scene">
-                <div className="scene-stars">✦　·　✧　　　✦</div>
-                <div className="scene-platform" />
-                <div className="scene-hero"><span /></div>
-                <div className="scene-monster"><i /><i /></div>
-                <div className="scene-caption">A new challenge appears</div>
-              </div>
-              <div className="window-editor">
-                <div className="editor-heading">CODE EDITOR <span>C#</span></div>
-                <div className="code-lines" aria-hidden="true">
-                  <span><b>01</b> <i>int</i>[] scores = {'{'} 8, 5, 9 {'}'};</span>
-                  <span><b>02</b> <i>for</i> (<em>int</em> i = 0; i &lt; scores.Length; i++)</span>
-                  <span className="code-focus"><b>03</b> {'{'} total += scores[i]; {'}'}</span>
-                  <span><b>04</b> <strong>// check the array bounds</strong></span>
-                </div>
-                <div className="hint-strip"><span className="hint-spark">✦</span> Try tracing the last valid index.</div>
-              </div>
-            </div>
-            <div className="window-footer"><span><i /> ODIN GUIDANCE ACTIVE</span><span>ILLUSTRATIVE PREVIEW</span></div>
+            <img className="gameplay-preview" src={gameplayPreview} alt="ODIN guides a player through a coding challenge in the game" />
+            <div className="window-footer"><span><i /> ODIN GUIDANCE ACTIVE</span><span>IN-GAME PREVIEW</span></div>
           </div>
           <div className="hero-signal signal-bottom"><span>FIELD NOTE</span><b>Support the process.<br />Let the student solve.</b></div>
         </div>

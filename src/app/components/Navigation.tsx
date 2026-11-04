@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useFeatureLockdown } from '../context/FeatureLockdownContext';
 import { Button } from './ui/button';
+import { LandingPageLink } from './LandingPageLink';
 
 // ── Nav link definitions ──────────────────────────────────────────────────────
 
@@ -178,6 +179,8 @@ export function Navigation() {
                 )}
               </div>
             )}
+
+            <LandingPageLink className="shrink-0 px-2 py-2" />
 
             {/* User info + logout */}
             <div className={`flex items-center gap-3 shrink-0 ml-2 pl-3 border-l ${

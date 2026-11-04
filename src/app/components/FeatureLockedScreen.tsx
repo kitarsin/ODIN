@@ -1,6 +1,7 @@
 import { ShieldAlert, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
+import { LandingPageLink } from './LandingPageLink';
 
 interface FeatureLockedScreenProps {
   featureName?: string;
@@ -26,6 +27,7 @@ export function FeatureLockedScreen({ featureName, message }: FeatureLockedScree
           <div className="absolute inset-0 bg-gradient-to-br from-[#FF5252]/20 via-transparent to-[#FF5252]/5 pointer-events-none" />
 
           <div className="relative p-8 text-center">
+            <LandingPageLink className="mb-6" />
             {/* Icon */}
             <div className="flex justify-center mb-6">
               <div className="relative">

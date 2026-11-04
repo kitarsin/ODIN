@@ -9,6 +9,7 @@ import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { LandingPageLink } from '../components/LandingPageLink';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -107,6 +108,7 @@ export function Login() {
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 transition-all ${getBgClass()}`}>
       <div className="w-full max-w-md">
+        <LandingPageLink className="mb-5" />
         <div className={`border p-8 shadow-2xl transition-all ${
           isGameMode
             ? 'bg-[#16213e] border-[#00ff41] shadow-[0_0_30px_rgba(0,255,65,0.3)] border-4'

@@ -5,6 +5,7 @@ import { useAuth, PretestResponse } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { compilePretestCode, CompileResult } from '../../lib/odinApi';
 import { Button } from '../components/ui/button';
+import { LandingPageLink } from '../components/LandingPageLink';
 
 // ── Event log types ──────────────────────────────────────────────────────────
 
@@ -413,6 +414,7 @@ export function Posttest() {
     return (
       <div className={`min-h-screen flex items-center justify-center p-4 ${bg}`}>
         <div className={`w-full max-w-lg border p-8 shadow-2xl ${cardCls}`}>
+          <LandingPageLink className="mb-6" />
           <h1 className={`text-xl font-semibold mb-3 ${text}`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '16px' } : mono}>
             {isGameMode ? '> SYSTEM_EVALUATION' : 'Post Test Evaluation'}
           </h1>
@@ -449,6 +451,7 @@ export function Posttest() {
     return (
       <div className={`min-h-screen flex items-center justify-center p-4 ${bg}`}>
         <div className={`w-full max-w-md border p-10 shadow-2xl text-center ${cardCls}`}>
+          <LandingPageLink className="mb-6" />
           <CheckCircle className={`w-14 h-14 mx-auto mb-5 ${isGameMode ? 'text-[#00ff41]' : 'text-primary'}`} />
           <h1 className={`text-xl font-semibold mb-3 ${text}`} style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '14px' } : mono}>
             {isGameMode ? '> EVALUATION_COMPLETE' : 'Thank you for participating!'}
@@ -475,6 +478,7 @@ export function Posttest() {
 
   return (
     <div className={`min-h-screen flex flex-col p-4 md:p-6 ${bg}`}>
+      <LandingPageLink confirmLeaving className="w-full max-w-4xl mx-auto mb-4" />
       <div className={`w-full max-w-4xl mx-auto border shadow-2xl flex flex-col ${cardCls}`} style={{ minHeight: '80vh' }}>
 
         {/* Header bar */}
