@@ -1,4 +1,8 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { useEffect, useState, type ReactNode } from 'react';
+import { createBrowserRouter, Link, Navigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, Keyboard } from 'lucide-react';
+import { LandingPage } from './pages/LandingPage';
+import odinMark from '../img/brand/new-logo.png';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { ForgotPassword } from './pages/ForgotPassword';
@@ -18,30 +22,61 @@ import { OdinTestBench } from './pages/OdinTestBench';
 import { Pretest } from './pages/Pretest';
 import { Posttest } from './pages/Posttest';
 
+function DesktopExperience({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation();
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 767px)').matches);
+
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(query.matches);
+    query.addEventListener('change', update);
+    update();
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  if (!isMobile) return children;
+
+  return (
+    <main className="odin-mobile-gate">
+      <section className="mobile-gate-card" aria-labelledby="mobile-gate-title">
+        <img src={odinMark} alt="ODIN pixel robot" />
+        <p className="mobile-gate-kicker">ODIN // DESKTOP MODE</p>
+        <span className="mobile-gate-keyboard"><Keyboard aria-hidden="true" /></span>
+        <h1 id="mobile-gate-title">Open ODIN on desktop</h1>
+        <p>ODIN’s coding game is designed for a desktop browser and a physical keyboard. Switch to a laptop or desktop to sign in and continue.</p>
+        <Link className="pixel-button primary-button" to="/"> <ArrowLeft aria-hidden="true" /> Back to the landing page</Link>
+        <span className="mobile-gate-foot">C# ARRAY QUEST // READY WHEN YOU ARE</span>
+      </section>
+    </main>
+  );
+}
+
+const onDesktop = (page: ReactNode) => <DesktopExperience>{page}</DesktopExperience>;
+
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate to="/login" replace />
+    element: <LandingPage />
   },
   {
     path: '/login',
-    element: <Login />
+    element: onDesktop(<Login />)
   },
   {
     path: '/register',
-    element: <Register />
+    element: onDesktop(<Register />)
   },
   {
     path: '/forgot-password',
-    element: <ForgotPassword />
+    element: onDesktop(<ForgotPassword />)
   },
   {
     path: '/update-password',
-    element: <UpdatePassword />
+    element: onDesktop(<UpdatePassword />)
   },
   {
     path: '/dashboard',
-    element: (
+    element: onDesktop(
       <ProtectedRoute featureKey="dashboard">
         <StudentDashboard />
       </ProtectedRoute>
@@ -49,7 +84,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/play',
-    element: (
+    element: onDesktop(
       <ProtectedRoute featureKey="game">
         <GameContainer />
       </ProtectedRoute>
@@ -57,7 +92,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/wiki',
-    element: (
+    element: onDesktop(
       <ProtectedRoute featureKey="wiki">
         <Wiki />
       </ProtectedRoute>
@@ -65,7 +100,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/profile',
-    element: (
+    element: onDesktop(
       <ProtectedRoute featureKey="profile">
         <Profile />
       </ProtectedRoute>
@@ -73,7 +108,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/account-settings',
-    element: (
+    element: onDesktop(
       <ProtectedRoute featureKey="account-settings">
         <AccountSettings />
       </ProtectedRoute>
@@ -81,7 +116,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    element: (
+    element: onDesktop(
       <ProtectedRoute requireAdmin>
         <AdminDatabase />
       </ProtectedRoute>
@@ -89,7 +124,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin/analytics',
-    element: (
+    element: onDesktop(
       <ProtectedRoute requireAdmin>
         <Analytics />
       </ProtectedRoute>
@@ -97,7 +132,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin/lockdown',
-    element: (
+    element: onDesktop(
       <ProtectedRoute requireAdmin>
         <FeatureLockdown />
       </ProtectedRoute>
@@ -105,7 +140,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin/gamelogs',
-    element: (
+    element: onDesktop(
       <ProtectedRoute requireAdmin>
         <AdminGameLogs />
       </ProtectedRoute>
@@ -113,7 +148,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin/responses',
-    element: (
+    element: onDesktop(
       <ProtectedRoute requireAdmin>
         <AdminResponseEditor />
       </ProtectedRoute>
@@ -121,7 +156,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/test-bench',
-    element: (
+    element: onDesktop(
       <ProtectedRoute featureKey="test-bench">
       <OdinTestBench />
       </ProtectedRoute>
@@ -129,7 +164,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/pretest',
-    element: (
+    element: onDesktop(
       <ProtectedRoute skipPretestGate>
         <Pretest />
       </ProtectedRoute>
@@ -137,7 +172,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/posttest',
-    element: (
+    element: onDesktop(
       <ProtectedRoute featureKey="posttest">
         <Posttest />
       </ProtectedRoute>
@@ -145,6 +180,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <Navigate to="/login" replace />
+    element: <Navigate to="/" replace />
   }
 ]);
