@@ -109,7 +109,7 @@ export function Login() {
     <div className={`min-h-screen flex items-center justify-center p-4 transition-all ${getBgClass()}`}>
       <div className="w-full max-w-md">
         <LandingPageLink className="mb-5" />
-        <div className={`border p-8 shadow-2xl transition-all ${
+        <div className={`odin-enter border p-8 shadow-2xl transition-all ${
           isGameMode
             ? 'bg-[#16213e] border-[#00ff41] shadow-[0_0_30px_rgba(0,255,65,0.3)] border-4'
             : `${getCardBg()} border-2 ${getCardBorder()} rounded-lg`
@@ -238,9 +238,9 @@ export function Login() {
             <Button
               type="submit"
               disabled={isSubmitting || !canSubmit}
-              className={`w-full font-semibold transition-all ${
+              className={`odin-press w-full font-semibold transition-all ${
                 isGameMode
-                  ? 'bg-[#00ff41] hover:bg-[#00cc33] text-[#1a1a2e] border-2 border-[#00ff41] shadow-[0_0_15px_rgba(0,255,65,0.5)]'
+                  ? 'bg-[#00ff41] hover:bg-[#00cc33] text-[#1a1a2e] border-2 border-[#00ff41] shadow-[0_0_15px_rgba(0,255,65,0.5)] odin-glow-ambient'
                     : 'bg-primary hover:bg-primary/90 text-primary-foreground'
               }`}
               style={isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '12px' } : {}}

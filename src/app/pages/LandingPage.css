@@ -636,3 +636,248 @@
   .window-bar, .window-footer, .window-live { font-size: 9px; }
   .scope-copy > p, .section-heading > p { font-size: 15px; }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Motion & micro-interactions. Keeps the 8-bit pixel language:
+ * snaps, blinks, stepped sweeps, no soft-UI bounces.
+ * ───────────────────────────────────────────────────────────────────────────*/
+
+html:has(.odin-landing) { scroll-behavior: smooth; }
+.odin-landing [id] { scroll-margin-top: 96px; }
+
+/* Scroll reveal — each element drifts up as it enters view. */
+@media (prefers-reduced-motion: no-preference) {
+  .odin-landing [data-odin-reveal] {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+    transition: opacity .7s cubic-bezier(.22,.65,.3,1),
+                transform .7s cubic-bezier(.22,.65,.3,1);
+    will-change: opacity, transform;
+  }
+  .odin-landing [data-odin-reveal].is-revealed {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  .odin-landing [data-odin-reveal][data-odin-delay="1"] { transition-delay: .08s; }
+  .odin-landing [data-odin-reveal][data-odin-delay="2"] { transition-delay: .18s; }
+  .odin-landing [data-odin-reveal][data-odin-delay="3"] { transition-delay: .28s; }
+}
+
+/* Blinking pixel caret after the hero accent line. */
+.pixel-caret {
+  display: inline-block;
+  width: .14em;
+  height: .82em;
+  margin-left: .12em;
+  vertical-align: -.08em;
+  background: currentColor;
+  color: #5fcde4;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pixel-caret { animation: odin-blink 1.05s steps(2, end) infinite; }
+  @keyframes odin-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+}
+.light-mode .pixel-caret { color: #087f94; }
+
+/* Scanline sweep across the game preview. */
+.window-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 36%;
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    rgba(130, 232, 240, 0) 0%,
+    rgba(130, 232, 240, .08) 50%,
+    rgba(130, 232, 240, 0) 100%);
+  mix-blend-mode: screen;
+  z-index: 4;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .window-scan { animation: odin-scan 5.4s linear infinite; }
+  @keyframes odin-scan {
+    0%   { transform: translateY(-110%); }
+    100% { transform: translateY(380%); }
+  }
+}
+
+/* Game window ambient pulse + mascot wobble. */
+@media (prefers-reduced-motion: no-preference) {
+  .game-window { animation: odin-window-pulse 4.8s ease-in-out infinite; }
+  @keyframes odin-window-pulse {
+    0%, 100% { box-shadow: 6px 6px 0 #030919, 0 0 0 0 rgba(95, 205, 228, .0); }
+    50%      { box-shadow: 6px 6px 0 #030919, 0 0 32px rgba(95, 205, 228, .22); }
+  }
+  .hero-mascot { animation: odin-float 5s ease-in-out infinite, odin-sway 7s ease-in-out infinite; }
+  @keyframes odin-sway {
+    0%, 100% { filter: drop-shadow(0 14px 24px rgba(42, 205, 220, .22)); }
+    50%      { filter: drop-shadow(0 20px 30px rgba(42, 205, 220, .38)); }
+  }
+}
+
+/* Nav links — animated pixel underline on hover + active drag. */
+.landing-nav > a:not(.landing-nav-cta) { position: relative; }
+.landing-nav > a:not(.landing-nav-cta)::after {
+  content: '';
+  position: absolute;
+  left: 13px;
+  right: 13px;
+  bottom: 4px;
+  height: 2px;
+  background: var(--cyan);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform .25s steps(4, end);
+}
+.landing-nav > a:not(.landing-nav-cta):hover::after { transform: scaleX(1); }
+.landing-nav-cta { transition: transform .18s ease, background .18s ease, box-shadow .18s ease; }
+.landing-nav-cta:hover { transform: translate(1px, 1px); box-shadow: 1px 2px 0 #030919; }
+
+/* Primary button — pixel press + ambient glow. */
+.pixel-button { position: relative; overflow: hidden; }
+.primary-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 20%, rgba(255,255,255,.35) 50%, transparent 80%);
+  transform: translateX(-120%);
+  transition: transform .55s ease;
+  pointer-events: none;
+}
+.primary-button:hover::before { transform: translateX(120%); }
+.pixel-button:active { transform: translate(3px, 3px); }
+.primary-button:active { box-shadow: 1px 1px 0 #1593ff !important; }
+
+/* Process cards — step, snap, glow the rail. */
+.process-card { transition: transform .22s steps(3, end), border-color .22s ease, box-shadow .22s ease; }
+.process-card:hover { transform: translate(-2px, -4px); box-shadow: 7px 9px 0 #030919; }
+.process-card .card-rail { transition: width .35s cubic-bezier(.22,.65,.3,1), box-shadow .35s ease; }
+.process-card:hover .card-rail { width: 100%; box-shadow: 0 0 18px currentColor; }
+.process-card .step-icon { transition: transform .25s steps(4, end), background .25s ease; }
+.process-card:hover .step-icon { transform: rotate(-6deg) translateY(-2px); background: rgba(255,255,255,.05); }
+
+/* Loop note shimmer — a thin amber sweep crosses the strip. */
+.loop-note { position: relative; overflow: hidden; }
+.loop-note::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(251, 242, 54, .14), transparent);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .loop-note::after { animation: odin-shimmer 6s ease-in-out infinite; }
+  @keyframes odin-shimmer {
+    0%, 100% { transform: translateX(0); opacity: 0; }
+    35%      { opacity: 1; }
+    65%      { transform: translateX(380%); opacity: 1; }
+    66%, 99% { opacity: 0; transform: translateX(380%); }
+  }
+}
+
+/* Scope principles — stepped slide on hover. */
+.scope-principles > div { transition: transform .22s steps(3, end), background .2s ease; padding-left: 4px; margin-left: -4px; }
+.scope-principles > div:hover { transform: translateX(6px); background: rgba(95, 205, 228, .05); }
+
+/* Scope mark — gently rotate when section reveals. */
+@media (prefers-reduced-motion: no-preference) {
+  .scope-mark { animation: odin-tilt 7s ease-in-out infinite; transform-origin: center; }
+  @keyframes odin-tilt {
+    0%, 100% { transform: rotate(-1.5deg); }
+    50%      { transform: rotate(1.5deg); }
+  }
+}
+
+/* Research result numbers — subtle count-in bob. */
+@media (prefers-reduced-motion: no-preference) {
+  .research-results.is-revealed article strong {
+    animation: odin-pop .55s cubic-bezier(.3,.9,.4,1.4) .15s both;
+  }
+  .research-results.is-revealed article:nth-child(2) strong { animation-delay: .35s; }
+  @keyframes odin-pop {
+    0%   { transform: translateY(10px); opacity: 0; }
+    60%  { transform: translateY(-3px); opacity: 1; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+}
+
+/* FAQ — stepped chevron + content wipe. */
+.faq-list summary span { transition: transform .22s steps(3, end), color .22s ease; }
+.faq-list summary:hover { color: var(--cyan); }
+.faq-list summary:hover span { transform: translateY(-1px) scale(1.08); }
+.faq-list details p { transform-origin: top; }
+@media (prefers-reduced-motion: no-preference) {
+  .faq-list details[open] p { animation: odin-wipe .35s ease both; }
+  @keyframes odin-wipe {
+    0%   { opacity: 0; transform: translateY(-4px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* CTA — ambient border crawl around the stripe. */
+.landing-cta { position: relative; overflow: hidden; }
+.landing-cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, var(--cyan), transparent 25%, transparent 75%, var(--cyan)) top / 100% 2px no-repeat,
+    linear-gradient(90deg, var(--cyan), transparent 25%, transparent 75%, var(--cyan)) bottom / 100% 2px no-repeat;
+  opacity: .55;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .landing-cta::after { animation: odin-cta-crawl 4s linear infinite; }
+  @keyframes odin-cta-crawl {
+    0%   { background-position: -40% top, 40% bottom; }
+    100% { background-position: 140% top, -140% bottom; }
+  }
+}
+.landing-cta .pixel-button { transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
+.landing-cta .pixel-button:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #1593ff; }
+
+/* Scroll cue — breathing arrow line. */
+@media (prefers-reduced-motion: no-preference) {
+  .scroll-cue span { animation: odin-cue 2.1s ease-in-out infinite; transform-origin: 0 50%; }
+  @keyframes odin-cue {
+    0%, 100% { transform: scaleX(.6); opacity: .55; }
+    50%      { transform: scaleX(1);  opacity: 1; }
+  }
+}
+
+/* Subtle background pan on the hero star-field. */
+@media (prefers-reduced-motion: no-preference) {
+  .landing-hero::before { animation: odin-starfield 55s linear infinite; }
+  @keyframes odin-starfield {
+    0%   { background-position: 0 0; }
+    100% { background-position: 480px 0; }
+  }
+}
+
+/* Hero signals — gentle pulse ring. */
+@media (prefers-reduced-motion: no-preference) {
+  .signal-top .signal-led { animation: odin-led 1.8s ease-in-out infinite; }
+  @keyframes odin-led {
+    0%, 100% { box-shadow: 0 0 6px var(--mint); }
+    50%      { box-shadow: 0 0 14px var(--mint), 0 0 0 3px rgba(81, 226, 194, .18); }
+  }
+}
+
+/* Mobile notice entrance. */
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-notice[open] { animation: odin-notice .35s cubic-bezier(.22,.65,.3,1); }
+  @keyframes odin-notice {
+    0%   { transform: translateY(10px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+}
+
+/* Reduce-motion safety: prefer-reduced override wins. */
+@media (prefers-reduced-motion: reduce) {
+  .odin-landing [data-odin-reveal] { opacity: 1 !important; transform: none !important; }
+  .window-scan, .pixel-caret { display: none; }
+}
