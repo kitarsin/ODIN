@@ -7,6 +7,7 @@ const GLYPHS = {
   chevron: { w: 3, h: 5, cells: [[0, 0, 1, 1], [1, 1, 1, 1], [2, 2, 1, 1], [1, 3, 1, 1], [0, 4, 1, 1]] },
   down: { w: 5, h: 3, cells: [[0, 0, 1, 1], [4, 0, 1, 1], [1, 1, 1, 1], [3, 1, 1, 1], [2, 2, 1, 1]] },
   play: { w: 4, h: 7, cells: [[0, 0, 1, 7], [1, 1, 1, 5], [2, 2, 1, 3], [3, 3, 1, 1]] },
+  menu: { w: 7, h: 5, cells: [[0, 0, 7, 1], [0, 2, 7, 1], [0, 4, 7, 1]] },
 } as const;
 
 export type PixelGlyphName = keyof typeof GLYPHS;

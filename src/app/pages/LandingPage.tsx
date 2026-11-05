@@ -189,6 +189,33 @@ export function LandingPage() {
   // The party member under the pointer, in the classroom or the party bar.
   const [partyFocus, setPartyFocus] = useState<string | null>(null);
   const handleSplashDone = useCallback(() => setReady(true), []);
+  // The compact header's menu (narrow screens only; wide screens show the full nav).
+  const headerRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+
+  // Close the menu on Escape (focus back to the button), on a tap outside the header, or when the
+  // window grows wide enough for the full nav.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setMenuOpen(false);
+      menuButtonRef.current?.focus();
+    };
+    const onPointer = (e: PointerEvent) => { if (!headerRef.current?.contains(e.target as Node)) setMenuOpen(false); };
+    const wide = window.matchMedia('(min-width: 1200px)');
+    const onWide = () => { if (wide.matches) setMenuOpen(false); };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onPointer);
+    wide.addEventListener('change', onWide);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPointer);
+      wide.removeEventListener('change', onWide);
+    };
+  }, [menuOpen]);
 
   // The phone notice waits for the preloader so the two don't stack.
   useEffect(() => {
@@ -304,7 +331,7 @@ export function LandingPage() {
         </div>
       </dialog>
 
-      <header className="landing-header">
+      <header className="landing-header" ref={headerRef} data-menu-open={menuOpen || undefined}>
         <Link to="/" className="landing-brand" aria-label="ODIN home">
           <img className="px" src={odinHead} alt="" width={32} height={32} />
           <span>ODIN</span>
@@ -317,14 +344,28 @@ export function LandingPage() {
           <a href="#team"><RollLabel>The team</RollLabel></a>
           <Link className="landing-nav-cta" to="/login"><RollLabel>Enter the portal</RollLabel> <PixelGlyph name="chevron" /></Link>
         </nav>
+        <button
+          ref={menuButtonRef}
+          type="button"
+          className="landing-menu-toggle"
+          aria-expanded={menuOpen}
+          aria-controls="landing-menu"
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          <PixelGlyph name={menuOpen ? 'cross' : 'menu'} scale={3} />
+          <span>{menuOpen ? 'Close' : 'Menu'}</span>
+        </button>
+        {/* Narrow screens: the page sections as a game-style command list under the header. */}
+        <nav id="landing-menu" className="landing-menu" aria-label="Explore this page" hidden={!menuOpen}>
+          <a href="#how-it-works" onClick={closeMenu}><PixelGlyph name="chevron" className="landing-menu-cursor" />How it works</a>
+          <a href="#scope" onClick={closeMenu}><PixelGlyph name="chevron" className="landing-menu-cursor" />The experience</a>
+          <a href="#research" onClick={closeMenu}><PixelGlyph name="chevron" className="landing-menu-cursor" />The research</a>
+          <a href="#team" onClick={closeMenu}><PixelGlyph name="chevron" className="landing-menu-cursor" />The team</a>
+          <Link className="pixel-button primary-button" to="/login" onClick={closeMenu}><RollLabel>Enter the portal</RollLabel> <PixelGlyph name="chevron" /></Link>
+        </nav>
         <span className="scroll-meter" aria-hidden="true"><i ref={meterRef} /></span>
       </header>
-      <nav className="mobile-section-nav" aria-label="Explore this page">
-        <a href="#how-it-works">How it works</a>
-        <a href="#scope">The experience</a>
-        <a href="#research">Research</a>
-        <a href="#team">Team</a>
-      </nav>
+      {menuOpen && <div className="landing-menu-scrim" aria-hidden="true" />}
 
       <section className="sheet sheet-deep landing-hero" ref={heroRef}>
         <div className="scene-bg scene-sim" aria-hidden="true" />

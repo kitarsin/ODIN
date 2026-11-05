@@ -128,7 +128,8 @@ html.odin-preloading { overflow: hidden; }
 }
 @media (hover: hover) and (pointer: fine) { .landing-nav a:not(.landing-nav-cta):hover { background: var(--o-surface); } }
 .landing-nav-cta { background: var(--o-deep); color: var(--o-cyan) !important; }
-.mobile-section-nav { display: none; }
+/* Narrow screens swap the nav for one MENU button and a dropdown command list (see Responsive). */
+.landing-menu-toggle, .landing-menu, .landing-menu-scrim { display: none; }
 /* Scroll progress, filled in 16px blocks like an XP bar. */
 .scroll-meter { position: absolute; left: 0; right: 0; bottom: -3px; height: 5px; pointer-events: none; }
 .scroll-meter i {
@@ -481,11 +482,17 @@ html.odin-preloading { overflow: hidden; }
   left: calc(var(--s) * var(--x)); top: calc(var(--s) * var(--y));
   width: calc(var(--s) * var(--w)); height: calc(var(--s) * var(--h));
 }
-/* A soft pixel shadow under each sprite's feet. */
+/* A pixel-art floor shadow under each sprite (team/floor-shadow.png, drawn on the scene's own grid):
+   a soft outer edge, a darker core and contact shade under each foot, leaning a little forward and
+   left, away from the windows. It sits on ::before, outside the flipped img, so the light stays
+   consistent for the faculty too. Sprite-local box: x -3..23, y 31..37 (the sprite is 21 x 34). */
 .room-sprite::before {
-  content: ''; position: absolute; left: 10%; right: 10%; bottom: calc(var(--s) * -2); height: calc(var(--s) * 4);
-  background: rgba(40, 40, 60, .28);
-  clip-path: polygon(20% 0, 80% 0, 100% 50%, 80% 100%, 20% 100%, 0 50%);
+  content: ''; position: absolute;
+  left: calc(var(--s) * -3); top: calc(var(--s) * 31);
+  width: calc(var(--s) * 27); height: calc(var(--s) * 7);
+  background: url('../../img/landing/team/floor-shadow.png') 0 0 / 100% 100% no-repeat;
+  image-rendering: pixelated;
+  pointer-events: none;
 }
 .room-sprite img { position: absolute; inset: 0; width: 100%; height: 100%; }
 /* Faculty face left, towards the students. */
@@ -721,22 +728,75 @@ html.odin-preloading { overflow: hidden; }
   .footage { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .footage-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .footage-step[aria-selected="true"] { translate: 0 -4px; }
+  /* One slim bar: brand, the portal button and MENU. The sections open as a list under it. */
+  .landing-header { gap: 12px; }
+  .landing-nav { margin-left: auto; padding: 0; border: 0; background: none; }
   .landing-nav a:not(.landing-nav-cta) { display: none; }
-  .landing-nav { padding: 0; border: 0; background: none; }
   .landing-nav-cta { border: 2px solid var(--o-heading); }
-  .mobile-section-nav {
-    position: sticky; top: 72px; z-index: 25;
-    display: flex; gap: 8px; overflow-x: auto;
-    padding: 10px max(16px, calc((100% - 1200px) / 2));
-    background: var(--o-bg); border-bottom: 2px solid var(--o-line-soft);
-    scrollbar-width: none;
+  :root.dark .landing-nav-cta { border-color: var(--o-border); }
+  .landing-menu-toggle {
+    flex: none;
+    min-width: 44px; min-height: 44px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 0 14px;
+    background: var(--o-surface); border: 2px solid var(--o-heading);
+    color: var(--o-heading);
+    font: 20px/1 var(--o-font-pixel); text-transform: uppercase;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 160ms ease, color 160ms ease;
   }
-  .mobile-section-nav a {
-    flex: none; min-height: 40px; display: inline-flex; align-items: center; padding: 0 14px;
-    background: var(--o-surface); border: 2px solid var(--o-line-soft);
-    color: var(--o-heading); font: 20px/1 var(--o-font-pixel); text-transform: uppercase;
+  :root.dark .landing-menu-toggle { border-color: var(--o-border); }
+  .landing-menu-toggle[aria-expanded="true"] { background: var(--o-deep); color: var(--o-cyan); }
+  .landing-menu-toggle .pixel-glyph { width: 21px; height: 15px; }
+  .landing-menu-toggle[aria-expanded="true"] .pixel-glyph { width: 15px; height: 15px; }
+  .landing-menu:not([hidden]) {
+    position: absolute; left: 0; right: 0; top: calc(100% + 3px); z-index: 1;
+    max-height: calc(100svh - 75px); overflow-y: auto; overscroll-behavior: contain;
+    display: grid; gap: 0;
+    padding: 8px max(16px, calc((100% - 1200px) / 2)) 20px;
+    background: var(--o-surface);
+    border-bottom: 3px solid var(--o-heading);
+    box-shadow: 0 8px 0 rgba(7, 14, 38, .18);
+  }
+  :root.dark .landing-menu:not([hidden]) { border-bottom-color: var(--o-border); }
+  .landing-menu a:not(.pixel-button) {
+    min-height: 56px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 8px;
+    border-bottom: 2px solid var(--o-line-soft);
+    color: var(--o-heading);
+    font: 24px/1 var(--o-font-pixel); text-transform: uppercase;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* The RPG cursor: shown on the command being pointed at, pressed or focused. */
+  .landing-menu-cursor { flex: none; width: 9px; height: 15px; color: var(--o-accent); visibility: hidden; }
+  .landing-menu a:active .landing-menu-cursor, .landing-menu a:focus-visible .landing-menu-cursor { visibility: visible; }
+  .landing-menu a:not(.pixel-button):active { background: var(--o-surface-2); }
+  @media (hover: hover) and (pointer: fine) {
+    .landing-menu a:not(.pixel-button):hover { background: var(--o-surface-2); }
+    .landing-menu a:hover .landing-menu-cursor { visibility: visible; }
+  }
+  /* Tablets keep the portal button in the bar, so the menu leaves it out; phones get it here. */
+  .landing-menu .pixel-button { display: none; margin-top: 16px; width: 100%; }
+  .landing-menu-scrim {
+    display: block;
+    position: fixed; inset: 0; z-index: 29;
+    background: rgba(7, 14, 38, .5);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .landing-menu:not([hidden]) { animation: landing-menu-drop 220ms var(--o-ease-out); }
+    .landing-menu:not([hidden]) > * { animation: landing-menu-item 260ms var(--o-ease-out) backwards; }
+    .landing-menu > :nth-child(2) { animation-delay: 30ms; }
+    .landing-menu > :nth-child(3) { animation-delay: 60ms; }
+    .landing-menu > :nth-child(4) { animation-delay: 90ms; }
+    .landing-menu > :nth-child(5) { animation-delay: 120ms; }
+    .landing-menu-scrim { animation: o-fade-in 200ms ease; }
   }
 }
+@keyframes landing-menu-drop { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes landing-menu-item { from { opacity: 0; translate: 0 -6px; } }
+@keyframes o-fade-in { from { opacity: 0; } }
 @media (max-width: 1023px) {
   .hero-display, .hero-grid { width: calc(100% - 48px); }
   .hero-display h1, .cta-pixel, .splash-hello { font-size: 80px; }
@@ -753,10 +813,16 @@ html.odin-preloading { overflow: hidden; }
 }
 @media (max-width: 760px) {
   .odin-landing { --wrap: calc(100% - 32px); --amp: .5; }
-  .landing-header { height: 64px; padding: 0 16px; }
+  /* Phones: just the brand and MENU (the portal button moves into the menu). */
+  .landing-header { height: 56px; padding: 0 12px 0 16px; }
+  .landing-brand { gap: 10px; }
+  .landing-brand img { width: 28px; height: 28px; }
+  .landing-brand > span { font-size: 28px; }
   .landing-brand i { display: none; }
-  .mobile-section-nav { top: 64px; }
-  .landing-nav .landing-nav-cta { min-height: 44px; padding: 0 12px; }
+  .landing-nav { display: none; }
+  .landing-menu-toggle { margin-left: auto; min-height: 40px; padding: 0 12px; }
+  .landing-menu:not([hidden]) { max-height: calc(100svh - 59px); }
+  .landing-menu .pixel-button { display: inline-flex; }
   .landing-hero { padding: 40px 0 72px; }
   .corners .tl, .corners .tr { top: 10px; }
   .corners .tl, .corners .bl { left: 10px; }
@@ -831,7 +897,6 @@ html.odin-preloading { overflow: hidden; }
   .footage-step { grid-template-columns: auto 1fr; justify-items: start; gap: 12px; min-height: 48px; padding: 0 14px; text-align: left; }
 }
 @media (max-width: 480px) {
-  .landing-nav .landing-nav-cta { font-size: 10px; gap: 6px; padding: 0 10px; }
   .hero-display h1, .cta-pixel { font-size: 40px; }
   .splash-hello { font-size: 50px; }
   .party-group ul { gap: 10px; }

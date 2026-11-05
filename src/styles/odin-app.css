@@ -159,6 +159,77 @@
   .odin-nav-who { display: none; }
   .odin-nav-user { padding-left: 8px; }
 }
+/* Phones and small tablets: one slim bar (brand + MENU). The links, the user, the landing-page link
+   and log out open as a sheet under it, so the ribbon no longer stacks into several rows. */
+.odin-nav-toggle, .odin-nav-sheet, .odin-nav-scrim { display: none; }
+@media (max-width: 1023px) {
+  .odin-nav-inner { height: 56px; flex-wrap: nowrap; padding: 0 12px 0 16px; }
+  .odin-nav-right { display: none; }
+  .odin-nav-brand { gap: 10px; }
+  .odin-nav-brand img { width: 32px; height: 32px; }
+  .odin-nav-brand span { font-size: 28px; }
+  .odin-nav-toggle {
+    margin-left: auto; flex: none;
+    min-width: 44px; min-height: 40px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 0 12px;
+    background: var(--o-surface); border: 2px solid var(--app-edge);
+    color: var(--o-heading);
+    font: 20px/1 var(--o-font-pixel); text-transform: uppercase;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+  .odin-nav-toggle svg { width: 18px; height: 18px; }
+  .odin-nav-toggle[aria-expanded="true"] { background: var(--o-deep); color: var(--o-cyan); }
+  .odin-nav-sheet:not([hidden]) {
+    position: absolute; left: 0; right: 0; top: calc(100% + 3px);
+    max-height: calc(100svh - 59px); overflow-y: auto; overscroll-behavior: contain;
+    display: grid; gap: 12px;
+    padding: 12px 16px 16px;
+    background: var(--o-surface);
+    border-bottom: 3px solid var(--app-edge);
+    box-shadow: 0 8px 0 rgba(7, 14, 38, .18);
+  }
+  .odin-nav-sheet-who { padding: 4px 4px 12px; border-bottom: 2px solid var(--o-line-soft); }
+  .odin-nav-sheet-links { display: grid; gap: 2px; }
+  .odin-nav-sheet .odin-nav-link { min-height: 52px; justify-content: flex-start; gap: 12px; padding: 0 12px; font-size: 22px; -webkit-tap-highlight-color: transparent; }
+  .odin-nav-sheet .odin-nav-link svg { width: 18px; height: 18px; }
+  .odin-nav-sheet .odin-nav-link:not(.is-active):not(.is-locked):active { background: var(--o-surface-2); }
+  .odin-nav-sheet .odin-nav-lock { position: static; margin-left: auto; }
+  .odin-nav-sheet-who .odin-nav-name { font-size: 16px; }
+  .odin-nav-sheet-foot {
+    display: grid; gap: 8px;
+    padding-top: 12px; border-top: 2px solid var(--o-line-soft);
+  }
+  .odin-nav-sheet .odin-nav-back { order: 0; margin: 0; min-height: 44px; padding: 0 12px; color: var(--o-heading); font: 20px/1 var(--o-font-pixel); text-transform: uppercase; }
+  .odin-nav-sheet-logout {
+    min-height: 48px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 0 14px;
+    background: none; border: 2px solid var(--app-edge);
+    color: var(--o-heading);
+    font: 20px/1 var(--o-font-pixel); text-transform: uppercase;
+    cursor: pointer;
+  }
+  .odin-nav-sheet-logout svg { width: 16px; height: 16px; }
+  .odin-nav-sheet-logout:active { background: var(--o-error); color: var(--o-ink); }
+  @media (hover: hover) and (pointer: fine) { .odin-nav-sheet-logout:hover { background: var(--o-error); color: var(--o-ink); } }
+  .odin-nav-scrim { display: block; position: fixed; inset: 0; z-index: 39; background: rgba(7, 14, 38, .5); }
+  @media (prefers-reduced-motion: no-preference) {
+    .odin-nav-sheet:not([hidden]) { animation: odin-sheet-drop 220ms var(--o-ease-out); }
+    .odin-nav-sheet:not([hidden]) .odin-nav-link { animation: odin-sheet-item 260ms var(--o-ease-out) backwards; }
+    .odin-nav-sheet .odin-nav-link:nth-child(2) { animation-delay: 25ms; }
+    .odin-nav-sheet .odin-nav-link:nth-child(3) { animation-delay: 50ms; }
+    .odin-nav-sheet .odin-nav-link:nth-child(4) { animation-delay: 75ms; }
+    .odin-nav-sheet .odin-nav-link:nth-child(5) { animation-delay: 100ms; }
+    .odin-nav-sheet .odin-nav-link:nth-child(n+6) { animation-delay: 125ms; }
+    .odin-nav-scrim { animation: odin-scrim-in 200ms ease; }
+  }
+}
+@keyframes odin-sheet-drop { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes odin-sheet-item { from { opacity: 0; translate: 0 -6px; } }
+@keyframes odin-scrim-in { from { opacity: 0; } }
 
 /* ---------- Content: game panels, calmer than the landing page ---------- */
 /* Square corners everywhere except loading spinners. */

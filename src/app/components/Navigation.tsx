@@ -2,7 +2,7 @@ import { useRef, useState, useLayoutEffect, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Home, Gamepad2, Book, User, Database, LogOut, Settings,
-  ShieldAlert, Lock, ClipboardList, FlaskConical, ChevronDown,
+  ShieldAlert, Lock, ClipboardList, FlaskConical, ChevronDown, Menu, X,
 } from 'lucide-react';
 import logo64  from '../../img/brand/odin-logo-transparent-64.png';
 import logo128 from '../../img/brand/odin-logo-transparent-128.png';
@@ -55,6 +55,10 @@ export function Navigation() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [hasOverflow, setHasOverflow] = useState(false);
   const linksRef = useRef<HTMLDivElement>(null);
+  // Phones and small tablets: one slim bar with a MENU button; everything else lives in its sheet.
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
+  const sheetButtonRef = useRef<HTMLButtonElement>(null);
 
   const isActive = (path: string) => location.pathname === path;
   const links = user?.role === 'admin' ? ADMIN_LINKS : STUDENT_LINKS;
@@ -81,6 +85,30 @@ export function Navigation() {
     return () => document.removeEventListener('mousedown', handler);
   }, [moreOpen]);
 
+  // Close the sheet after navigating, on Escape, on a tap outside the bar, or once the window is wide.
+  useEffect(() => { setSheetOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setSheetOpen(false);
+      sheetButtonRef.current?.focus();
+    };
+    const onPointer = (e: PointerEvent) => { if (!navRef.current?.contains(e.target as Node)) setSheetOpen(false); };
+    const wide = window.matchMedia('(min-width: 1024px)');
+    const onWide = () => { if (wide.matches) setSheetOpen(false); };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onPointer);
+    wide.addEventListener('change', onWide);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPointer);
+      wide.removeEventListener('change', onWide);
+    };
+  }, [sheetOpen]);
+
+  const handleLogout = async () => { await logout(); navigate('/login'); };
+
   // Renders one nav link, respecting lockdown for students. Styling lives in odin-app.css (.odin-nav).
   const renderLink = (item: NavItem, inDropdown = false) => {
     const locked = item.featureKey ? isFeatureLocked(item.featureKey).locked : false;
@@ -89,7 +117,7 @@ export function Navigation() {
       <Link
         key={item.to}
         to={locked ? '#' : item.to}
-        onClick={locked ? (e: React.MouseEvent) => e.preventDefault() : () => setMoreOpen(false)}
+        onClick={locked ? (e: React.MouseEvent) => e.preventDefault() : () => { setMoreOpen(false); setSheetOpen(false); }}
         title={locked ? 'This feature is currently locked' : undefined}
         aria-current={active ? 'page' : undefined}
         className={`odin-nav-link${active ? ' is-active' : ''}${locked ? ' is-locked' : ''}${inDropdown ? ' in-menu' : ''}`}
@@ -102,7 +130,8 @@ export function Navigation() {
   };
 
   return (
-    <nav className="odin-nav">
+    <>
+    <nav className="odin-nav" ref={navRef} data-sheet-open={sheetOpen || undefined}>
       <div className="odin-nav-inner">
 
         {/* Logo */}
@@ -153,7 +182,7 @@ export function Navigation() {
               <div className="odin-nav-id">{user?.studentId}</div>
             </div>
             <Button
-              onClick={async () => { await logout(); navigate('/login'); }}
+              onClick={handleLogout}
               variant="ghost"
               size="sm"
               className="odin-nav-logout"
@@ -163,7 +192,39 @@ export function Navigation() {
             </Button>
           </div>
         </div>
+
+        {/* Narrow screens only (CSS hides it on wide ones). */}
+        <button
+          ref={sheetButtonRef}
+          type="button"
+          className="odin-nav-toggle"
+          aria-expanded={sheetOpen}
+          aria-controls="odin-nav-sheet"
+          onClick={() => setSheetOpen((open) => !open)}
+        >
+          {sheetOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+          <span>{sheetOpen ? 'Close' : 'Menu'}</span>
+        </button>
+      </div>
+
+      <div id="odin-nav-sheet" className="odin-nav-sheet" hidden={!sheetOpen}>
+        <div className="odin-nav-sheet-who">
+          <div className="odin-nav-name">{user?.name}</div>
+          <div className="odin-nav-id">{user?.studentId}</div>
+        </div>
+        <div className="odin-nav-sheet-links">
+          {links.map((item) => renderLink(item, true))}
+        </div>
+        <div className="odin-nav-sheet-foot">
+          <LandingPageLink className="odin-nav-back" />
+          <button type="button" className="odin-nav-sheet-logout" onClick={handleLogout}>
+            <LogOut aria-hidden="true" /> Log out
+          </button>
+        </div>
       </div>
     </nav>
+    {/* Dims the page under an open sheet; a tap on it closes the sheet (outside the nav). */}
+    {sheetOpen && <div className="odin-nav-scrim" aria-hidden="true" />}
+    </>
   );
 }
