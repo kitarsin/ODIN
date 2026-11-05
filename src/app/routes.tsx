@@ -22,6 +22,8 @@ import { OdinTestBench } from './pages/OdinTestBench';
 import { Pretest } from './pages/Pretest';
 import { Posttest } from './pages/Posttest';
 import { isMobileDevice } from './utils/mobileDevice';
+import '../styles/odin-public.css';
+import '../styles/odin-app.css';
 
 function DesktopExperience({ children }: { children: ReactNode }) {
   const isMobile = isMobileDevice();
@@ -44,6 +46,11 @@ function DesktopExperience({ children }: { children: ReactNode }) {
 }
 
 const onDesktop = (page: ReactNode) => <DesktopExperience>{page}</DesktopExperience>;
+
+// Signed-in pages sit inside the ODIN frame (src/styles/odin-app.css): the landing page's look,
+// with a scene behind each tab. `tab` picks the scene; the pages themselves are unchanged.
+type AppTab = 'dashboard' | 'play' | 'wiki' | 'test' | 'profile' | 'settings' | 'admin';
+const onApp = (tab: AppTab, page: ReactNode) => onDesktop(<div className="odin-public odin-app" data-tab={tab}>{page}</div>);
 
 export const router = createBrowserRouter([
   {
@@ -68,7 +75,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/dashboard',
-    element: onDesktop(
+    element: onApp('dashboard', 
       <ProtectedRoute featureKey="dashboard">
         <StudentDashboard />
       </ProtectedRoute>
@@ -76,7 +83,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/play',
-    element: onDesktop(
+    element: onApp('play', 
       <ProtectedRoute featureKey="game">
         <GameContainer />
       </ProtectedRoute>
@@ -84,7 +91,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/wiki',
-    element: onDesktop(
+    element: onApp('wiki', 
       <ProtectedRoute featureKey="wiki">
         <Wiki />
       </ProtectedRoute>
@@ -92,7 +99,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/profile',
-    element: onDesktop(
+    element: onApp('profile', 
       <ProtectedRoute featureKey="profile">
         <Profile />
       </ProtectedRoute>
@@ -100,7 +107,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/account-settings',
-    element: onDesktop(
+    element: onApp('settings', 
       <ProtectedRoute featureKey="account-settings">
         <AccountSettings />
       </ProtectedRoute>
@@ -108,7 +115,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    element: onDesktop(
+    element: onApp('admin', 
       <ProtectedRoute requireAdmin>
         <AdminDatabase />
       </ProtectedRoute>
@@ -116,7 +123,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin/analytics',
-    element: onDesktop(
+    element: onApp('admin', 
       <ProtectedRoute requireAdmin>
         <Analytics />
       </ProtectedRoute>
@@ -124,7 +131,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin/lockdown',
-    element: onDesktop(
+    element: onApp('admin', 
       <ProtectedRoute requireAdmin>
         <FeatureLockdown />
       </ProtectedRoute>
@@ -132,7 +139,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin/gamelogs',
-    element: onDesktop(
+    element: onApp('admin', 
       <ProtectedRoute requireAdmin>
         <AdminGameLogs />
       </ProtectedRoute>
@@ -140,7 +147,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin/responses',
-    element: onDesktop(
+    element: onApp('admin', 
       <ProtectedRoute requireAdmin>
         <AdminResponseEditor />
       </ProtectedRoute>
@@ -148,7 +155,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/test-bench',
-    element: onDesktop(
+    element: onApp('admin', 
       <ProtectedRoute featureKey="test-bench">
       <OdinTestBench />
       </ProtectedRoute>
@@ -156,7 +163,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/pretest',
-    element: onDesktop(
+    element: onApp('test', 
       <ProtectedRoute skipPretestGate>
         <Pretest />
       </ProtectedRoute>
@@ -164,7 +171,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/posttest',
-    element: onDesktop(
+    element: onApp('test', 
       <ProtectedRoute featureKey="posttest">
         <Posttest />
       </ProtectedRoute>

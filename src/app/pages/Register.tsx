@@ -6,6 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { AuthLayout } from '../components/AuthLayout';
 
 export function Register() {
   const [name, setName] = useState('');
@@ -82,16 +83,13 @@ export function Register() {
     email.trim().length > 0 &&
     password.trim().length > 0;
 
-  const bgClass = isGameMode ? 'bg-[#1a1a2e]' : 'bg-background';
-
   const cardBgClass = isGameMode ? 'bg-[#16213e]' : 'bg-card';
   const cardBorderClass = isGameMode ? 'border-[#00ff41]' : 'border-border';
   const textColorClass = isGameMode ? 'text-[#00ff41]' : 'text-foreground';
   const secondaryTextClass = isGameMode ? 'text-[#4ecdc4]' : 'text-muted-foreground';
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 transition-all ${bgClass}`}>
-      <div className="w-full max-w-md">
+    <AuthLayout>
         <div className={`border p-8 shadow-2xl transition-all ${isGameMode ? `bg-[#16213e] border-[#00ff41] shadow-[0_0_30px_rgba(0,255,65,0.3)] border-4 rounded` : `${cardBgClass} border-2 ${cardBorderClass} rounded-lg`}`}>
           <div className="flex flex-col items-center mb-8">
             <div className={`w-16 h-16 rounded-lg flex items-center justify-center mb-4 relative ${isGameMode ? 'bg-[#00ff41] shadow-[0_0_20px_rgba(0,255,65,0.6)]' : 'bg-primary'}`}>
@@ -267,7 +265,6 @@ export function Register() {
             </p>
           </div>
         </div>
-      </div>
-    </div>
+    </AuthLayout>
   );
 }

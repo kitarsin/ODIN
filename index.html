@@ -5,6 +5,8 @@
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>InsomniCode's ODIN</title>
+      <link rel="preload" href="/fonts/odin-pixel.woff" as="font" type="font/woff" crossorigin />
+      <link rel="preload" href="/fonts/dedicool.woff" as="font" type="font/woff" crossorigin />
       <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png" />
       <link rel="icon" type="image/png" sizes="16x16" href="/brand/favicon-16.png" />
       <link rel="apple-touch-icon" sizes="180x180" href="/brand/apple-touch-icon.png" />
@@ -13,23 +15,35 @@
       <script>
         (function () {
           try {
-            var mode = localStorage.getItem('odin-color-mode') === 'light' ? 'light' : 'dark';
+            var mode = localStorage.getItem('odin-color-mode-v2') === 'dark' ? 'dark' : 'light';
             document.documentElement.classList.toggle('dark', mode === 'dark');
             document.documentElement.classList.toggle('light-mode', mode === 'light');
             document.documentElement.dataset.theme = mode;
+            // On the landing page the boot screen matches the preloader that follows it.
+            if (location.pathname === '/' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+              document.documentElement.classList.add('odin-boot-landing');
+            }
           } catch (error) {
-            document.documentElement.classList.add('dark');
-            document.documentElement.dataset.theme = 'dark';
+            document.documentElement.classList.add('light-mode');
+            document.documentElement.dataset.theme = 'light';
           }
         })();
       </script>
+      <style>
+        .odin-boot { display:flex; align-items:center; justify-content:center; min-height:100vh; background:#EEF3FA; color:#4B5873; font-family:monospace; }
+        .odin-boot b { display:block; font-size:18px; color:#0B6BD4; margin-bottom:8px; font-weight:normal; }
+        [data-theme="dark"] .odin-boot { background:#070E26; color:#A7B2C6; }
+        [data-theme="dark"] .odin-boot b { color:#5FCDE4; }
+        .odin-boot-landing .odin-boot { background:#070E26; color:#070E26; }
+        .odin-boot-landing .odin-boot b { color:#5FCDE4; }
+      </style>
     </head>
 
     <body>
       <div id="root"> 
-        <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0F172A;color:#94A3B8;font-family:monospace;">
+        <div class="odin-boot">
           <div style="text-align:center;">
-            <div style="font-size:18px;color:#10B981;margin-bottom:8px;">Loading ODIN…</div>
+            <b>Loading ODIN…</b>
             <div style="font-size:12px;">If this stays blank, open your browser console for errors.</div>
             <noscript style="display:block;margin-top:10px;color:#EF4444;font-size:12px;">JavaScript is required — enable JavaScript in your browser.</noscript>
           </div>

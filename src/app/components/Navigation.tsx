@@ -81,23 +81,7 @@ export function Navigation() {
     return () => document.removeEventListener('mousedown', handler);
   }, [moreOpen]);
 
-  // ── Shared style helpers ──
-  const itemClass = (active: boolean, locked = false) =>
-    `flex items-center gap-2 px-3 py-2 rounded transition-colors text-sm whitespace-nowrap ${
-      locked
-        ? 'opacity-40 cursor-not-allowed'
-        : active
-        ? isGameMode
-          ? 'text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]'
-          : 'text-primary bg-primary/10'
-        : isGameMode
-        ? 'text-[#4ecdc4] hover:text-[#00ff41]'
-        : 'text-muted-foreground hover:text-foreground'
-    }`;
-
-  const itemStyle = isGameMode ? { fontFamily: 'var(--font-pixel)', fontSize: '10px' } : {};
-
-  // Renders one nav link, respecting lockdown for students
+  // Renders one nav link, respecting lockdown for students. Styling lives in odin-app.css (.odin-nav).
   const renderLink = (item: NavItem, inDropdown = false) => {
     const locked = item.featureKey ? isFeatureLocked(item.featureKey).locked : false;
     const active = isActive(item.to);
@@ -107,103 +91,76 @@ export function Navigation() {
         to={locked ? '#' : item.to}
         onClick={locked ? (e: React.MouseEvent) => e.preventDefault() : () => setMoreOpen(false)}
         title={locked ? 'This feature is currently locked' : undefined}
-        className={`relative ${itemClass(active, locked)} ${inDropdown ? 'w-full' : ''}`}
-        style={itemStyle}
+        aria-current={active ? 'page' : undefined}
+        className={`odin-nav-link${active ? ' is-active' : ''}${locked ? ' is-locked' : ''}${inDropdown ? ' in-menu' : ''}`}
       >
         {item.icon}
         {isGameMode ? item.gameLabel : item.label}
-        {locked && <Lock className="w-3 h-3 absolute -top-1 -right-1 text-[#FF5252]" />}
+        {locked && <Lock className="odin-nav-lock" />}
       </Link>
     );
   };
 
   return (
-    <nav className={`border-b transition-all ${
-      isGameMode
-        ? 'border-[#00ff41] bg-[#16213e] shadow-[0_0_10px_rgba(0,255,65,0.3)]'
-        : 'border-border bg-card'
-    }`}>
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
-        <div className="flex items-center justify-between gap-2 sm:gap-4 min-w-0">
+    <nav className="odin-nav">
+      <div className="odin-nav-inner">
 
-          {/* Logo */}
-          <Link to="/dashboard" className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <img
-              src={logo128}
-              srcSet={`${logo64} 64w, ${logo128} 128w, ${logo256} 256w`}
-              sizes="40px"
-              alt="ODIN"
-              className={`w-9 h-9 sm:w-10 sm:h-10 ${isGameMode ? 'drop-shadow-[0_0_12px_rgba(100,241,209,0.6)]' : ''}`}
-              style={{ imageRendering: 'pixelated' }}
-            />
-            <span
-              className={`text-lg sm:text-xl font-semibold transition-all ${isGameMode ? 'text-[#00ff41]' : 'text-foreground'}`}
-              style={isGameMode ? { fontFamily: 'var(--font-pixel)' } : { fontFamily: 'var(--font-mono)' }}
-            >
-              ODIN
-            </span>
-          </Link>
+        {/* Logo */}
+        <Link to="/dashboard" className="odin-nav-brand">
+          <img
+            src={logo128}
+            srcSet={`${logo64} 64w, ${logo128} 128w, ${logo256} 256w`}
+            sizes="40px"
+            alt="ODIN"
+            style={{ imageRendering: 'pixelated' }}
+          />
+          <span>ODIN</span>
+        </Link>
 
-          {/* Right side: links + more button + user */}
-          <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+        {/* Right side: links + more button + user */}
+        <div className="odin-nav-right">
 
-            {/* Inline links — hidden overflow gets picked up by More dropdown */}
-            <div
-              ref={linksRef}
-              className="flex items-center gap-1 overflow-hidden min-w-0"
-            >
-              {links.map((item) => renderLink(item))}
-            </div>
+          {/* Inline links — hidden overflow gets picked up by More dropdown */}
+          <div ref={linksRef} className="odin-nav-links">
+            {links.map((item) => renderLink(item))}
+          </div>
 
-            {/* More dropdown — only visible when links overflow */}
-            {hasOverflow && (
-              <div className="relative shrink-0" data-more-menu>
-                <button
-                  onClick={() => setMoreOpen(!moreOpen)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded transition-colors text-sm shrink-0 ${
-                    moreOpen
-                      ? isGameMode ? 'text-[#00ff41] bg-[#00ff41]/10' : 'text-primary bg-primary/10'
-                      : isGameMode ? 'text-[#4ecdc4] hover:text-[#00ff41]' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  style={itemStyle}
-                >
-                  {isGameMode ? 'MORE' : 'More'}
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
-                </button>
-                {moreOpen && (
-                  <div className={`absolute right-0 top-full mt-1 z-50 min-w-[160px] rounded-md border shadow-lg py-1 ${
-                    isGameMode ? 'bg-[#16213e] border-[#00ff41]' : 'bg-card border-border'
-                  }`}>
-                    {links.map((item) => renderLink(item, true))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <LandingPageLink className="shrink-0 px-1.5 sm:px-2 py-2" />
-
-            {/* User info + logout */}
-            <div className={`flex items-center gap-2 sm:gap-3 shrink-0 ml-1 sm:ml-2 pl-2 sm:pl-3 border-l ${
-              isGameMode ? 'border-[#00ff41]' : 'border-border'
-            }`}>
-              <div className="text-right hidden sm:block">
-                <div className={`text-sm ${isGameMode ? 'text-[#00ff41]' : 'text-foreground'}`}>{user?.name}</div>
-                <div
-                  className={`text-xs ${isGameMode ? 'text-[#4ecdc4]' : 'text-muted-foreground'}`}
-                  style={{ fontFamily: 'var(--font-mono)' }}
-                >
-                  {user?.studentId}
-                </div>
-              </div>
-              <Button
-                onClick={async () => { await logout(); navigate('/login'); }}
-                variant="ghost"
-                size="sm"
-                className={isGameMode ? 'text-[#ff6b6b] hover:text-[#ff6b6b]' : 'text-muted-foreground hover:text-destructive'}
+          {/* More dropdown — only visible when links overflow */}
+          {hasOverflow && (
+            <div className="odin-nav-more" data-more-menu>
+              <button
+                onClick={() => setMoreOpen(!moreOpen)}
+                className={`odin-nav-link${moreOpen ? ' is-active' : ''}`}
+                aria-expanded={moreOpen}
               >
-                <LogOut className="w-4 h-4" />
-              </Button>
+                {isGameMode ? 'MORE' : 'More'}
+                <ChevronDown className={moreOpen ? 'is-open' : ''} />
+              </button>
+              {moreOpen && (
+                <div className="odin-nav-menu">
+                  {links.map((item) => renderLink(item, true))}
+                </div>
+              )}
             </div>
+          )}
+
+          <LandingPageLink className="odin-nav-back" />
+
+          {/* User info + logout */}
+          <div className="odin-nav-user">
+            <div className="odin-nav-who">
+              <div className="odin-nav-name">{user?.name}</div>
+              <div className="odin-nav-id">{user?.studentId}</div>
+            </div>
+            <Button
+              onClick={async () => { await logout(); navigate('/login'); }}
+              variant="ghost"
+              size="sm"
+              className="odin-nav-logout"
+              aria-label="Log out"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       </div>

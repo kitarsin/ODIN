@@ -1,0 +1,303 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+ * ODIN signed-in pages: the landing page's look, toned down for daily use.
+ * routes.tsx wraps every signed-in page in <div class="odin-public odin-app" data-tab="...">.
+ * Only appearance lives here. Page content, layout logic and behaviour are untouched; the
+ * pages keep their Tailwind/shadcn classes and this file restyles them inside the frame.
+ * Tokens (--o-*) come from odin-public.css.
+ * ───────────────────────────────────────────────────────────────────────────*/
+
+/* ---------- Frame, theme tokens and the scene behind each tab ---------- */
+.odin-app {
+  /* Point the shadcn tokens used by the pages at the ODIN palette. */
+  --background: var(--o-bg);
+  --foreground: var(--o-heading);
+  --card: var(--o-surface);
+  --card-foreground: var(--o-heading);
+  --popover: var(--o-surface);
+  --popover-foreground: var(--o-heading);
+  --primary: #0B6BD4;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1E5FA8;
+  --secondary-foreground: #FFFFFF;
+  --muted: #E3EAF5;
+  --muted-foreground: var(--o-soft);
+  --accent: #E3EAF5;
+  --accent-foreground: var(--o-heading);
+  --border: var(--o-line-soft);
+  --input: var(--o-line-soft);
+  --input-background: var(--o-surface-2);
+  --ring: var(--o-focus);
+  --app-wash: rgba(238, 243, 250, .86);
+  --app-edge: var(--o-heading);
+
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
+  color: var(--o-text);
+}
+:root.dark .odin-app {
+  --primary: #5FCDE4;
+  --primary-foreground: #0A0C14;
+  --secondary: #8FB8FF;
+  --secondary-foreground: #0A0C14;
+  --muted: #262C3A;
+  --accent: #262C3A;
+  --app-wash: rgba(7, 14, 38, .84);
+  --app-edge: var(--o-border);
+}
+
+/* The scene: fixed behind the page and washed back so it never competes with the content. */
+.odin-app::before {
+  content: '';
+  position: fixed; inset: 0; z-index: -1;
+  background-color: var(--o-bg);
+  background-repeat: no-repeat;
+  background-position: center, center;
+  background-size: cover, cover;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.odin-app[data-tab="dashboard"]::before { background-image: linear-gradient(var(--app-wash), var(--app-wash)), url('../img/landing/bg/lab-night.png'); }
+.odin-app[data-tab="play"]::before { background-image: linear-gradient(var(--app-wash), var(--app-wash)), url('../img/landing/bg/hero-simulation.png'); }
+.odin-app[data-tab="wiki"]::before { background-image: linear-gradient(var(--app-wash), var(--app-wash)), url('../img/landing/bg/library-day.png'); }
+.odin-app[data-tab="test"]::before { background-image: linear-gradient(var(--app-wash), var(--app-wash)), url('../img/landing/bg/team-classroom.png'); }
+.odin-app[data-tab="profile"]::before { background-image: linear-gradient(var(--app-wash), var(--app-wash)), url('../img/landing/bg/campus-dusk.png'); }
+.odin-app[data-tab="settings"]::before { background-image: linear-gradient(var(--app-wash), var(--app-wash)), url('../img/landing/bg/cta-sky-day.png'); background-position: center, right top; }
+:root.dark .odin-app[data-tab="settings"]::before { background-image: linear-gradient(var(--app-wash), var(--app-wash)), url('../img/landing/bg/cta-sky-night.png'); }
+.odin-app[data-tab="admin"]::before { background-image: linear-gradient(var(--app-wash), var(--app-wash)), url('../img/landing/bg/footage-diner.png'); }
+
+/* The pages paint their own full-screen background; let the scene show through instead. */
+.odin-app > .bg-background,
+.odin-app > [class*="min-h-screen"],
+.odin-app > .h-screen { background-color: transparent !important; }
+
+/* ---------- The ribbon (Navigation.tsx), as the landing page header ---------- */
+.odin-nav {
+  position: sticky; top: 0; z-index: 40;
+  background: var(--o-surface);
+  border-bottom: 3px solid var(--app-edge);
+}
+.odin-nav-inner {
+  height: 72px;
+  display: flex; align-items: center; gap: 20px;
+  padding: 0 max(24px, calc((100% - 1392px) / 2));
+}
+.odin-nav-brand { display: inline-flex; align-items: center; gap: 12px; flex: none; }
+.odin-nav-brand img { width: 40px; height: 40px; }
+.odin-nav-brand span { color: var(--o-heading); font: 32px/1 var(--o-font-title); }
+.odin-nav-right { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+.odin-nav-links {
+  min-width: 0;
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px;
+  overflow: hidden;
+  background: var(--o-surface-2);
+  border: 2px solid var(--app-edge);
+}
+.odin-nav-link {
+  position: relative; flex: none;
+  min-height: 40px;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 0 14px;
+  background: none; border: 0;
+  color: var(--o-heading);
+  font: 20px/1 var(--o-font-pixel);
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+.odin-nav-link svg { width: 16px; height: 16px; flex: none; }
+/* Icons stay in the More menu but not in the strip, so the labels fit. */
+.odin-nav-links .odin-nav-link > svg:first-child { display: none; }
+@media (hover: hover) and (pointer: fine) { .odin-nav-link:not(.is-active):not(.is-locked):hover { background: var(--o-surface); } }
+.odin-nav-link.is-active { background: var(--o-deep); color: var(--o-cyan); }
+.odin-nav-link.is-locked { opacity: .4; cursor: not-allowed; }
+.odin-nav-lock { position: absolute; top: 2px; right: 2px; width: 12px !important; height: 12px !important; color: var(--o-error); }
+.odin-nav-more { position: relative; flex: none; }
+.odin-nav-more > .odin-nav-link { border: 2px solid var(--app-edge); }
+.odin-nav-more > .odin-nav-link svg { transition: rotate 160ms var(--o-ease-out); }
+.odin-nav-more > .odin-nav-link svg.is-open { rotate: 180deg; }
+.odin-nav-menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 50;
+  min-width: 220px;
+  display: grid; gap: 2px; padding: 4px;
+  background: var(--o-surface);
+  border: 2px solid var(--app-edge);
+  box-shadow: 4px 4px 0 var(--o-shadow);
+}
+.odin-nav-menu .odin-nav-link { justify-content: flex-start; }
+.odin-nav .odin-nav-back {
+  flex: none;
+  min-height: 40px; padding: 0 4px;
+  color: var(--o-heading);
+  font: 20px/1 var(--o-font-pixel);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.odin-nav .odin-nav-back:hover { color: var(--o-accent); }
+.odin-nav-user { flex: none; display: flex; align-items: center; gap: 10px; padding-left: 12px; border-left: 2px solid var(--o-line-soft); }
+.odin-nav-who { text-align: right; }
+.odin-nav-name { color: var(--o-heading); font: 600 14px/1.2 var(--o-font-body); }
+.odin-nav-id { margin-top: 4px; color: var(--o-soft); font: 10px/1.2 var(--o-font-pixel); }
+.odin-nav .odin-nav-logout {
+  width: 40px; height: 40px; padding: 0;
+  border: 2px solid var(--app-edge); border-radius: 0;
+  color: var(--o-heading);
+}
+.odin-nav .odin-nav-logout:hover { background: var(--o-error); color: var(--o-ink); }
+/* Narrower windows: the links move to their own row under the brand, so no label is cut off. */
+@media (max-width: 1399px) {
+  .odin-nav-inner { height: auto; flex-wrap: wrap; row-gap: 10px; padding-block: 12px; }
+  .odin-nav-right { display: contents; }
+  .odin-nav .odin-nav-back { order: 1; margin-left: auto; }
+  .odin-nav-user { order: 2; }
+  .odin-nav-links { order: 3; flex: 1 0 100%; }
+  .odin-nav-more { order: 4; }
+}
+@media (max-width: 1100px) {
+  .odin-nav-who { display: none; }
+  .odin-nav-user { padding-left: 8px; }
+}
+
+/* ---------- Content: game panels, calmer than the landing page ---------- */
+/* Square corners everywhere except loading spinners. */
+.odin-app [class*="rounded"]:not(.animate-spin) { border-radius: 0 !important; }
+
+/* Panels: framed like the game's battle screen and dialogue box, a thick blue border with softly
+   rounded corners and the panel title set like the dialogue speaker's name. The fill follows the
+   colour mode: white in light mode, the game's own dark grey in dark mode. */
+.odin-app {
+  --frame: #1593FF;
+  --frame-fill: #FFFFFF;
+  --frame-inner: #C9DDF5;
+  --frame-inner-fill: #F5F8FD;
+  --frame-drop: rgba(11, 28, 69, .18);
+  --speaker: var(--o-navy);
+}
+/* Light mode uses the darker navy for the frame and titles; dark mode keeps the game's bright blue. */
+:root:not(.dark) .odin-app { --frame: var(--o-navy); --frame-inner: #B9C7DE; }
+:root.dark .odin-app {
+  --frame-fill: #1F2228;
+  --frame-inner: #1B568A;
+  --frame-inner-fill: #171A20;
+  --frame-drop: rgba(2, 6, 26, .6);
+  --speaker: #00FFFF;
+}
+.odin-app .bg-card,
+.odin-app .bg-card[class*="rounded"],
+.odin-app [data-slot="card"] {
+  background-color: var(--frame-fill) !important;
+  border: 4px solid var(--frame) !important;
+  border-radius: 8px !important;
+  box-shadow: 4px 4px 0 var(--frame-drop);
+}
+/* Boxes inside a panel are the battle screen's inner windows: a thinner line, no drop. */
+.odin-app .bg-card .bg-card,
+.odin-app .bg-card .bg-card[class*="rounded"],
+.odin-app .bg-card [class*="bg-muted/"],
+.odin-app .bg-card [class*="bg-muted/"][class*="rounded"] {
+  background-color: var(--frame-inner-fill) !important;
+  border: 2px solid var(--frame-inner) !important;
+  border-radius: 4px !important;
+  box-shadow: none;
+}
+
+/* Headings: page titles in the title face, panel titles like the dialogue speaker, the rest Inter. */
+.odin-app h1 {
+  color: var(--o-heading);
+  font-family: var(--o-font-title) !important;
+  font-size: 32px !important;
+  font-weight: normal !important;
+  line-height: 1.15 !important;
+  letter-spacing: 0;
+}
+.odin-app .bg-card h2,
+.odin-app .bg-card h3.text-lg,
+.odin-app [data-slot="card-title"] {
+  color: var(--speaker);
+  font-family: var(--o-font-title) !important;
+  font-size: 24px !important;
+  font-weight: normal !important;
+  line-height: 1.2 !important;
+}
+.odin-app .bg-card h2 svg { color: var(--speaker); }
+
+/* Readability: nothing smaller than 12px, and muted text keeps a strong contrast. */
+.odin-app .text-\[10px\], .odin-app .text-\[11px\] { font-size: 12px !important; }
+.odin-app .text-muted-foreground { color: var(--o-soft); }
+
+/* Buttons: the landing page's pixel button. */
+.odin-app button.bg-primary,
+.odin-app a.bg-primary,
+.odin-app [data-slot="button"].bg-primary,
+.odin-app button.bg-secondary,
+.odin-app button.bg-destructive {
+  min-height: 44px;
+  border: 2px solid var(--o-ink) !important;
+  background-color: var(--o-cyan) !important;
+  color: var(--o-ink) !important;
+  font-family: var(--o-font-pixel) !important;
+  font-size: 20px !important;
+  font-weight: normal !important;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0 var(--o-shadow);
+  transition: transform 120ms var(--o-ease-out), box-shadow 120ms var(--o-ease-out), background-color 160ms ease;
+}
+.odin-app button.bg-destructive { background-color: var(--o-error) !important; }
+:root.dark .odin-app button.bg-primary, :root.dark .odin-app a.bg-primary, :root.dark .odin-app [data-slot="button"].bg-primary {
+  border-color: var(--o-cyan) !important;
+  box-shadow: 4px 4px 0 var(--o-border);
+}
+@media (hover: hover) and (pointer: fine) {
+  .odin-app button.bg-primary:not(:disabled):hover, .odin-app a.bg-primary:hover, .odin-app [data-slot="button"].bg-primary:not(:disabled):hover {
+    background-color: #83E0F0 !important;
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--o-shadow);
+  }
+}
+.odin-app button.bg-primary:not(:disabled):active, .odin-app [data-slot="button"].bg-primary:not(:disabled):active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--o-shadow); }
+.odin-app [data-slot="button"][class*="border"]:not(.bg-primary):not(.odin-nav-logout) { border: 2px solid var(--app-edge) !important; }
+
+/* Text fields: square, with the landing page's focus ring. */
+.odin-app [data-slot="input"],
+.odin-app input[type="text"],
+.odin-app input[type="email"],
+.odin-app input[type="password"],
+.odin-app input[type="search"],
+.odin-app select {
+  border: 2px solid var(--o-line-soft) !important;
+  border-radius: 0 !important;
+  background-color: var(--o-surface-2);
+}
+:root.dark .odin-app [data-slot="input"], :root.dark .odin-app input[type="text"], :root.dark .odin-app input[type="email"],
+:root.dark .odin-app input[type="password"], :root.dark .odin-app input[type="search"], :root.dark .odin-app select { border-color: #3A4560 !important; }
+.odin-app [data-slot="input"]:focus-visible,
+.odin-app input:focus-visible,
+.odin-app select:focus-visible {
+  border-color: var(--o-focus) !important;
+  box-shadow: 4px 4px 0 var(--o-cyan) !important;
+  outline: none;
+}
+
+/* Progress: a segmented pixel meter, like a health bar. */
+.odin-app [data-slot="progress"] {
+  height: 16px !important;
+  background: var(--o-surface-2) !important;
+  border: 2px solid var(--app-edge);
+}
+.odin-app [data-slot="progress-indicator"],
+.odin-app .bg-gradient-to-r.from-primary {
+  background: repeating-linear-gradient(90deg, var(--o-accent) 0 10px, transparent 10px 12px) !important;
+}
+.odin-app .h-3:has(> .bg-gradient-to-r.from-primary) { height: 16px; border: 2px solid var(--app-edge); background: var(--o-surface-2) !important; }
+
+/* Small tags and chips read as pixel labels. */
+.odin-app .bg-card span.border.text-xs.font-semibold {
+  padding: 5px 8px 3px !important;
+  font: 10px/1 var(--o-font-pixel) !important;
+  text-transform: uppercase;
+}
+
+/* The game window gets a pixel frame of its own. */
+.odin-app iframe { border: 3px solid var(--app-edge); box-shadow: 6px 6px 0 var(--o-shadow); }

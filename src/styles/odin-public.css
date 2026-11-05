@@ -1,0 +1,388 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+ * ODIN public pages: landing, sign-in pages and the mobile gate.
+ * Colours, fonts and panels come from Web_Design_Kit (10 Web Code/odin-web.css).
+ * Logged-in pages keep using theme.css and are not styled here.
+ * ───────────────────────────────────────────────────────────────────────────*/
+
+@font-face { font-family: 'ODIN Pixel'; src: url('/fonts/odin-pixel.woff') format('woff'); font-display: swap; }
+@font-face { font-family: 'Dedicool'; src: url('/fonts/dedicool.woff') format('woff'); font-display: swap; }
+
+/* ---------- Tokens: light is the default, dark follows html.dark ---------- */
+.odin-public, .odin-mobile-gate {
+  /* Kit palette, the same in both modes */
+  --o-deep: #070E26;
+  --o-navy: #0B1C45;
+  --o-dots-navy: #162652;
+  --o-cyan: #5FCDE4;
+  --o-teal: #1BD1C3;
+  --o-ice: #BEF0E8;
+  --o-gold: #FBF236;
+  --o-amber: #FFBE46;
+  --o-border: #1593FF;
+  --o-ground: #243C78;
+  --o-ink: #0A0C14;
+  --o-correct: #5BE37B;
+  --o-error: #FF6E6E;
+
+  /* The game's panels stay dark in both modes, like a screen inside the page */
+  --o-panel: #1F2228;
+  --o-panel-2: #171A20;
+  --o-panel-line: #1B568A;
+  --o-panel-white: #F0F6FF;
+  --o-panel-text: #DEE6F2;
+  --o-panel-label: #96A0B4;
+  --o-panel-muted: #606A7E;
+
+  /* Page surfaces (light) */
+  --o-bg: #EEF3FA;
+  --o-dots: #D3DEEE;
+  --o-surface: #FFFFFF;
+  --o-surface-2: #F5F8FD;
+  --o-heading: #0B1C45;
+  --o-text: #1E2A44;
+  --o-soft: #4B5873;
+  --o-line: #1593FF;
+  --o-line-soft: #C9D7EA;
+  --o-shadow: #273C6F;
+  --o-accent: #0B6BD4;
+  --o-accent-shadow: #CFE6FA;
+  --o-mark: #FBF236;
+  --o-focus: #0B6BD4;
+
+  --o-font-pixel: 'ODIN Pixel', 'Roboto Mono', monospace;
+  --o-font-title: 'Dedicool', 'ODIN Pixel', monospace;
+  --o-font-body: var(--font-inter), Inter, system-ui, sans-serif;
+  --o-px: 4px;
+  --o-ease-out: cubic-bezier(.23, 1, .32, 1);
+
+  color: var(--o-text);
+  font-family: var(--o-font-body);
+}
+
+:root.dark .odin-public, :root.dark .odin-mobile-gate {
+  --o-bg: #0D1430;
+  --o-dots: #1C2858;
+  --o-surface: #1F2228;
+  --o-surface-2: #171A20;
+  --o-heading: #F0F6FF;
+  --o-text: #DEE6F2;
+  --o-soft: #A7B2C6;
+  --o-line: #1593FF;
+  --o-line-soft: #23345E;
+  --o-shadow: #02061A;
+  --o-accent: #5FCDE4;
+  --o-accent-shadow: #0B1C45;
+  --o-mark: #FBF236;
+  --o-focus: #FBF236;
+}
+
+/* ---------- Shared primitives ---------- */
+.odin-public *, .odin-mobile-gate * { box-sizing: border-box; }
+.odin-public img.px, .odin-mobile-gate img.px { image-rendering: pixelated; }
+
+.o-kicker {
+  display: inline-flex; align-items: center; gap: 10px;
+  margin: 0 0 16px;
+  color: var(--o-accent);
+  font: 20px/1.2 var(--o-font-pixel);
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+.o-dot {
+  width: 8px; height: 8px; flex: none;
+  display: inline-block;
+  background: var(--o-correct);
+  box-shadow: 0 0 0 2px var(--o-ink);
+}
+
+/* The game's button: square, bordered, with a hard pixel shadow. */
+.pixel-button {
+  min-height: 48px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 0 18px;
+  border: 2px solid var(--o-ink);
+  background: var(--o-surface);
+  color: var(--o-heading);
+  font: 20px/1 var(--o-font-pixel);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: var(--o-px) var(--o-px) 0 var(--o-shadow);
+  transition: transform 120ms var(--o-ease-out), box-shadow 120ms var(--o-ease-out), background-color 160ms ease;
+}
+.pixel-button svg { width: 16px; height: 16px; flex: none; }
+.pixel-button.primary-button { background: var(--o-cyan); color: var(--o-ink); }
+:root.dark .pixel-button { border-color: var(--o-cyan); }
+:root.dark .pixel-button.primary-button { box-shadow: var(--o-px) var(--o-px) 0 var(--o-border); }
+@media (hover: hover) and (pointer: fine) {
+  .pixel-button:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--o-shadow); }
+  .pixel-button.primary-button:hover { background: #83E0F0; }
+  :root.dark .pixel-button.primary-button:hover { box-shadow: 6px 6px 0 var(--o-border); }
+}
+.pixel-button:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--o-shadow); }
+:root.dark .pixel-button.primary-button:active { box-shadow: 2px 2px 0 var(--o-border); }
+
+.odin-public :focus-visible, .odin-mobile-gate :focus-visible {
+  outline: 3px solid var(--o-focus);
+  outline-offset: 3px;
+}
+
+/* A game panel: the code editor box, used for windows and dialogue. */
+.o-panel {
+  background: var(--o-panel);
+  border: 3px solid var(--o-border);
+  color: var(--o-panel-text);
+  box-shadow: 6px 6px 0 var(--o-shadow);
+}
+.o-panel-bar {
+  min-height: 40px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 8px 14px;
+  border-bottom: 2px solid var(--o-panel-line);
+  color: var(--o-panel-white);
+  font: 20px/1 var(--o-font-pixel);
+}
+.o-panel-bar small { color: var(--o-panel-label); font: inherit; }
+
+/* ODIN's dialogue box: a speaker tab sitting on the panel's top edge. */
+.o-dialog { position: relative; margin-top: 20px; }
+.o-dialog-speaker {
+  position: absolute; top: -20px; left: 12px;
+  padding: 4px 10px 2px;
+  background: var(--o-panel);
+  border: 3px solid var(--o-border);
+  color: #00FFFF;
+  font: 16px/1 var(--o-font-title);
+}
+.o-dialog-body { padding: 18px 16px 14px; font: 20px/1.2 var(--o-font-pixel); color: var(--o-panel-white); }
+
+/* ---------- Mobile notice dialog (landing page, phones only) ---------- */
+.mobile-notice {
+  width: min(440px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+.mobile-notice::backdrop { background: rgba(7, 14, 38, .72); }
+.mobile-notice-inner { padding: 22px 20px 20px; }
+.mobile-notice-icon { width: 44px; height: 44px; display: grid; place-items: center; border: 2px solid var(--o-cyan); color: var(--o-cyan); }
+.mobile-notice-icon svg { width: 20px; height: 20px; }
+.mobile-notice-kicker { margin: 18px 0 10px; color: var(--o-cyan); font: 20px/1 var(--o-font-pixel); }
+.mobile-notice h2 { margin: 0; color: var(--o-panel-white); font: 32px/1.1 var(--o-font-title); }
+.mobile-notice-inner > p:not(.mobile-notice-kicker) { margin: 14px 0 22px; color: var(--o-panel-text); font-size: 15px; line-height: 1.6; }
+.mobile-notice .pixel-button { width: 100%; }
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-notice[open] { animation: o-pop 220ms var(--o-ease-out); }
+}
+
+/* ---------- Mobile gate (routes.tsx: sign-in pages on phones) ---------- */
+.odin-mobile-gate {
+  min-height: 100svh;
+  padding: 24px 16px;
+  display: grid; place-items: center;
+  background: radial-gradient(var(--o-dots) 1.5px, transparent 1.6px) 0 0 / 32px 32px, var(--o-bg);
+  text-align: center;
+}
+.mobile-gate-card {
+  width: min(100%, 440px);
+  padding: 30px 22px 24px;
+  background: var(--o-panel);
+  border: 3px solid var(--o-border);
+  box-shadow: 6px 6px 0 var(--o-shadow);
+  color: var(--o-panel-text);
+}
+.mobile-gate-card > img { display: block; width: 128px; height: 128px; margin: 0 auto; object-fit: contain; image-rendering: pixelated; }
+.mobile-gate-kicker { margin: 14px 0 12px; color: var(--o-cyan); font: 20px/1 var(--o-font-pixel); }
+.mobile-gate-keyboard { width: 44px; height: 44px; display: inline-grid; place-items: center; margin-bottom: 14px; border: 2px solid var(--o-cyan); color: var(--o-cyan); }
+.mobile-gate-keyboard svg { width: 20px; height: 20px; }
+.mobile-gate-card h1 { margin: 0; color: var(--o-panel-white); font: 32px/1.1 var(--o-font-title); }
+.mobile-gate-card > p:not(.mobile-gate-kicker) { margin: 14px auto 22px; max-width: 340px; color: var(--o-panel-text); font-size: 15px; line-height: 1.6; }
+.mobile-gate-card .pixel-button { width: 100%; }
+.mobile-gate-foot { display: block; margin-top: 20px; color: var(--o-panel-label); font: 10px/1.4 var(--o-font-pixel); }
+
+/* ---------- Sign-in pages (AuthLayout) ---------- */
+.odin-auth {
+  /* Re-point theme.css tokens inside the sign-in pages only, so the existing
+     Tailwind classes (bg-card, text-primary...) pick up the kit's colours. */
+  --background: var(--o-surface-2);
+  --foreground: var(--o-heading);
+  --card: var(--o-surface);
+  --card-foreground: var(--o-heading);
+  --primary: #0B6BD4;
+  --primary-foreground: #FFFFFF;
+  --muted-foreground: var(--o-soft);
+  --border: var(--o-line-soft);
+  --input: var(--o-line-soft);
+  --input-background: var(--o-surface-2);
+  --ring: var(--o-focus);
+  --destructive: #C62828;
+
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(480px, 1fr);
+  align-items: start;
+  position: relative;
+  background: #69D1EA;
+}
+:root.dark .odin-auth { background-color: #071537; }
+:root.dark .odin-auth {
+  --background: #12151B;
+  --primary: #5FCDE4;
+  --primary-foreground: #0A0C14;
+  --destructive: #FF6E6E;
+}
+
+/* One scene behind the whole page: the landing CTA's sky (sun and clouds by day, stars by night)
+   with its hedge strip as the ground both columns stand on. */
+.auth-scene {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    url('../img/landing/bg/cta-strip-day.png') left bottom / auto 196px repeat-x,
+    url('../img/landing/bg/cta-sky-day.png') right top / cover no-repeat,
+    #69D1EA;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+:root.dark .auth-scene {
+  background-image: url('../img/landing/bg/cta-strip-night.png'), url('../img/landing/bg/cta-sky-night.png');
+  background-color: #071537;
+}
+
+/* Left: ODIN's transmission (AuthLayout.tsx), pinned while the form scrolls. Each line types itself
+   out over the sky, holds, and the next one begins. */
+.auth-art {
+  position: sticky; top: 0; z-index: 1;
+  height: 100svh;
+  overflow: hidden;
+}
+.cine { position: absolute; inset: 0; }
+.cine-card {
+  position: absolute; left: clamp(32px, 6vw, 88px); right: clamp(24px, 4vw, 64px); top: 16%;
+  max-width: 640px;
+}
+.cine-kicker {
+  display: inline-block; margin: 0;
+  padding: 7px 10px 5px;
+  background: var(--o-ink); color: var(--o-cyan);
+  font: 20px/1 var(--o-font-pixel);
+}
+.cine-name {
+  position: relative;
+  margin: 24px 0 0;
+  color: var(--o-ink);
+  font: 56px/1.12 var(--o-font-title);
+  text-shadow: 4px 4px 0 rgba(255, 255, 255, .55);
+}
+.cine-ghost { visibility: hidden; }
+.cine-typed { position: absolute; inset: 0; }
+.cine-caret {
+  display: inline-block; width: .5em; height: .12em; margin-left: .08em;
+  background: currentColor;
+  vertical-align: baseline;
+}
+@media (prefers-reduced-motion: no-preference) { .cine-caret { animation: o-blink 1s steps(1) infinite; } }
+:root.dark .cine-name { color: var(--o-panel-white); text-shadow: 4px 4px 0 #02061A; }
+@media (max-height: 859px), (max-width: 1279px) {
+  .cine-name { font-size: 40px; }
+}
+
+/* Right: the form as a game window, floating in the same sky. */
+.auth-main {
+  position: relative; z-index: 1;
+  min-height: 100svh;
+  display: grid; place-items: center;
+  padding: 48px 32px 228px;
+}
+.auth-slot { position: relative; z-index: 1; width: 100%; max-width: 460px; }
+.odin-auth .auth-slot > a {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-bottom: 20px; padding: 8px 12px;
+  background: var(--o-surface); border: 2px solid var(--o-heading);
+  box-shadow: 3px 3px 0 var(--o-line-soft);
+  color: var(--o-heading); font: 20px/1 var(--o-font-pixel); text-transform: uppercase; text-decoration: none;
+}
+:root.dark .odin-auth .auth-slot > a { border-color: var(--o-border); box-shadow: 3px 3px 0 #02061A; }
+
+/* The card is framed like the game's battle screen: thick blue border, softly rounded corners. */
+.odin-auth .auth-slot > div {
+  position: relative;
+  overflow: hidden;
+  padding: 0 32px 32px !important;
+  border: 4px solid var(--o-border) !important;
+  border-radius: 8px !important;
+  background: var(--o-surface) !important;
+  box-shadow: 4px 4px 0 rgba(11, 28, 69, .25) !important;
+}
+:root.dark .odin-auth .auth-slot > div { box-shadow: 4px 4px 0 rgba(2, 6, 26, .6) !important; }
+:root:not(.dark) .odin-auth .auth-slot > div { border-color: var(--o-navy) !important; }
+/* Window title bar with the game's three lights. */
+.odin-auth .auth-slot > div::before {
+  content: 'ODIN // PORTAL';
+  display: block;
+  margin: 0 -32px 28px;
+  padding: 12px 16px 10px 72px;
+  border-bottom: 3px solid var(--o-ink);
+  background:
+    linear-gradient(var(--o-error), var(--o-error)) 16px 50% / 10px 10px no-repeat,
+    linear-gradient(var(--o-amber), var(--o-amber)) 32px 50% / 10px 10px no-repeat,
+    linear-gradient(var(--o-correct), var(--o-correct)) 48px 50% / 10px 10px no-repeat,
+    var(--o-deep);
+  color: var(--o-cyan);
+  font: 20px/1 var(--o-font-pixel);
+}
+:root.dark .odin-auth .auth-slot > div::before { border-bottom-color: var(--o-border); }
+
+.odin-auth h1 { text-align: center; color: var(--o-heading); font-family: var(--o-font-title) !important; font-size: 32px !important; font-weight: normal !important; line-height: 1.15 !important; }
+.odin-auth label { color: var(--o-heading) !important; font: 20px/1 var(--o-font-pixel) !important; text-transform: uppercase; }
+.odin-auth input {
+  height: 48px;
+  padding: 0 14px;
+  border: 2px solid var(--o-heading);
+  border-radius: 0;
+  background: var(--o-surface-2);
+  color: var(--o-heading);
+  font-size: 15px;
+}
+:root.dark .odin-auth input { border-color: #3A4560; }
+.odin-auth input:focus-visible { border-color: var(--o-focus); box-shadow: 4px 4px 0 var(--o-cyan); outline: none; }
+.odin-auth button[type="submit"] {
+  min-height: 52px;
+  border: 2px solid var(--o-ink);
+  border-radius: 0;
+  background: var(--o-cyan) !important;
+  color: var(--o-ink) !important;
+  font: 20px/1 var(--o-font-pixel);
+  text-transform: uppercase;
+  box-shadow: var(--o-px) var(--o-px) 0 var(--o-ink);
+  transition: transform 120ms var(--o-ease-out), box-shadow 120ms var(--o-ease-out);
+}
+:root.dark .odin-auth button[type="submit"] { border-color: var(--o-cyan); box-shadow: var(--o-px) var(--o-px) 0 var(--o-border); }
+.odin-auth button[type="submit"]:not(:disabled):active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--o-ink); }
+.odin-auth button[type="submit"]:disabled { opacity: .55; }
+.odin-auth [role="alert"] { border: 2px solid currentColor !important; border-radius: 0 !important; font-weight: 600; }
+
+@media (max-width: 1023px) {
+  .odin-auth { grid-template-columns: 1fr; }
+  .auth-art { display: none; }
+}
+@media (max-width: 480px) {
+  .auth-main { padding: 32px 16px 200px; }
+  .odin-auth .auth-slot > div { padding: 0 20px 24px !important; }
+  .odin-auth .auth-slot > div::before { margin: 0 -20px 24px; }
+}
+
+/* Long button labels may wrap on phones instead of overflowing. */
+@media (max-width: 480px) {
+  .pixel-button { white-space: normal; text-align: center; line-height: 1.2; padding-block: 10px; }
+}
+
+/* ---------- Motion ---------- */
+@keyframes o-pop { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes o-blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  .odin-auth .auth-slot { animation: o-pop 260ms var(--o-ease-out) both; }
+}

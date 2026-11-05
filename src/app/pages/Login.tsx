@@ -10,6 +10,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { LandingPageLink } from '../components/LandingPageLink';
+import { AuthLayout } from '../components/AuthLayout';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -63,13 +64,6 @@ export function Login() {
   const isSubmitting = loading || authLoading;
   const canSubmit = email.trim().length > 0 && password.trim().length > 0;
 
-  const getBgClass = () => {
-    if (isGameMode) {
-      return 'bg-[#1a1a2e] bg-[linear-gradient(0deg,transparent_24%,rgba(0,255,65,.05)_25%,rgba(0,255,65,.05)_26%,transparent_27%,transparent_74%,rgba(0,255,65,.05)_75%,rgba(0,255,65,.05)_76%,transparent_77%,transparent),linear-gradient(90deg,transparent_24%,rgba(0,255,65,.05)_25%,rgba(0,255,65,.05)_26%,transparent_27%,transparent_74%,rgba(0,255,65,.05)_75%,rgba(0,255,65,.05)_76%,transparent_77%,transparent)] bg-[size:50px_50px]';
-    }
-    return 'bg-background';
-  };
-
   const getCardBg = () => {
     if (isGameMode) return 'bg-[#16213e]';
     return 'bg-card';
@@ -106,8 +100,7 @@ export function Login() {
   };
 
   return (
-    <div className={`min-h-[100svh] flex items-center justify-center p-4 sm:p-6 transition-all ${getBgClass()}`}>
-      <div className="w-full max-w-md">
+    <AuthLayout>
         <LandingPageLink className="mb-5" />
         <div className={`odin-enter border p-6 sm:p-8 shadow-2xl transition-all ${
           isGameMode
@@ -263,7 +256,6 @@ export function Login() {
             </p>
           </div>
         </div>
-      </div>
-    </div>
+    </AuthLayout>
   );
 }
