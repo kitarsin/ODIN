@@ -15,6 +15,9 @@ import syntaxErrorPoster from '../../img/landing/battle-syntax-error-poster.webp
 import odinHintClip from '../../img/landing/battle-odin-hint.gif';
 import odinHintStill from '../../img/landing/battle-odin-hint-still.png';
 import odinHintPoster from '../../img/landing/battle-odin-hint-poster.webp';
+import encounterClip from '../../img/landing/overworld-encounter.gif';
+import encounterStill from '../../img/landing/overworld-encounter-still.png';
+import encounterPoster from '../../img/landing/overworld-encounter-poster.webp';
 import playerMWalk from '../../img/landing/playerm-walk.gif';
 import playerMIdle from '../../img/landing/playerm-idle.png';
 import playerFWalk from '../../img/landing/playerf-walk.gif';
@@ -114,6 +117,62 @@ function countUp(el: HTMLElement) {
     if (t < 1) requestAnimationFrame(step);
   };
   requestAnimationFrame(step);
+}
+
+// The in-game footage, in the order a player meets it: the encounter on the map, a first
+// attempt in battle, then ODIN's hint. Shown one at a time in FootageReel.
+const footage = [
+  { step: '01', name: 'Encounter', bar: 'MAP // ENCOUNTER', gif: encounterClip, poster: encounterPoster, still: encounterStill,
+    alt: 'The player walks through the Fast Food Maze until the Infinite Striker comes up and stops them, starting a battle' },
+  { step: '02', name: 'Attempt', bar: 'BATTLE // ATTEMPT', gif: syntaxErrorClip, poster: syntaxErrorPoster, still: syntaxErrorStill,
+    alt: "A player types a C# nested loop in the game's code editor until a syntax error is reported on line 12" },
+  { step: '03', name: 'Next step', bar: 'BATTLE // NEXT STEP', gif: odinHintClip, poster: odinHintPoster, still: odinHintStill,
+    alt: "ODIN's dialogue box types out a hint suggesting the player try a different approach" },
+];
+
+/** A game-style command menu of numbered steps beside one large window; the chosen step's clip
+    plays in the window on hover, like the other footage. */
+function FootageReel() {
+  const [active, setActive] = useState(0);
+  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const select = (i: number) => {
+    const next = (i + footage.length) % footage.length;
+    setActive(next);
+    tabs.current[next]?.focus();
+  };
+  const clip = footage[active];
+  return (
+    <div className="footage">
+      <div className="footage-steps" role="tablist" aria-label="In-game footage" aria-orientation="vertical">
+        {footage.map((f, i) => (
+          <button
+            key={f.step}
+            ref={(el) => { tabs.current[i] = el; }}
+            type="button"
+            role="tab"
+            id={`footage-tab-${f.step}`}
+            aria-selected={i === active}
+            aria-controls="footage-panel"
+            tabIndex={i === active ? 0 : -1}
+            className="footage-step"
+            onClick={() => setActive(i)}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); select(i + 1); }
+              if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); select(i - 1); }
+            }}
+          >
+            <PixelGlyph name="chevron" scale={3} className="footage-step-cursor" />
+            <span className="footage-step-num">{f.step}</span>
+            <span className="footage-step-name">{f.name}</span>
+          </button>
+        ))}
+      </div>
+      <figure className="o-panel footage-window" role="tabpanel" id="footage-panel" aria-labelledby={`footage-tab-${clip.step}`}>
+        <div className="o-panel-bar"><span>{clip.bar}</span><small>{clip.step} / {String(footage.length).padStart(2, '0')}</small></div>
+        <HoverClip key={clip.step} gif={clip.gif} poster={clip.poster} still={clip.still} alt={clip.alt} />
+      </figure>
+    </div>
+  );
 }
 
 // The game's 20 enemies split into a far row (all of them, small) and a near row (every other one, large).
@@ -350,17 +409,7 @@ export function LandingPage() {
           <div className="footage-band" data-odin-reveal data-scroll>
             <div className="scene-bg scene-diner" aria-hidden="true" />
             <span className="edge-crosses left" aria-hidden="true"><PixelGlyph name="cross" scale={3} /><PixelGlyph name="cross" scale={3} /><PixelGlyph name="cross" scale={3} /></span>
-            <div className="footage">
-              <figure className="o-panel footage-window">
-                <div className="o-panel-bar"><span>BATTLE // ATTEMPT</span><small>IN-GAME</small></div>
-                <HoverClip gif={syntaxErrorClip} poster={syntaxErrorPoster} still={syntaxErrorStill} alt="A player types a C# nested loop in the game's code editor until a syntax error is reported on line 12" />
-              </figure>
-              <span className="footage-arrow" aria-hidden="true"><PixelGlyph name="chevron" scale={4} /></span>
-              <figure className="o-panel footage-window">
-                <div className="o-panel-bar"><span>BATTLE // NEXT STEP</span><small>IN-GAME</small></div>
-                <HoverClip gif={odinHintClip} poster={odinHintPoster} still={odinHintStill} alt="ODIN's dialogue box types out a hint suggesting the player try a different approach" />
-              </figure>
-            </div>
+            <FootageReel />
             <span className="edge-crosses right" aria-hidden="true"><PixelGlyph name="cross" scale={3} /><PixelGlyph name="cross" scale={3} /><PixelGlyph name="cross" scale={3} /></span>
           </div>
           <div className="loop-note" data-odin-reveal data-scroll><span className="note-mark" aria-hidden="true">↳</span><p><strong>The student stays in control.</strong> ODIN provides scaffolding, not a generated solution.</p></div>

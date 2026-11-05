@@ -301,10 +301,34 @@ html.odin-preloading { overflow: hidden; }
   box-shadow: 8px 8px 0 var(--o-ink);
 }
 :root.dark .footage-band { border-color: var(--o-border); box-shadow: 8px 8px 0 #02061A; }
-.footage { width: 100%; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 24px; }
+/* In-game footage: a command menu of numbered steps beside one large game window. */
+.footage { width: 100%; margin: 0 auto; display: grid; grid-template-columns: 240px minmax(0, 1fr); align-items: start; gap: 24px; }
+.footage-steps { display: grid; gap: 10px; }
+.footage-step {
+  position: relative;
+  display: grid; grid-template-columns: 18px auto 1fr; align-items: center; gap: 12px;
+  min-height: 64px; padding: 0 16px;
+  background: var(--o-panel);
+  border: 3px solid var(--o-border);
+  color: var(--o-panel-white);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 #02061A;
+  transition: background-color 120ms steps(2, end), translate 120ms steps(2, end);
+}
+.footage-step-cursor { visibility: hidden; color: var(--o-ink); }
+.footage-step-num { color: var(--o-cyan); font: 20px/1 var(--o-font-pixel); }
+.footage-step-name { font: 16px/1.2 var(--o-font-title); }
+@media (hover: hover) and (pointer: fine) { .footage-step:not([aria-selected="true"]):hover { background: #26304A; } }
+.footage-step[aria-selected="true"] { background: var(--o-cyan); border-color: var(--o-cyan); color: var(--o-ink); translate: 6px 0; }
+.footage-step[aria-selected="true"] .footage-step-num { color: var(--o-ink); }
+.footage-step[aria-selected="true"] .footage-step-cursor { visibility: visible; }
+@media (prefers-reduced-motion: no-preference) {
+  .footage-step[aria-selected="true"] .footage-step-cursor { animation: footage-cursor 800ms steps(1, end) infinite; }
+}
+@keyframes footage-cursor { 50% { translate: 3px 0; } }
 .footage-window { margin: 0; }
 .footage-window .clip { display: block; width: 100%; height: auto; }
-.footage-arrow { width: 56px; height: 56px; display: grid; place-items: center; background: var(--o-cyan); border: 2px solid var(--o-ink); color: var(--o-ink); box-shadow: 4px 4px 0 #02061A; }
 .edge-crosses { position: absolute; top: 50%; display: grid; gap: 10px; transform: translateY(-50%); color: var(--o-cyan); }
 .edge-crosses.left { left: 16px; }
 .edge-crosses.right { right: 16px; }
@@ -618,7 +642,7 @@ html.odin-preloading { overflow: hidden; }
 .landing-hero { --hero: 0; }
 [data-scroll] { --p: .5; --e: 0; }
 @media (prefers-reduced-motion: no-preference) {
-  .split[data-scroll] > p, .process-card, .footage-window, .footage-arrow, .loop-note[data-scroll],
+  .split[data-scroll] > p, .process-card, .footage-window, .footage-step, .loop-note[data-scroll],
   .loop-note .note-mark, .scope-tags span, .scope-principles, .research-results, .faq-list details,
   .team-room-window, .party-slot, .cta-letter {
     --k: calc(1 - clamp(0, var(--e) * 1.8 - var(--n, 0) * .2, 1));
@@ -643,10 +667,12 @@ html.odin-preloading { overflow: hidden; }
   .process-grid .process-card:nth-child(2) { --n: 1; }
   .process-grid .process-card:nth-child(3) { --n: 2; }
 
-  /* Footage: the windows zoom forward in turn and the arrow spins round to point at the result. */
-  .footage-band .footage-window { scale: calc(1 - var(--k2) * .2); translate: 0 calc(var(--k2) * 80px * var(--amp)); }
-  .footage-band .footage-window:last-child { --n: 1; }
-  .footage-band .footage-arrow { --n: .5; rotate: calc(var(--k) * -180deg); scale: calc(1 - var(--k) * .6); }
+  /* Footage: the steps rise in one after another and the game window zooms forward. */
+  .footage-band .footage-window { --n: .4; scale: calc(1 - var(--k2) * .16); translate: 0 calc(var(--k2) * 80px * var(--amp)); }
+  .footage-step { opacity: calc(1 - var(--k)); translate: 0 calc(var(--k2) * 48px * var(--amp)); }
+  .footage-step:nth-child(2) { --n: .5; }
+  .footage-step:nth-child(3) { --n: 1; }
+  .footage-step[aria-selected="true"] { translate: 6px calc(var(--k2) * 48px * var(--amp)); }
 
   /* The statement banner grows into place and its arrow drops onto it. */
   .loop-note[data-scroll] { scale: calc(1 - var(--k2) * .14); }
@@ -676,7 +702,8 @@ html.odin-preloading { overflow: hidden; }
   .party-group.faculty .party-slot:nth-child(2) { --n: 2.5; }
 
   /* Call to action: each letter of ODIN:// drops from above in turn. */
-  .cta-letter { --n: calc(var(--i) * .5); display: inline-block; translate: 0 calc(var(--k2) * -120px * var(--amp)); }
+  /* The last letter must still settle before the block is fully in: 11 letters x .1 keeps --n under 1.2. */
+  .cta-letter { --n: calc(var(--i) * .1); display: inline-block; translate: 0 calc(var(--k2) * -120px * var(--amp)); }
 }
 
 /* ---------- Responsive ---------- */
@@ -688,6 +715,9 @@ html.odin-preloading { overflow: hidden; }
   .hero-mascot { right: 64px; }
 }
 @media (max-width: 1199px) {
+  .footage { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .footage-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .footage-step[aria-selected="true"] { translate: 0 -4px; }
   .landing-nav a:not(.landing-nav-cta) { display: none; }
   .landing-nav { padding: 0; border: 0; background: none; }
   .landing-nav-cta { border: 2px solid var(--o-heading); }
@@ -763,9 +793,11 @@ html.odin-preloading { overflow: hidden; }
   .note-mark { width: 56px; height: 56px; font-size: 40px; }
   .odin-landing .loop-note strong { font-size: 32px; }
   .odin-landing .loop-note p { font-size: 18px; }
-  .footage { grid-template-columns: 1fr; justify-items: center; gap: 16px; }
-  .footage-window { width: 100%; }
-  .footage-arrow { transform: rotate(90deg); }
+  /* The outlined READY is filled with the sky colour, so keep the sun and moon from sitting behind it. */
+  .landing-cta, :root.dark .landing-cta { background-position: left top; }
+  .footage-step { grid-template-columns: auto; justify-items: center; gap: 6px; min-height: 0; padding: 10px 6px; text-align: center; }
+  .footage-step-cursor { display: none; }
+  .footage-step-name { font-size: 16px; }
   .edge-crosses { display: none; }
   .scope-grid { grid-template-columns: 1fr; gap: 24px; }
   .scope-mark { width: 112px; height: 112px; }
@@ -789,6 +821,11 @@ html.odin-preloading { overflow: hidden; }
   .splash-odin > img { width: 64px; height: 64px; }
   .splash-odin .o-dialog-body { font-size: 20px; min-height: 4.8em; }
   .splash-skip { display: none; }
+}
+@media (max-width: 480px) {
+  /* Too narrow for three step buttons side by side: list them. */
+  .footage-steps { grid-template-columns: 1fr; gap: 8px; }
+  .footage-step { grid-template-columns: auto 1fr; justify-items: start; gap: 12px; min-height: 48px; padding: 0 14px; text-align: left; }
 }
 @media (max-width: 480px) {
   .landing-nav .landing-nav-cta { font-size: 10px; gap: 6px; padding: 0 10px; }
