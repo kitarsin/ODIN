@@ -30,8 +30,10 @@ import jersonIdle from '../../img/landing/team/jerson-idle.gif';
 import johanIdle from '../../img/landing/team/johan-idle.gif';
 import russellIdle from '../../img/landing/team/russell-idle.gif';
 import ianIdle from '../../img/landing/team/ian-idle.gif';
-import docShaneSprite from '../../img/landing/team/doc-shane.png';
-import docJelloSprite from '../../img/landing/team/doc-jello.png';
+import docShaneStill from '../../img/landing/team/doc-shane-still.png';
+import docShaneIdle from '../../img/landing/team/doc-shane-idle.gif';
+import docJelloStill from '../../img/landing/team/doc-jello-still.png';
+import docJelloIdle from '../../img/landing/team/doc-jello-idle.gif';
 import classroomScene from '../../img/landing/bg/team-classroom.png';
 import '../../styles/odin-public.css';
 import './LandingPage.css';
@@ -63,7 +65,7 @@ const processSteps = [
 // spot: where each sprite stands in the classroom scene, in the scene's own pixels (256 x 128).
 // Students stand in the floor lane on the left; faculty stand on the teacher's platform right of the
 // pillar, mirrored so the two groups face each other.
-// The sprite files are drawn at 4x, so students are 21 x 34 scene pixels and faculty 20 x 33.
+// The sprite files are drawn at 4x, so every member is 21 x 34 scene pixels.
 const students = [
   { tag: 'P1', name: 'Jerson Angelo B. Bautista', still: jersonStill, idle: jersonIdle, spot: [21, 78] },
   { tag: 'P2', name: 'Ken Johan Liwanag', still: johanStill, idle: johanIdle, spot: [55, 74] },
@@ -72,15 +74,14 @@ const students = [
 ];
 
 const faculty = [
-  { tag: 'MENTOR', name: 'Dr. Angelo C. Arguson', role: 'Thesis mentor', sprite: docJelloSprite, spot: [180, 51] },
-  { tag: 'ADVISER', name: 'Dr. Shaneth C. Ambat', role: 'Course adviser', sprite: docShaneSprite, spot: [224, 51] },
+  { tag: 'MENTOR', name: 'Dr. Angelo C. Arguson', role: 'Thesis mentor', still: docJelloStill, idle: docJelloIdle, spot: [180, 50] },
+  { tag: 'ADVISER', name: 'Dr. Shaneth C. Ambat', role: 'Course adviser', still: docShaneStill, idle: docShaneIdle, spot: [224, 50] },
 ];
 
 // Everyone in the classroom, back row first so nearer sprites overlap farther ones.
 const partyInRoom = [
-  // Faculty have no idle animation yet; give them an `idle` here once they do.
-  ...faculty.map((m) => ({ tag: m.tag, still: m.sprite, idle: null as string | null, spot: m.spot, w: 20, h: 33, flip: true })),
-  ...students.map((m) => ({ tag: m.tag, still: m.still, idle: m.idle as string | null, spot: m.spot, w: 21, h: 34, flip: false })),
+  ...faculty.map((m) => ({ tag: m.tag, still: m.still, idle: m.idle, spot: m.spot, w: 21, h: 34, flip: true })),
+  ...students.map((m) => ({ tag: m.tag, still: m.still, idle: m.idle, spot: m.spot, w: 21, h: 34, flip: false })),
 ].sort((a, b) => a.spot[1] - b.spot[1]);
 
 // The game's 20 enemies, in level order, drawn as tonal silhouettes behind the hero.
