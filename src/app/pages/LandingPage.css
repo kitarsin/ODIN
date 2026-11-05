@@ -490,7 +490,10 @@ html.odin-preloading { overflow: hidden; }
 .room-sprite img { position: absolute; inset: 0; width: 100%; height: 100%; }
 /* Faculty face left, towards the students. */
 .room-sprite.is-flipped img { transform: scaleX(-1); }
-.room-sprite .idle { display: none; }
+/* The idle GIF stays laid out but invisible, so it downloads as the section comes near instead of
+   on the first hover (which left the sprite blank for a moment). The still only hides once its GIF
+   has loaded (data-ready, set in LandingPage.tsx). */
+.room-sprite .idle { visibility: hidden; }
 .room-cursor {
   position: absolute; left: 50%; top: calc(var(--s) * -9);
   width: calc(var(--s) * 5); height: calc(var(--s) * 3);
@@ -504,8 +507,8 @@ html.odin-preloading { overflow: hidden; }
 }
 .room-sprite[data-active] .room-cursor { opacity: 1; }
 @media (prefers-reduced-motion: no-preference) {
-  .room-sprite[data-active] .idle { display: block; }
-  .room-sprite[data-active]:has(.idle) .still { visibility: hidden; }
+  .room-sprite[data-active] .idle[data-ready] { visibility: visible; }
+  .room-sprite[data-active]:has(.idle[data-ready]) .still { visibility: hidden; }
   .room-sprite[data-active] .room-cursor { animation: room-cursor 800ms steps(1, end) infinite; }
 }
 @keyframes room-cursor { 50% { translate: -50% calc(var(--s) * 1); } }

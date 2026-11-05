@@ -495,7 +495,7 @@ export function LandingPage() {
                   >
                     <PixelGlyph name="down" className="room-cursor" />
                     <img className="px still" src={m.still} alt="" loading="lazy" />
-                    {m.idle && <img className="px idle" src={m.idle} alt="" loading="lazy" />}
+                    {m.idle && <img className="px idle" src={m.idle} alt="" loading="lazy" onLoad={(e) => { e.currentTarget.dataset.ready = ''; }} />}
                   </span>
                 ))}
               </div>
