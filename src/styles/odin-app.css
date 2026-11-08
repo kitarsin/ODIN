@@ -159,6 +159,11 @@
   .odin-nav-who { display: none; }
   .odin-nav-user { padding-left: 8px; }
 }
+/* Admin nav carries more links than the student nav, so the strip shrinks a
+   step: smaller pixel label, tighter padding, and the "More" dropdown kicks
+   in sooner before the last label can clip. */
+.odin-nav-links.is-compact .odin-nav-link { font-size: 16px; padding: 0 10px; min-height: 36px; }
+.odin-nav-links.is-compact .odin-nav-link svg { width: 14px; height: 14px; }
 /* Phones and small tablets: one slim bar (brand + MENU). The links, the user, the landing-page link
    and log out open as a sheet under it, so the ribbon no longer stacks into several rows. */
 .odin-nav-toggle, .odin-nav-sheet, .odin-nav-scrim { display: none; }
@@ -235,8 +240,8 @@
 /* Square corners everywhere except loading spinners. */
 .odin-app [class*="rounded"]:not(.animate-spin) { border-radius: 0 !important; }
 
-/* Panels: framed like the game's battle screen and dialogue box, a thick blue border with softly
-   rounded corners and the panel title set like the dialogue speaker's name. The fill follows the
+/* Panels: framed like the game's battle screen and dialogue box, a thick blue border with square
+   corners and the panel title set like the dialogue speaker's name. The fill follows the
    colour mode: white in light mode, the game's own dark grey in dark mode. */
 .odin-app {
   --frame: #1593FF;
@@ -260,7 +265,7 @@
 .odin-app [data-slot="card"] {
   background-color: var(--frame-fill) !important;
   border: 4px solid var(--frame) !important;
-  border-radius: 8px !important;
+  border-radius: 0 !important;
   box-shadow: 4px 4px 0 var(--frame-drop);
 }
 /* Boxes inside a panel are the battle screen's inner windows: a thinner line, no drop. */
@@ -270,7 +275,7 @@
 .odin-app .bg-card [class*="bg-muted/"][class*="rounded"] {
   background-color: var(--frame-inner-fill) !important;
   border: 2px solid var(--frame-inner) !important;
-  border-radius: 4px !important;
+  border-radius: 0 !important;
   box-shadow: none;
 }
 

@@ -21,6 +21,7 @@ interface NavItem {
   label: string;
   gameLabel: string;
   featureKey?: string;
+  menuOnly?: boolean;
 }
 
 const ADMIN_LINKS: NavItem[] = [
@@ -30,8 +31,8 @@ const ADMIN_LINKS: NavItem[] = [
   { to: '/admin/analytics',  icon: <Book className="w-4 h-4" />,        label: 'Analytics',   gameLabel: 'STATS'},
   { to: '/admin/gamelogs',   icon: <Gamepad2 className="w-4 h-4" />,    label: 'Game Logs',   gameLabel: 'LOGS' },
   { to: '/admin/responses',  icon: <ClipboardList className="w-4 h-4" />,label: 'Responses',  gameLabel: 'RESP' },
-  { to: '/admin/lockdown',   icon: <ShieldAlert className="w-4 h-4" />, label: 'Lockdown',    gameLabel: 'LOCK' },
-  { to: '/test-bench',       icon: <FlaskConical className="w-4 h-4" />,label: 'Test Bench',  gameLabel: 'TEST' },
+  { to: '/admin/lockdown',   icon: <ShieldAlert className="w-4 h-4" />, label: 'Lockdown',    gameLabel: 'LOCK', menuOnly: true },
+  { to: '/test-bench',       icon: <FlaskConical className="w-4 h-4" />,label: 'Test Bench',  gameLabel: 'TEST', menuOnly: true },
 ];
 
 const STUDENT_LINKS: NavItem[] = [
@@ -62,6 +63,9 @@ export function Navigation() {
 
   const isActive = (path: string) => location.pathname === path;
   const links = user?.role === 'admin' ? ADMIN_LINKS : STUDENT_LINKS;
+  const stripLinks = links.filter((item) => !item.menuOnly);
+  const menuLinks = links.filter((item) => item.menuOnly);
+  const showMore = hasOverflow || menuLinks.length > 0;
 
   // Detect when inline links overflow the available space
   useLayoutEffect(() => {
@@ -150,12 +154,12 @@ export function Navigation() {
         <div className="odin-nav-right">
 
           {/* Inline links — hidden overflow gets picked up by More dropdown */}
-          <div ref={linksRef} className="odin-nav-links">
-            {links.map((item) => renderLink(item))}
+          <div ref={linksRef} className={`odin-nav-links${user?.role === 'admin' ? ' is-compact' : ''}`}>
+            {stripLinks.map((item) => renderLink(item))}
           </div>
 
-          {/* More dropdown — only visible when links overflow */}
-          {hasOverflow && (
+          {/* More dropdown — visible when links overflow or when any link is menu-only */}
+          {showMore && (
             <div className="odin-nav-more" data-more-menu>
               <button
                 onClick={() => setMoreOpen(!moreOpen)}
@@ -167,7 +171,7 @@ export function Navigation() {
               </button>
               {moreOpen && (
                 <div className="odin-nav-menu">
-                  {links.map((item) => renderLink(item, true))}
+                  {menuLinks.map((item) => renderLink(item, true))}
                 </div>
               )}
             </div>

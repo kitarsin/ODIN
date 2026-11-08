@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigation } from '../components/Navigation';
-import { Search, UserPlus, Pencil, Trash2, Database, Download } from 'lucide-react';
+import { Search, UserPlus, Pencil, Trash2, Database, Download, RotateCcw, Eraser, FileDown, FileUp } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Checkbox } from '../components/ui/checkbox';
@@ -674,32 +674,34 @@ export function AdminDatabase() {
         </div>
 
         {/* Maintenance */}
-        <div className="border rounded-lg p-6 bg-card border-border transition-colors mb-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-semibold mb-1">Maintenance Utilities</h2>
-              <p className="text-sm text-muted-foreground">
-                One-time admin actions to fix legacy data issues.
-              </p>
+        <div className="border rounded-lg p-4 bg-card border-border transition-colors mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold">Maintenance Utilities</h2>
+              <p className="text-xs text-muted-foreground">One-time actions to fix legacy data.</p>
             </div>
-            <Button
-              onClick={handleDedupBadges}
-              disabled={maintenanceStatus === 'running'}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              {maintenanceStatus === 'running' ? 'Running...' : 'De-dup Badges'}
-            </Button>
-            <Button
-              onClick={handleDedupAchievements}
-              disabled={maintenanceStatus === 'running'}
-              className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
-            >
-              {maintenanceStatus === 'running' ? 'Running...' : 'De-dup Achievements'}
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                onClick={handleDedupBadges}
+                disabled={maintenanceStatus === 'running'}
+                size="sm"
+                className="h-9 bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {maintenanceStatus === 'running' ? 'Running…' : 'Dedupe Badges'}
+              </Button>
+              <Button
+                onClick={handleDedupAchievements}
+                disabled={maintenanceStatus === 'running'}
+                size="sm"
+                className="h-9 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+              >
+                {maintenanceStatus === 'running' ? 'Running…' : 'Dedupe Achievements'}
+              </Button>
+            </div>
           </div>
           {maintenanceMessage && (
             <div
-              className={`mt-4 text-sm ${
+              className={`mt-3 text-xs ${
                 maintenanceStatus === 'error' ? 'text-destructive' : 'text-muted-foreground'
               }`}
             >
@@ -709,17 +711,17 @@ export function AdminDatabase() {
         </div>
 
         {/* Toolbar */}
-        <div className="border rounded-lg p-4 mb-6 bg-card border-border transition-colors">
-          <div className="flex items-center gap-4">
+        <div className="border rounded-lg p-3 mb-4 bg-card border-border transition-colors">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Search */}
-            <div className="flex-1 relative">
+            <div className="relative flex-1 min-w-[220px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search by name or ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 border bg-background border-border text-foreground transition-colors"
+                className="pl-10 h-9 border bg-background border-border text-foreground transition-colors"
               />
             </div>
 
@@ -727,7 +729,7 @@ export function AdminDatabase() {
             <select
               value={filterSection}
               onChange={(e) => setFilterSection(e.target.value)}
-              className="px-4 py-2 border rounded-md text-sm bg-background border-border text-foreground transition-colors"
+              className="h-9 px-3 border rounded-md text-sm bg-background border-border text-foreground transition-colors"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
               {sections.map(section => (
@@ -741,7 +743,7 @@ export function AdminDatabase() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value as 'all' | 'student' | 'admin')}
-              className="px-4 py-2 border rounded-md text-sm bg-background border-border text-foreground transition-colors"
+              className="h-9 px-3 border rounded-md text-sm bg-background border-border text-foreground transition-colors"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
               <option value="all">All Roles</option>
@@ -755,28 +757,32 @@ export function AdminDatabase() {
                 setEditingUser(null);
                 setIsModalOpen(true);
               }}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              size="sm"
+              className="h-9 bg-primary hover:bg-primary/90 text-primary-foreground"
             >
-              <UserPlus className="w-4 h-4 mr-2" />
-              Add New User
+              <UserPlus className="w-4 h-4 mr-1.5" />
+              Add User
             </Button>
 
             <Button
               onClick={handleExportAllPretests}
               disabled={exportingAll}
-              className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+              size="sm"
+              title="Export all pretest responses as a ZIP"
+              className="h-9 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
             >
-              <Download className="w-4 h-4 mr-2" />
-              {exportingAll ? 'Exporting…' : 'Export All Pretests'}
+              <Download className="w-4 h-4 mr-1.5" />
+              {exportingAll ? '…' : 'Pretests'}
             </Button>
-            {/* Export All Posttests */}
             <Button
               onClick={handleExportAllPosttests}
               disabled={exportingAllPosttests}
-              className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+              size="sm"
+              title="Export all posttest responses as a ZIP"
+              className="h-9 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
             >
-              <Download className="w-4 h-4 mr-2" />
-              {exportingAllPosttests ? 'Exporting…' : 'Export All Posttests'}
+              <Download className="w-4 h-4 mr-1.5" />
+              {exportingAllPosttests ? '…' : 'Posttests'}
             </Button>
           </div>
         </div>
@@ -898,61 +904,65 @@ export function AdminDatabase() {
                     <td className="px-4 py-3 text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
                       {formatDate(user.lastLogin)}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
+                    <td className="px-2 py-2">
+                      <div className="flex items-center gap-0.5">
                         <Button
                           onClick={() => handleEdit(user)}
                           variant="ghost"
-                          size="sm"
-                          className="text-secondary hover:text-secondary hover:bg-secondary/10 transition-colors"
+                          size="icon"
+                          title="Edit user"
+                          className="h-8 w-8 text-secondary hover:text-secondary hover:bg-secondary/10 transition-colors"
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
                         {user.role === 'student' && (
                           <>
-                        <Button
-                          onClick={() => handleResetSyncRate(user)}
-                          variant="ghost"
-                          size="sm"
-                          className="text-primary hover:text-primary hover:bg-primary/10 transition-colors"
-                        >
-                          Reset Sync
-                        </Button>
-                        <Button
-                          onClick={() => handleResetProgress(user)}
-                          variant="ghost"
-                          size="sm"
-                          className="text-amber-500 hover:text-amber-600 hover:bg-amber-500/10 transition-colors"
-                        >
-                          Reset Progress
-                        </Button>
-                        <Button
-                          onClick={() => handleExportPretest(user)}
-                          variant="ghost"
-                          size="sm"
-                          disabled={exportingUserId === user.id}
-                          className="text-secondary hover:text-secondary hover:bg-secondary/10 transition-colors"
-                          title="Export pretest JSON"
-                        >
-                          <Download className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleExportPosttest(user)}
-                          variant="ghost"
-                          size="sm"
-                          disabled={exportingPosttestUserId === user.id}
-                          className="text-secondary hover:text-secondary hover:bg-secondary/10 transition-colors"
-                          title="Export posttest JSON"
-                        >
-                          <Download className="w-4 h-4" />
-                        </Button>
+                            <Button
+                              onClick={() => handleResetSyncRate(user)}
+                              variant="ghost"
+                              size="icon"
+                              title="Reset sync rate to 0"
+                              className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10 transition-colors"
+                            >
+                              <Eraser className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              onClick={() => handleResetProgress(user)}
+                              variant="ghost"
+                              size="icon"
+                              title="Reset full progress (submissions, sessions, mastery)"
+                              className="h-8 w-8 text-amber-500 hover:text-amber-600 hover:bg-amber-500/10 transition-colors"
+                            >
+                              <RotateCcw className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              onClick={() => handleExportPretest(user)}
+                              variant="ghost"
+                              size="icon"
+                              disabled={exportingUserId === user.id}
+                              title="Export pretest JSON"
+                              className="h-8 w-8 text-secondary hover:text-secondary hover:bg-secondary/10 transition-colors"
+                            >
+                              <FileDown className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              onClick={() => handleExportPosttest(user)}
+                              variant="ghost"
+                              size="icon"
+                              disabled={exportingPosttestUserId === user.id}
+                              title="Export posttest JSON"
+                              className="h-8 w-8 text-secondary hover:text-secondary hover:bg-secondary/10 transition-colors"
+                            >
+                              <FileUp className="w-4 h-4" />
+                            </Button>
                           </>
                         )}
                         <Button
                           onClick={() => handleDelete(user.id)}
                           variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          size="icon"
+                          title="Delete user"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
