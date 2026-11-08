@@ -117,7 +117,7 @@ export function FeatureLockdown() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold mb-2 flex items-center gap-3">
-            <ShieldAlert className="w-7 h-7 text-[#FF5252]" />
+            <ShieldAlert className="w-7 h-7 text-destructive" />
             Feature Lockdown
           </h1>
           <p className="text-sm text-muted-foreground">Control which features students can access. Admins always retain full access.</p>
@@ -132,18 +132,18 @@ export function FeatureLockdown() {
               <button
                 key={f.key}
                 onClick={() => handleQuickToggle(f.key)}
-                className={`relative border rounded-lg p-4 text-left transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                className={`relative border rounded-lg p-4 text-left transition-colors ${
                   locked
-                    ? 'border-[#FF5252] bg-[#FF5252]/10 shadow-[0_0_12px_rgba(255,82,82,0.15)]'
+                    ? 'border-destructive/50 bg-destructive/10'
                     : 'border-border bg-card hover:border-primary/40'
                 }`}
               >
-                <div className={`mb-2 ${locked ? 'text-[#FF5252]' : 'text-primary'}`}>
+                <div className={`mb-2 ${locked ? 'text-destructive' : 'text-primary'}`}>
                   {FEATURE_ICONS[f.icon]}
                 </div>
                 <p className="text-sm font-medium mb-1">{f.label}</p>
                 <div className="flex items-center justify-between">
-                  <span className={`text-xs font-semibold ${locked ? 'text-[#FF5252]' : 'text-primary'}`} style={{ fontFamily: 'var(--font-mono)' }}>
+                  <span className={`text-xs font-semibold ${locked ? 'text-destructive' : 'text-primary'}`} style={{ fontFamily: 'var(--font-mono)' }}>
                     {locked ? 'LOCKED' : 'OPEN'}
                   </span>
                   {count > 0 && (
@@ -153,7 +153,7 @@ export function FeatureLockdown() {
                   )}
                 </div>
                 {/* Status dot */}
-                <div className={`absolute top-3 right-3 w-2.5 h-2.5 rounded-full ${locked ? 'bg-[#FF5252] shadow-[0_0_6px_rgba(255,82,82,0.6)]' : 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]'}`} />
+                <div className={`absolute top-3 right-3 w-2.5 h-2.5 rounded-full ${locked ? 'bg-destructive' : 'bg-emerald-500'}`} />
               </button>
             );
           })}
@@ -229,7 +229,7 @@ export function FeatureLockdown() {
               {formError && <p className="text-sm text-destructive">{formError}</p>}
               <div className="flex justify-end gap-2">
                 <Button variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
-                <Button onClick={handleSubmit} disabled={submitting} className="bg-[#FF5252] hover:bg-[#FF5252]/90 text-white">
+                <Button onClick={handleSubmit} disabled={submitting} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
                   {submitting ? 'Creating…' : 'Create Rule'}
                 </Button>
               </div>
@@ -245,7 +245,6 @@ export function FeatureLockdown() {
           </select>
           <select value={filterScope} onChange={(e) => setFilterScope(e.target.value)} className="px-3 py-1.5 border rounded-md text-sm bg-background border-border text-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
             <option value="all">All Scopes</option>
-            <option value="all">Global</option>
             <option value="section">Section</option>
             <option value="student">Student</option>
           </select>
@@ -281,22 +280,22 @@ export function FeatureLockdown() {
                       <tr key={rule.id} className={`border-b border-border hover:bg-muted transition-colors ${idx % 2 === 0 ? 'bg-card' : 'bg-muted/20'}`}>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <span className={rule.is_active ? 'text-[#FF5252]' : 'text-muted-foreground'}>{featureMeta ? FEATURE_ICONS[featureMeta.icon] : null}</span>
+                            <span className={rule.is_active ? 'text-destructive' : 'text-muted-foreground'}>{featureMeta ? FEATURE_ICONS[featureMeta.icon] : null}</span>
                             <span className="text-sm font-medium">{featureMeta?.label || rule.feature_key}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-sm" style={{ fontFamily: 'var(--font-mono)' }}>{getScopeLabel(rule)}</td>
                         <td className="px-4 py-3 text-sm text-muted-foreground max-w-[200px] truncate">{rule.message || '—'}</td>
                         <td className="px-4 py-3">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${rule.is_active ? 'bg-[#FF5252]/20 text-[#FF5252]' : 'bg-muted text-muted-foreground'}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${rule.is_active ? 'bg-[#FF5252]' : 'bg-muted-foreground'}`} />
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${rule.is_active ? 'bg-destructive/20 text-destructive' : 'bg-muted text-muted-foreground'}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${rule.is_active ? 'bg-destructive' : 'bg-muted-foreground'}`} />
                             {rule.is_active ? 'Active' : 'Inactive'}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>{formatDate(rule.created_at)}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => handleToggle(rule)} className={`transition-colors ${rule.is_active ? 'text-[#FF5252] hover:bg-[#FF5252]/10' : 'text-primary hover:bg-primary/10'}`}>
+                            <Button variant="ghost" size="sm" onClick={() => handleToggle(rule)} className={`transition-colors ${rule.is_active ? 'text-destructive hover:bg-destructive/10' : 'text-primary hover:bg-primary/10'}`}>
                               {rule.is_active ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
                             </Button>
                             <Button variant="ghost" size="sm" onClick={() => handleDelete(rule.id)} className="text-destructive hover:bg-destructive/10 transition-colors">
@@ -316,7 +315,7 @@ export function FeatureLockdown() {
             <span className="text-sm text-muted-foreground">
               {filteredRules.length} rule{filteredRules.length !== 1 ? 's' : ''}
               {filteredRules.filter((r) => r.is_active).length > 0 && (
-                <span className="ml-2 text-[#FF5252]">({filteredRules.filter((r) => r.is_active).length} active)</span>
+                <span className="ml-2 text-destructive">({filteredRules.filter((r) => r.is_active).length} active)</span>
               )}
             </span>
             <span className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>feature_lockdowns</span>

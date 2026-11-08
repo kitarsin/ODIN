@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Fragment } from 'react';
 import { Navigation } from '../components/Navigation';
 import { Gamepad2, Users, Brain, AlertTriangle, ChevronDown, ChevronRight, Clock, CheckCircle, XCircle, Search, RotateCcw, Download } from 'lucide-react';
 import { getClassOverview, getStudentList, getPlayerSessions, getSessionSubmissions, buildPuzzleTitleMap, resetPlayerProgress } from '../../lib/odinApi';
@@ -310,7 +310,7 @@ export function AdminGameLogs() {
                 key={state}
                 className={`text-xs px-2 py-1 rounded-full font-medium ${BEHAVIOR_STYLE[state] ?? 'text-muted-foreground bg-muted'}`}
               >
-                {state.replace(/([A-Z])/g, ' $1').trim()}: {count}
+                {(state ?? '').replace(/([A-Z])/g, ' $1').trim()}: {count}
               </span>
             ))}
           </div>
@@ -370,9 +370,8 @@ export function AdminGameLogs() {
                   </tr>
                 ) : (
                   filteredStudents.map(student => (
-                    <>
+                    <Fragment key={student.id}>
                       <tr
-                        key={student.id}
                         onClick={() => selectStudent(student)}
                         className={`border-b border-border cursor-pointer transition-colors ${
                           selectedStudentId === student.id
@@ -398,11 +397,11 @@ export function AdminGameLogs() {
                         </td>
                         <td className="p-3 text-center text-muted-foreground">{student.totalSubmissions}</td>
                         <td className="p-3 text-center">
-                          <span className="font-semibold text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>{student.overallMastery.toFixed(0)}%</span>
+                          <span className="font-semibold text-secondary" style={{ fontFamily: 'var(--font-mono)' }}>{(student.overallMastery ?? 0).toFixed(0)}%</span>
                         </td>
                         <td className="p-3 text-center">
-                          <span className={`font-semibold ${helplessnessColor(student.helplessnessScore)}`} style={{ fontFamily: 'var(--font-mono)' }}>
-                            {student.helplessnessScore.toFixed(1)}
+                          <span className={`font-semibold ${helplessnessColor(student.helplessnessScore ?? 0)}`} style={{ fontFamily: 'var(--font-mono)' }}>
+                            {(student.helplessnessScore ?? 0).toFixed(1)}
                           </span>
                         </td>
                         <td className="p-3 text-center">
@@ -423,7 +422,7 @@ export function AdminGameLogs() {
 
                       {/* ── Tier 3: Session List (inline expansion) ── */}
                       {selectedStudentId === student.id && (
-                        <tr key={`${student.id}-sessions`} className="bg-muted/20">
+                        <tr className="bg-muted/20">
                           <td colSpan={8} className="p-0">
                             <div className="px-6 py-4 border-b border-border">
                               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
@@ -507,7 +506,7 @@ export function AdminGameLogs() {
                                                   >
                                                     <span className="text-muted-foreground font-mono">{idx + 1}</span>
                                                     <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium w-fit ${BEHAVIOR_STYLE[sub.behaviorState] ?? 'text-muted-foreground bg-muted'}`}>
-                                                      {sub.behaviorState.replace(/([A-Z])/g, ' $1').trim()}
+                                                      {(sub.behaviorState ?? '—').replace(/([A-Z])/g, ' $1').trim()}
                                                     </span>
                                                     <span className="text-muted-foreground">{sub.diagnosticCategory !== 'None' ? sub.diagnosticCategory : '—'}</span>
                                                     <span className="text-muted-foreground">{sub.interventionType !== 'None' ? sub.interventionType : '—'}</span>
@@ -544,7 +543,7 @@ export function AdminGameLogs() {
                                                         </div>
                                                         <div>
                                                           <p className="text-[10px] text-muted-foreground">Total Time</p>
-                                                          <p className="text-foreground">{sub.totalTimeSeconds.toFixed(1)}s</p>
+                                                          <p className="text-foreground">{(sub.totalTimeSeconds ?? 0).toFixed(1)}s</p>
                                                         </div>
                                                       </div>
                                                       {sub.diagnosticMessage && sub.diagnosticCategory !== 'None' && (
@@ -569,7 +568,7 @@ export function AdminGameLogs() {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </Fragment>
                   ))
                 )}
               </tbody>
