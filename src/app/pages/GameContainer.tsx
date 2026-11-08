@@ -139,7 +139,7 @@ export function GameContainer() {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={handleCancelLeave}
-                className="px-4 py-2 text-sm rounded border border-border hover:bg-muted transition-colors"
+                className="odin-button-secondary px-4 py-2 text-sm rounded border border-border hover:bg-muted transition-colors"
               >
                 Stay
               </button>

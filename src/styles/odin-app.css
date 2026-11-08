@@ -334,6 +334,30 @@
 }
 .odin-app button.bg-primary:not(:disabled):active, .odin-app [data-slot="button"].bg-primary:not(:disabled):active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--o-shadow); }
 .odin-app [data-slot="button"][class*="border"]:not(.bg-primary):not(.odin-nav-logout) { border: 2px solid var(--app-edge) !important; }
+/* The quieter partner of the pixel button (e.g. "Stay" beside "Save & Leave"): same size, face and
+   hard shadow, but on the panel colour so the main action still leads. */
+.odin-app button.odin-button-secondary {
+  min-height: 44px;
+  border: 2px solid var(--o-ink) !important;
+  background-color: var(--frame-fill) !important;
+  color: var(--o-heading) !important;
+  font-family: var(--o-font-pixel) !important;
+  font-size: 20px !important;
+  font-weight: normal !important;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0 var(--o-shadow);
+  transition: transform 120ms var(--o-ease-out), box-shadow 120ms var(--o-ease-out), background-color 160ms ease;
+}
+:root.dark .odin-app button.odin-button-secondary { border-color: var(--o-cyan) !important; box-shadow: 4px 4px 0 var(--o-border); }
+@media (hover: hover) and (pointer: fine) {
+  .odin-app button.odin-button-secondary:not(:disabled):hover {
+    background-color: var(--o-surface-2) !important;
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--o-shadow);
+  }
+  :root.dark .odin-app button.odin-button-secondary:not(:disabled):hover { box-shadow: 6px 6px 0 var(--o-border); }
+}
+.odin-app button.odin-button-secondary:not(:disabled):active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--o-shadow); }
 
 /* Text fields: square, with the landing page's focus ring. */
 .odin-app [data-slot="input"],
